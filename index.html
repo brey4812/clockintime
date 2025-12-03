@@ -1,3 +1,14 @@
+Analizando tu última captura, el retraso de **140 ms** que ves ahora en el móvil no es por el JavaScript (eso ya lo arreglamos con el `defer`), sino por tu archivo **`CSS/index.css`**.
+
+**¿Por qué pasa esto?**
+El navegador detiene la carga para ir a buscar ese archivo de estilos. Como tu archivo CSS es muy pequeño (solo 1.9 KiB), la mejor estrategia para eliminar ese retraso por completo es **"inlayarlo" (Inline CSS)**.
+
+Es decir, vamos a pegar los estilos **directamente dentro del HTML**. Así el navegador no tiene que hacer ningún "viaje" extra para buscarlos y la carga es instantánea. Además, he aplicado el cambio de color directamente en el código para solucionar el problema de contraste de la otra imagen.
+
+Aquí tienes tu **`index.html` DEFINITIVO y ULTRA-RÁPIDO**.
+*(Ya no necesitas el archivo `CSS/index.css` para esta página, porque está todo incluido aquí).*
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,8 +16,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido a clockInTime</title>
     
-    <meta name="description" content="Portal de gestión de empleados, control horario, fichajes y tareas para empresas. Gestiona tu equipo de forma sencilla con clockInTime.">
-    <meta name="keywords" content="fichaje, control horario, gestión empleados, rrhh, clockintime, productividad">
+    <meta name="description" content="Portal de gestión de empleados, control horario, fichajes y tareas para empresas.">
+    <meta name="keywords" content="fichaje, control horario, gestión empleados, rrhh, clockintime">
     <meta name="author" content="clockInTime">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
     <meta property="og:title" content="Bienvenido a clockInTime">
@@ -16,21 +27,74 @@
     <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
     <meta name="theme-color" content="#87CEEB">
 
-    <style>
-        :root { --primary-color: #0056b3 !important; }
-        .btn-primary { background-color: #0056b3 !important; border-color: #0056b3 !important; }
-        .btn-secondary { color: #0056b3 !important; border-color: #0056b3 !important; }
-        .logo { color: #0056b3 !important; }
-    </style>
-
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
-    
-    <link rel="stylesheet" href="CSS/index.css">
+
+    <style>
+        :root {
+            /* CAMBIO DE COLOR: Oscurecido a #0056b3 para pasar el test de contraste */
+            --primary-color: #0056b3; 
+            --primary-hover: #004494;
+            --text-dark: #333;
+            --text-light: #666;
+            --bg-light: #f9f9f9;
+            --bg-white: #ffffff;
+            --container-width: 1100px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: var(--text-dark); }
+        .container { max-width: var(--container-width); margin: 0 auto; padding: 0 2rem; }
+        
+        .btn { display: inline-block; padding: 0.7rem 1.3rem; border-radius: 5px; text-decoration: none; font-weight: bold; transition: all 0.3s ease; cursor: pointer; }
+        .btn-primary { background: var(--primary-color); color: var(--bg-white); border: 1px solid var(--primary-color); }
+        .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+        .btn-secondary { background: transparent; color: var(--primary-color); border: 1px solid var(--primary-color); }
+        .btn-secondary:hover { background: var(--primary-color); color: var(--bg-white); }
+        .btn-large { font-size: 1.1rem; padding: 0.8rem 2rem; }
+
+        .navbar { background: var(--bg-white); box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 1rem 0; position: sticky; top: 0; z-index: 100; }
+        .navbar .container { display: flex; justify-content: space-between; align-items: center; }
+        .navbar .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+        .navbar .nav-links a { margin-left: 1rem; }
+
+        .hero { background: var(--bg-light); min-height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 1rem; }
+        .hero-content { max-width: 600px; }
+        .hero h1 { font-size: 2.8rem; line-height: 1.2; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; color: var(--text-light); margin-bottom: 2rem; }
+
+        .features { padding: 4rem 1rem; text-align: center; }
+        .features h2 { font-size: 2.2rem; margin-bottom: 3rem; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .feature-box { background: var(--bg-white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .feature-box i { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem; }
+        .feature-box h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .feature-box p { color: var(--text-light); }
+
+        .footer { background: #333; color: #fff; text-align: center; padding: 2rem 1rem; margin-top: 2rem; }
+        .legal-footer { text-align: center; padding: 1rem; margin-top: 1rem; font-size: 0.9rem; background-color: #f9f9f9; }
+        .legal-footer a { color: #666; margin: 0 0.5rem; text-decoration: none; }
+        .legal-footer a:hover { text-decoration: underline; }
+
+        /* Banner Cookies */
+        .cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; color: #e2e8f0; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 1001; box-shadow: 0 -5px 15px rgba(0,0,0,0.2); }
+        .cookie-banner-content p { margin: 0; padding-right: 1rem; }
+        .cookie-banner-content a { color: #00ffee; text-decoration: underline; }
+        .cookie-banner-buttons { display: flex; gap: 1rem; }
+        .btn-cookie { padding: 0.6rem 1rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-cookie-accept { background-color: var(--primary-color); color: #fff; }
+        .btn-cookie-decline { background-color: #475569; color: #fff; }
+        .cookie-banner-hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .navbar .container { flex-direction: column; }
+            .navbar .nav-links { margin-top: 1rem; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+    </style>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    </noscript>
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
 </head>
 
 <body>
@@ -104,3 +168,4 @@
     <script src="JS/main.js" defer></script>
 </body>
 </html>
+```
