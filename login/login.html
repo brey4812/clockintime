@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>clockInTime - Iniciar Sesión</title>
+    <link rel="stylesheet" href="../CSS/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Bienvenido de nuevo</h2>
+        <p>Inicia sesión para registrar tu jornada</p>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email"><i class="fas fa-user"></i> Email o Usuario</label>
+                <input type="email" id="email" name="email" placeholder="tu@empresa.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
+            </div>
+
+            <button type="submit" id="btn-login-submit" class="btn-submit">Acceder</button>
+
+            <div class="extra-links">
+                <p>¿Aún no tienes cuenta? <a id="link-register" href="register.html">Regístrate</a></p>
+                <p><a id="link-forgot-password" href="forgot-password.html">¿Has olvidado tu contraseña?</a></p>
+            </div>
+        </form>
+    </div>
+
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

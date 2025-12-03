@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="logo">clockInTime</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a>
+                    </li>
+                    <li>
+                        <a id="nav-solicitudes" href="solicitudes.html" class="active"><i class="fas fa-calendar-alt"></i> Solicitudes</a>
+                    </li>
+                    <li>
+                        <a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a>
+                    </li>
+                    <li>
+                        <a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a>
+                    </li>
+                    <li>
+                        <a id="nav-perfil" href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Solicitudes de Ausencia</h1>
+                <div class="user-info">
+                    <span><strong id="user-name-header">Nombre Empleado</strong></span>
+                </div>
+            </header>
+
+            <div class="page-grid-solicitudes">
+
+                <div class="widget">
+                    <h2>Nueva Solicitud</h2>
+                    <form id="request-form">
+                        <div class="form-group-app">
+                            <label for="request-type">Tipo de Ausencia</label>
+                            <select id="request-type" name="request-type">
+                                <option value="vacaciones">Vacaciones</option>
+                                <option value="asuntos-propios">Asuntos Propios</option>
+                                <option value="baja-medica">Baja Médica</option>
+                                <option value="teletrabajo">Día de Teletrabajo</option>
+                            </select>
+                        </div>
+                        <div class="date-inputs">
+                            <div class="form-group-app">
+                                <label for="start-date">Fecha Inicio</label>
+                                <input type="date" id="start-date" name="start-date">
+                            </div>
+                            <div class="form-group-app">
+                                <label for="end-date">Fecha Fin</label>
+                                <input type="date" id="end-date" name="end-date">
+                            </div>
+                        </div>
+                        <div class="form-group-app">
+                            <label for="comments">Comentarios (Opcional)</label>
+                            <textarea id="comments" name="comments" rows="4" placeholder="Ej. Cita médica"></textarea>
+                        </div>
+                        <button id="btn-submit-request" type="submit" class="btn-primary-app">Enviar Solicitud</button>
+                    </form>
+                </div>
+
+                <div class="widget">
+                    <h2>Historial</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Desde</th>
+                                    <th>Hasta</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historial-solicitudes-tbody">
+                                <tr>
+                                    <td>Vacaciones</td>
+                                    <td>15 Dic, 2025</td>
+                                    <td>20 Dic, 2025</td>
+                                    <td><span class="status-badge status-approved">Aprobada</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Asuntos Propios</td>
+                                    <td>10 Nov, 2025</td>
+                                    <td>10 Nov, 2025</td>
+                                    <td><span class="status-badge status-pending">Pendiente</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Teletrabajo</td>
+                                    <td>01 Nov, 2025</td>
+                                    <td>01 Nov, 2025</td>
+                                    <td><span class="status-badge status-rejected">Rechazada</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div> </main>
+
+    </div>
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Fichajes - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="logo">clockInTime</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a id="nav-fichajes" href="fichajes.html" class="active"><i class="fas fa-history"></i> Mis Fichajes</a>
+                    </li>
+                    <li>
+                        <a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a>
+                    </li>
+                    <li>
+                        <a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a>
+                    </li>
+                    <li>
+                        <a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a>
+                    </li>
+                    <li>
+                        <a id="nav-perfil" href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Mis Fichajes</h1>
+                <div class="user-info">
+                    <span><strong id="user-name-header">Nombre Empleado</strong></span>
+                </div>
+            </header>
+
+            <section class="widget">
+                <div class="widget-header">
+                    <h2>Historial de Registros</h2>
+                    <div class="date-filter">
+                        <label for="start-date">Desde:</label>
+                        <input type="date" id="start-date">
+                        <label for="end-date">Hasta:</label>
+                        <input type="date" id="end-date">
+                        <button id="btn-filter-fichajes" class="btn-filter">Filtrar</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Entrada</th>
+                                <th>Salida</th>
+                                <th>Pausas</th>
+                                <th>Total Horas</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fichajes-tbody">
+                            <tr>
+                                <td>05 Nov, 2025</td>
+                                <td>09:01</td>
+                                <td>17:32</td>
+                                <td>01:00</td>
+                                <td>07:31</td>
+                                <td><span class="status-badge status-completed">Completado</span></td>
+                            </tr>
+                            <tr>
+                                <td>04 Nov, 2025</td>
+                                <td>09:15</td>
+                                <td>17:00</td>
+                                <td>01:00</td>
+                                <td>06:45</td>
+                                <td><span class="status-badge status-issue">Incidencia</span></td>
+                            </tr>
+                            <tr>
+                                <td>03 Nov, 2025</td>
+                                <td colspan="3" class="text-center">Vacaciones</td>
+                                <td>00:00</td>
+                                <td><span class="status-badge status-off">Ausencia</span></td>
+                            </tr>
+                            <tr>
+                                <td>02 Nov, 2025</td>
+                                <td>08:58</td>
+                                <td>17:30</td>
+                                <td>01:00</td>
+                                <td>07:32</td>
+                                <td><span class="status-badge status-completed">Completado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+
+    </div>
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

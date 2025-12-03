@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - clockInTime (Admin)</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a id="nav-dashboard" href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a id="nav-gestion-usuarios" href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a id="nav-configuracion" href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
+                    <li>
+                        <a id="nav-perfil" href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                    <hr class="sidebar-divider">
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Configuración de la Empresa</h1>
+                <div class="user-info"><span id="user-name-header"><strong>Nombre del Admin</strong></span></div>
+            </header>
+
+            <div class="page-grid-solicitudes">
+                <div class="widget">
+                    <h2>Código de Invitación</h2>
+                    <p>Comparte este código con tus empleados para que puedan unirse a tu empresa al registrarse.</p>
+                    <div class="invite-code-box">
+                        <span id="invite-code-display">EMPRESA-2025-XYZ</span>
+                    </div>
+                    <button id="btn-generar-codigo" class="btn-outline">Generar nuevo código</button>
+                </div>
+
+                <div class="widget">
+                    <h2>Datos de la Empresa</h2>
+                    <form id="form-datos-empresa">
+                        <div class="form-group-app">
+                            <label for="input-nombre-empresa">Nombre de la Empresa</label>
+                            <input type="text" id="input-nombre-empresa" value="Mi Empresa S.L." disabled>
+                        </div>
+                        <div class="form-group-app">
+                            <label for="input-plan-actual">Plan Actual</label>
+                            <input type="text" id="input-plan-actual" value="Plan Premium" disabled>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

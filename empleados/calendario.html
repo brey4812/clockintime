@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="logo">clockInTime</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a></li>
+                    <li><a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a></li>
+                    <li><a id="nav-calendario" href="calendario.html" class="active"><i class="fas fa-calendar-week"></i> Calendario</a></li>
+                    <li><a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a></li>
+                    <li><a id="nav-perfil" href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Calendario</h1>
+                <div class="user-info"><span><strong id="user-name-header">Nombre Empleado</strong></span></div>
+            </header>
+
+            <div class="widget">
+                <div class="calendar-header">
+                    <button id="btn-cal-prev" class="btn-calendar-nav"><i class="fas fa-chevron-left"></i></button>
+                    <h2 id="calendar-month-year">Noviembre 2025</h2>
+                    <button id="btn-cal-next" class="btn-calendar-nav"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div id="calendar-grid-body" class="calendar-grid">
+                    <div class="day-header">Lunes</div>
+                    <div class="day-header">Martes</div>
+                    <div class="day-header">Miércoles</div>
+                    <div class="day-header">Jueves</div>
+                    <div class="day-header">Viernes</div>
+                    <div class="day-header">Sábado</div>
+                    <div class="day-header">Domingo</div>
+
+                    <div class="day-cell other-month">27</div>
+                    <div class="day-cell other-month">28</div>
+                    <div class="day-cell other-month">29</div>
+                    <div class="day-cell other-month">30</div>
+                    <div class="day-cell other-month">31</div>
+                    <div class="day-cell">1</div>
+                    <div class="day-cell">2</div>
+                    <div class="day-cell">3</div>
+                    <div class="day-cell">4</div>
+                    <div class="day-cell">5</div>
+                    <div class="day-cell">6</div>
+                    <div class="day-cell">7</div>
+                    <div class="day-cell">8</div>
+                    <div class="day-cell">9</div>
+                    <div class="day-cell">10</div>
+                    <div class="day-cell">11</div>
+                    <div class="day-cell">12
+                        <div class="calendar-event event-personal">Reunión</div>
+                    </div>
+                    <div class="day-cell">13</div>
+                    <div class="day-cell">14</div>
+                    <div class="day-cell">15</div>
+                    <div class="day-cell">16</div>
+                    <div class="day-cell">17</div>
+                    <div class="day-cell">18</div>
+                    <div class="day-cell">19</div>
+                    <div class="day-cell">20</div>
+                    <div class="day-cell today">21</div>
+                    <div class="day-cell">22</div>
+                    <div class="day-cell">23</div>
+                    <div class="day-cell">24
+                        <div class="calendar-event event-holiday">Vacaciones</div>
+                    </div>
+                    <div class="day-cell">25<div class="calendar-event event-holiday">Vacaciones</div></div>
+                    <div class="day-cell">26</div>
+                    <div class="day-cell">27</div>
+                    <div class="day-cell">28</div>
+                    <div class="day-cell">29</div>
+                    <div class="day-cell">30</div>
+                </div>
+            </div>
+
+        </main>
+        
+    </div>
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil (Admin) - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a id="nav-dashboard" href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a id="nav-gestion-usuarios" href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a id="nav-configuracion" href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
+                    <li>
+                        <a id="nav-perfil" href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                    <hr class="sidebar-divider">
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Mi Perfil de Administrador</h1>
+                <div class="user-info">
+                    <span><strong id="user-name-header">Nombre del Admin</strong></span>
+                </div>
+            </header>
+
+            <div class="page-grid-solicitudes">
+
+                <div class="widget">
+                    <h2>Datos Personales</h2>
+                    <form id="profile-form">
+                        
+                        <div class="profile-pic-container">
+                            <div class="profile-pic-display" id="profile-pic-preview">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-pic-actions">
+                                <button type="button" class="btn-outline" id="btn-upload-pic">Cambiar foto</button>
+                                <input type="file" id="input-pic-upload" accept="image/*">
+                                <button type="button" class="btn-action btn-delete" id="btn-remove-pic">Quitar</button>
+                            </div>
+                        </div>
+                        <div class="form-group-app">
+                            <label for="fullname">Nombre Completo</label>
+                            <input type="text" id="fullname" value="Nombre del Admin">
+                        </div>
+                        <div class="form-group-app">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" value="admin@empresa.com" disabled>
+                        </div>
+                        <div class="form-group-app">
+                            <label for="role">Rol</label>
+                            <input type="text" id="role" value="Administrador" disabled>
+                        </div>
+                        <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
+                    </form>
+                </div>
+
+                <div class="widget">
+                    <h2>Cambiar Contraseña</h2>
+                    <form id="password-form">
+                        <div class="form-group-app">
+                            <label for="current-password">Contraseña Actual</label>
+                            <input type="password" id="current-password" required>
+                        </div>
+                        
+                        <hr class="divider">
+
+                        <div class="form-group-app">
+                            <label for="new-password">Nueva Contraseña</label>
+                            <input type="password" id="new-password" required>
+                        </div>
+                        <div class="form-group-app">
+                            <label for="repeat-password">Repetir Nueva Contraseña</label>
+                            <input type="password" id="repeat-password" required>
+                        </div>
+                        <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
+                    </form>
+                </div>
+
+            </div> </main>
+
+    </div> <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+    </footer>
+
+</body>
+</html>

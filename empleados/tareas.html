@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Tareas - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="logo">clockInTime</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a></li>
+                    <li><a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a></li>
+                    <li><a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
+                    <li><a id="nav-tareas" href="tareas.html" class="active"><i class="fas fa-tasks"></i> Mis Tareas</a></li>
+                    <li><a id="nav-perfil" href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Mis Tareas (Kanban)</h1>
+                <button id="btn-open-task-modal" class="btn-primary-app small-btn"><i class="fas fa-plus"></i> Nueva Tarea</button>
+            </header>
+
+            <div class="kanban-board-container">
+                <div class="kanban-board">
+
+                    <div id="kanban-col-todo" class="kanban-column">
+                        <h2 class="kanban-column-title">Pendientes</h2>
+                        <div id="kanban-content-todo" class="kanban-column-content">
+                            <div class="kanban-card">
+                                <h3>Diseñar la nueva landing page</h3>
+                                <p>Revisar mockups y empezar el HTML.</p>
+                                <span class="badge-priority priority-high">Alta</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="kanban-col-doing" class="kanban-column">
+                        <h2 class="kanban-column-title">En Progreso</h2>
+                        <div id="kanban-content-doing" class="kanban-column-content">
+                            <div class="kanban-card">
+                                <h3>Crear formularios de login</h3>
+                                <p>Terminar el HTML y CSS de register.html y login.html.</p>
+                                <span class="badge-priority priority-medium">Media</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="kanban-col-done" class="kanban-column">
+                        <h2 class="kanban-column-title">Terminado</h2>
+                        <div id="kanban-content-done" class="kanban-column-content">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+    
+    <div class="modal-overlay modal-hidden" id="task-modal">
+        <div class="modal-content">
+            <button id="btn-close-task-modal" class="modal-close"><i class="fas fa-times"></i></button>
+            <h2>Nueva Tarea</h2>
+            <form id="new-task-form">
+                <div class="form-group-app">
+                    <label for="task-title">Título de la Tarea</label>
+                    <input type="text" id="task-title" placeholder="Ej. Diseñar la landing page" required>
+                </div>
+                <div class="form-group-app">
+                    <label for="task-desc">Descripción</label>
+                    <textarea id="task-desc" rows="3" placeholder="Añadir más detalles..."></textarea>
+                </div>
+                <div class="form-group-app">
+                    <label for="task-priority">Prioridad</label>
+                    <select id="task-priority">
+                        <option value="low">Baja</option>
+                        <option value="medium" selected>Media</option>
+                        <option value="high">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group-app">
+                    <label for="task-column">Estado</label>
+                    <select id="task-column">
+                        <option value="todo" selected>Pendiente</option>
+                        <option value="doing">En Progreso</option>
+                        <option value="done">Terminado</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-cancel-task" type="button" class="btn-secondary-app">Cancelar</button>
+                    <button id="btn-submit-task" type="submit" class="btn-primary-app">Crear Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        </footer>
+
+</body>
+</html>

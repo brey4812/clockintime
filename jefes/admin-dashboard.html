@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a id="nav-dashboard" href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a id="nav-gestion-usuarios" href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a id="nav-configuracion" href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
+                    <li>
+                        <a id="nav-perfil" href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                    <hr class="sidebar-divider">
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Dashboard Administrador</h1>
+                <div class="user-info"><span id="user-name-header"><strong>Nombre del Admin</strong></span></div>
+            </header>
+
+            <div class="widget-grid">
+                <div class="widget summary-widget">
+                    <h3>Usuarios Totales</h3>
+                    <div id="summary-usuarios-totales" class="summary-value">14</div>
+                </div>
+                <div class="widget summary-widget">
+                    <h3>Empresas Activas</h3>
+                    <div id="summary-empresas-activas" class="summary-value">1</div>
+                </div>
+                <div class="widget summary-widget">
+                    <h3>Planes</h3>
+                    <div id="summary-planes" class="summary-value">1 Premium</div>
+                </div>
+            </div>
+            
+            <div class="widget">
+                <h2>Bienvenido al Panel de Administración</h2>
+                <p>Desde aquí puedes gestionar todos los usuarios, roles y configuraciones de la plataforma.</p>
+            </div>
+        </main>
+
+    </div><footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+    </footer>
+
+    <div id="cookie-banner" class="cookie-banner">
+        <div class="cookie-banner-content">
+            <p>Usamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra
+                <a href="../legal/politica-cookies.html">Política de Cookies</a>.
+            </p>
+        </div>
+        <div class="cookie-banner-buttons">
+            <button id="cookie-decline" class="btn-cookie btn-cookie-decline">Rechazar</button>
+            <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Aceptar</button>
+        </div>
+    </div>
+</body>
+</html>

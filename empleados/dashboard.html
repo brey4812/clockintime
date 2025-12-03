@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - clockInTime</title>
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="logo">clockInTime</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a id="nav-dashboard" href="dashboard.html" class="active"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a>
+                    </li>
+                    <li>
+                        <a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a>
+                    </li>
+                    <li>
+                        <a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a>
+                    </li>
+                    <li>
+                        <a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a>
+                    </li>
+                    <li>
+                        <a id="nav-perfil" href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Dashboard</h1>
+                <div class="user-info">
+                    <span>Bienvenido, <strong id="user-name-header">Nombre Empleado</strong></span>
+                </div>
+            </header>
+
+            <section class="widget clock-in-widget">
+                <h2>Registra tu jornada</h2>
+                <div class="clock-status">
+                    Estado actual: <span id="clock-status-badge" class="status-badge status-out">Fuera del trabajo</span>
+                </div>
+                <button id="btn-clock-in" class="btn-clock-in btn-clock-green">
+                    <i class="fas fa-play"></i> Fichar Entrada
+                </button>
+                <div class="clock-buttons-secondary">
+                    <button id="btn-pause" class="btn-pause" disabled><i class="fas fa-pause"></i> Pausa</button>
+                    <button id="btn-end" class="btn-end" disabled><i class="fas fa-stop"></i> Finalizar Jornada</button>
+                </div>
+            </section>
+
+            <section class="widget-grid">
+                <div class="widget summary-widget">
+                    <h3>Horas Hoy</h3>
+                    <div id="summary-horas-hoy" class="summary-value">0h 00m</div>
+                </div>
+                <div class="widget summary-widget">
+                    <h3>Horas Semana</h3>
+                    <div id="summary-horas-semana" class="summary-value">0h 00m</div>
+                </div>
+                <div class="widget summary-widget">
+                    <h3>Próximas Ausencias</h3>
+                    <div id="summary-proximas-ausencias" class="summary-value small">No tienes ausencias programadas</div>
+                </div>
+            </section>
+
+        </main>
+
+    </div><footer class="legal-footer">
+        <a href="../terminos-servicio.html">Términos de Servicio</a>
+        <a href="../politica-privacidad.html">Política de Privacidad</a>
+        <a href="../politica-cookies.html">Política de Cookies</a>
+    </footer>
+
+    <div id="cookie-banner" class="cookie-banner">
+        <div class="cookie-banner-content">
+            <p>Usamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra
+                <a href="../politica-cookies.html">Política de Cookies</a>.
+            </p>
+        </div>
+        <div class="cookie-banner-buttons">
+            <button id="cookie-decline" class="btn-cookie btn-cookie-decline">Rechazar</button>
+            <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Aceptar</button>
+        </div>
+    </div>
+
+</body>
+</html>
