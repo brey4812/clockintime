@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+    padding: 2rem 0;
+    /* Añadido para que el footer se vea bien */
+    flex-direction: column;
+}
+
+.form-container {
+    background-color: #ffffff;
+    padding: 2.5rem; 
+    border-radius: 10px; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
+    width: 100%;
+    max-width: 420px; 
+    text-align: center;
+    margin: 1rem; 
+}
+
+.form-container h2 {
+    margin-bottom: 0.5rem;
+    color: #111;
+}
+
+.form-container p {
+    margin-bottom: 1.5rem;
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+    text-align: left; 
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.form-group label i {
+    margin-right: 5px; 
+    color: #007bff; 
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff; 
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff; 
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3; 
+}
+
+.extra-links {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.extra-links p {
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.extra-links a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.extra-links a:hover {
+    text-decoration: underline;
+}
+
+.legal-footer {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.legal-footer a {
+    color: #666;
+    margin: 0 0.5rem;
+    text-decoration: none;
+}
+.legal-footer a:hover {
+    text-decoration: underline;
+}
+
+.cookie-banner-hidden {
+    display: none !important;
+}
