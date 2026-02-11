@@ -25,6 +25,8 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--app-bg);
     color: var(--text-dark);
+    /* Previene scroll horizontal cuando el menú sale */
+    overflow-x: hidden; 
 }
 
 a {
@@ -35,8 +37,10 @@ a {
 .app-container {
     display: flex;
     min-height: 100vh;
+    position: relative; /* Necesario para el contexto */
 }
 
+/* --- SIDEBAR (Escritorio) --- */
 .sidebar {
     width: 250px;
     background-color: var(--sidebar-bg);
@@ -47,12 +51,16 @@ a {
     top: 0;
     left: 0;
     height: 100%;
-    transition: width 0.3s ease;
+    z-index: 1000; /* Asegura que esté sobre el contenido */
+    transition: transform 0.3s ease; /* Usamos transform para mejor rendimiento */
 }
 
 .sidebar-header {
     padding: 1.5rem 1.5rem;
     border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .sidebar .logo {
@@ -61,8 +69,19 @@ a {
     color: var(--sidebar-active);
 }
 
+/* Botón cerrar menú (Solo visible en móvil) */
+.sidebar-close-btn {
+    display: none; 
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
 .sidebar-nav {
     flex-grow: 1;
+    overflow-y: auto; /* Permite scroll si el menú es muy alto */
 }
 
 .sidebar-nav ul {
@@ -113,6 +132,7 @@ a {
     color: #fff;
 }
 
+/* --- CONTENIDO PRINCIPAL --- */
 .main-content {
     margin-left: 250px;
     width: calc(100% - 250px);
@@ -120,6 +140,7 @@ a {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: margin-left 0.3s ease;
 }
 
 .main-header {
@@ -132,14 +153,51 @@ a {
     flex-shrink: 0;
 }
 
+/* Botón Hamburguesa (Nuevo) */
+.menu-toggle-btn {
+    display: none; /* Oculto en escritorio */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
 .main-header h1 {
     font-size: 2rem;
+}
+
+/* Contenedor flexible para título y botón en móvil */
+.header-left {
+    display: flex;
+    align-items: center;
 }
 
 .user-info {
     font-weight: 500;
 }
 
+/* --- OVERLAY OSCURO (Nuevo) --- */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 900; /* Debajo del sidebar (1000) pero sobre el contenido */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Estilos Generales de Widgets y Tablas --- */
 .widget {
     background-color: var(--widget-bg);
     border-radius: 10px;
@@ -148,721 +206,112 @@ a {
     margin-bottom: 1.5rem;
 }
 
-.clock-in-widget {
-    text-align: center;
-}
-.clock-in-widget h2 {
-    margin-bottom: 1rem;
-    font-weight: 600;
-}
-.clock-status {
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-}
-.status-badge {
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    font-weight: bold;
-    color: #fff;
-}
+.clock-in-widget { text-align: center; }
+.clock-in-widget h2 { margin-bottom: 1rem; font-weight: 600; }
+.clock-status { margin-bottom: 1.5rem; font-size: 1.1rem; }
+.status-badge { padding: 0.3rem 0.7rem; border-radius: 20px; font-weight: bold; color: #fff; }
 .status-out { background-color: var(--text-light); }
 .status-in { background-color: var(--green); }
 .status-pause { background-color: var(--yellow); color: var(--text-dark); }
 
 .btn-clock-in {
-    width: 100%;
-    max-width: 300px;
-    padding: 1.2rem;
-    font-size: 1.25rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 1rem;
+    width: 100%; max-width: 300px; padding: 1.2rem; font-size: 1.25rem; font-weight: bold;
+    border: none; border-radius: 8px; color: #fff; cursor: pointer;
+    transition: background-color 0.3s ease; margin-bottom: 1rem;
 }
 .btn-clock-green { background-color: var(--green); }
 .btn-clock-green:hover { background-color: #218838; }
 .btn-clock-red { background-color: var(--red); }
 .btn-clock-red:hover { background-color: #c82333; }
 
-.clock-buttons-secondary {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-}
-
+.clock-buttons-secondary { display: flex; justify-content: center; gap: 1rem; }
 .clock-buttons-secondary button {
-    padding: 0.7rem 1.2rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    padding: 0.7rem 1.2rem; border: none; border-radius: 6px; font-size: 0.9rem;
+    font-weight: 500; cursor: pointer; transition: background-color 0.2s ease;
 }
-
-.clock-buttons-secondary button:disabled {
-    background-color: #e0e0e0;
-    color: #a0a0a0;
-    cursor: not-allowed;
-}
-
+.clock-buttons-secondary button:disabled { background-color: #e0e0e0; color: #a0a0a0; cursor: not-allowed; }
 .btn-pause { background-color: var(--yellow); color: var(--text-dark); }
 .btn-end { background-color: var(--red); color: #fff; }
 
-.widget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
+.widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+.summary-widget h3 { font-size: 1rem; color: var(--text-light); margin-bottom: 0.5rem; }
+.summary-widget .summary-value { font-size: 2rem; font-weight: bold; }
+.summary-widget .summary-value.small { font-size: 1rem; font-weight: 500; color: var(--text-light); }
 
-.summary-widget h3 {
-    font-size: 1rem;
-    color: var(--text-light);
-    margin-bottom: 0.5rem;
-}
+.widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.widget-header h2 { margin: 0; }
+.date-filter { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.date-filter label { font-size: 0.9rem; color: var(--text-light); }
+.date-filter input[type="date"] { padding: 0.4rem; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; }
+.btn-filter { padding: 0.5rem 0.8rem; background-color: var(--primary-color); color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; }
+.btn-filter:hover { background-color: var(--primary-hover); }
 
-.summary-widget .summary-value {
-    font-size: 2rem;
-    font-weight: bold;
-}
+.table-container { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { padding: 0.9rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+table td { vertical-align: middle; }
+thead th { background-color: #f8f9fa; color: var(--text-dark); font-weight: 600; }
+tbody tr:hover { background-color: #f1f5f9; }
+td.text-center { text-align: center; color: var(--text-light); font-style: italic; }
 
-.summary-widget .summary-value.small {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-light);
+.page-grid-solicitudes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.form-group-app { margin-bottom: 1.2rem; }
+.form-group-app label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+.form-group-app input, .form-group-app select, .form-group-app textarea {
+    width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); border-radius: 6px;
+    font-family: inherit; font-size: 0.95rem;
 }
-
-.widget-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap; 
-    gap: 1rem;
-}
-
-.widget-header h2 {
-    margin: 0;
-}
-
-.date-filter {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.date-filter label {
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.date-filter input[type="date"] {
-    padding: 0.4rem;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
-    font-family: inherit;
-}
-
-.btn-filter {
-    padding: 0.5rem 0.8rem;
-    background-color: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.btn-filter:hover {
-    background-color: var(--primary-hover);
-}
-
-.table-container {
-    width: 100%;
-    overflow-x: auto; 
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-th, td {
-    padding: 0.9rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-/* REGLA AÑADIDA PARA ALINEAR FOTOS */
-table td {
-    vertical-align: middle;
-}
-
-thead th {
-    background-color: #f8f9fa;
-    color: var(--text-dark);
-    font-weight: 600;
-}
-
-tbody tr:hover {
-    background-color: #f1f5f9;
-}
-
-td.text-center {
-    text-align: center;
-    color: var(--text-light);
-    font-style: italic;
-}
-
-.status-badge.status-completed { background-color: var(--green); }
-.status-badge.status-issue { background-color: var(--red); }
-.status-badge.status-off { background-color: var(--yellow); color: var(--text-dark); }
-
-.page-grid-solicitudes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.form-group-app {
-    margin-bottom: 1.2rem;
-}
-
-.form-group-app label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.form-group-app input[type="date"],
-.form-group-app input[type="text"],
-.form-group-app input[type="email"],
-.form-group-app input[type="password"],
-.form-group-app select,
-.form-group-app textarea {
-    width: 100%;
-    padding: 0.7rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 0.95rem;
-}
-
-.form-group-app textarea {
-    resize: vertical;
-}
-
-.form-group-app input:disabled {
-    background-color: #f1f5f9;
-    color: var(--text-light);
-    cursor: not-allowed;
-}
-
-.date-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
+.form-group-app textarea { resize: vertical; }
+.form-group-app input:disabled { background-color: #f1f5f9; color: var(--text-light); cursor: not-allowed; }
+.date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
 .btn-primary-app {
-    width: 100%;
-    padding: 0.85rem;
-    border: none;
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    width: auto; padding: 0.85rem; border: none; border-radius: 6px; background-color: var(--primary-color);
+    color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background-color 0.3s ease;
 }
+.btn-primary-app:hover { background-color: var(--primary-hover); }
+form .btn-primary-app { width: 100%; }
 
-.btn-primary-app:hover {
-    background-color: var(--primary-hover);
-}
-
-hr.divider {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 1.5rem 0;
-}
-
-.status-badge.status-approved { background-color: var(--green); }
-.status-badge.status-pending { background-color: var(--yellow); color: var(--text-dark); }
-.status-badge.status-rejected { background-color: var(--red); }
-
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.calendar-header h2 {
-    margin: 0;
-}
-
-.btn-calendar-nav {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-dark);
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    cursor: pointer;
-}
-.btn-calendar-nav:hover {
-    background-color: var(--app-bg);
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    border-top: 1px solid var(--border-color);
-    border-left: 1px solid var(--border-color);
-}
-
-.day-header {
-    font-weight: 600;
-    text-align: center;
-    padding: 0.5rem;
-    font-size: 0.9rem;
-    background-color: #f8f9fa;
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.day-cell {
-    min-height: 100px;
-    padding: 0.5rem;
-    font-weight: 500;
-    border-right: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.day-cell.other-month {
-    color: var(--text-light);
-    background-color: #fcfcfc;
-}
-
-.day-cell.today {
-    background-color: #e0eaff;
-    font-weight: bold;
-}
-
-.calendar-event {
-    font-size: 0.8rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #fff;
-    margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.calendar-header h2 { margin: 0; }
+.btn-calendar-nav { background: none; border: 1px solid var(--border-color); color: var(--text-dark); border-radius: 50%; width: 35px; height: 35px; cursor: pointer; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
+.day-header { font-weight: 600; text-align: center; padding: 0.5rem; font-size: 0.9rem; background-color: #f8f9fa; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+.day-cell { min-height: 100px; padding: 0.5rem; font-weight: 500; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+.day-cell.today { background-color: #e0eaff; font-weight: bold; }
+.calendar-event { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; color: #fff; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-personal { background-color: var(--primary-color); }
 .event-holiday { background-color: var(--green); }
 
-.kanban-board-container {
-    flex-grow: 1;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-}
-
-.kanban-board {
-    display: flex;
-    gap: 1.5rem;
-    min-height: 100%;
-}
-
-.kanban-column {
-    flex: 1;
-    min-width: 300px;
-    background-color: var(--app-bg);
-    border-radius: 8px;
-}
-
-.kanban-column-title {
-    font-size: 1.2rem;
-    padding: 1rem;
-    border-bottom: 3px solid var(--border-color);
-    color: var(--text-dark);
-}
+.kanban-board-container { flex-grow: 1; overflow-x: auto; padding-bottom: 1rem; }
+.kanban-board { display: flex; gap: 1.5rem; min-height: 100%; }
+.kanban-column { flex: 1; min-width: 300px; background-color: var(--app-bg); border-radius: 8px; }
+.kanban-column-title { font-size: 1.2rem; padding: 1rem; border-bottom: 3px solid var(--border-color); color: var(--text-dark); }
 .kanban-column:nth-child(1) .kanban-column-title { border-color: var(--yellow); }
 .kanban-column:nth-child(2) .kanban-column-title { border-color: var(--primary-color); }
 .kanban-column:nth-child(3) .kanban-column-title { border-color: var(--green); }
-
-.kanban-column-content {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    height: calc(100% - 60px); 
-}
-
-.kanban-card {
-    background-color: var(--widget-bg);
-    padding: 1rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-left: 4px solid var(--text-light);
-}
-
-.kanban-card h3 {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.kanban-card p {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-bottom: 0.75rem;
-}
-
-.badge-priority {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 12px;
-    color: var(--text-dark);
-}
+.kanban-column-content { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; height: calc(100% - 60px); }
+.kanban-card { background-color: var(--widget-bg); padding: 1rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid var(--text-light); }
+.badge-priority { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
 .priority-high { background-color: #fecaca; color: #b91c1c; }
 .priority-medium { background-color: #fef08a; color: #a16207; }
-.priority-low { background-color: #dbeafe; color: #1e40af; }
 
-.manager-badge {
-    font-size: 0.8rem;
-    color: var(--yellow);
-    font-weight: 500;
-    vertical-align: middle;
-}
+/* Modales y utilidades */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: var(--widget-bg); padding: 2rem; border-radius: 10px; width: 100%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+.modal-hidden { display: none; }
+.profile-pic-display { width: 120px; height: 120px; border-radius: 50%; background-color: var(--app-bg); border: 3px solid var(--border-color); display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 1rem; }
+.profile-pic-display img { width: 100%; height: 100%; object-fit: cover; }
+.table-profile-pic { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; vertical-align: middle; border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center;}
+.table-profile-pic img { width: 100%; height: 100%; object-fit: cover; }
 
-hr.sidebar-divider {
-    border: none;
-    border-top: 1px solid #334155;
-    margin: 1rem 1.5rem;
-}
+/* Footer Legal */
+.legal-footer { text-align: center; padding: 2rem 1rem 1rem 1rem; margin-top: 1rem; font-size: 0.9rem; background-color: var(--app-bg); color: #666; margin-left: 250px; width: calc(100% - 250px); }
 
-.view-switch-link {
-    background-color: #334155;
-    color: #fff !important;
-}
-.view-switch-link:hover {
-    background-color: #475569 !important;
-}
-
-.actions-cell {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-action {
-    padding: 0.4rem 0.6rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: #fff;
-}
-
-.btn-action.btn-approve {
-    background-color: var(--green);
-}
-.btn-action.btn-approve:hover {
-    background-color: #218838;
-}
-
-.btn-action.btn-reject {
-    background-color: var(--red);
-}
-.btn-action.btn-reject:hover {
-    background-color: #c82333;
-}
-
-.team-status-list {
-    list-style: none;
-    padding: 0;
-}
-
-.team-status-list li {
-    display: flex;
-    align-items: center;
-    padding: 0.9rem 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-.team-status-list li:last-child {
-    border-bottom: none;
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.dot-online { background-color: var(--green); }
-.dot-offline { background-color: #ccc; }
-.dot-pause { background-color: var(--yellow); }
-.dot-absent { background-color: var(--red); }
-
-.employee-name {
-    font-weight: 600;
-    flex-grow: 1;
-}
-
-.employee-status {
-    font-size: 0.9rem;
-    color: var(--text-light);
-}
-
-.upcoming-absences-list {
-    list-style: none;
-    padding: 0;
-}
-
-.upcoming-absences-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.9rem 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-.upcoming-absences-list li:last-child {
-    border-bottom: none;
-}
-.upcoming-absences-list li span {
-    color: var(--text-light);
-}
-
-.btn-outline {
-    background-color: transparent;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    padding: 0.4rem 0.7rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.8rem;
-}
-.btn-outline:hover {
-    background-color: var(--primary-color);
-    color: #fff;
-}
-
-.btn-download {
-    background-color: var(--green);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 0.4rem 0.6rem;
-    cursor: pointer;
-}
-.btn-download:hover {
-    background-color: #218838;
-}
-
-.admin-badge {
-    font-size: 0.8rem;
-    color: var(--green);
-    font-weight: 500;
-    vertical-align: middle;
-}
-
-.invite-code-box {
-    background-color: var(--app-bg);
-    border: 1px dashed var(--border-color);
-    padding: 1.5rem;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--text-dark);
-    margin: 1rem 0;
-    border-radius: 8px;
-}
-
-.btn-primary-app.small-btn {
-    width: auto;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-}
-
-.btn-primary-app.small-btn i {
-    margin-right: 5px;
-}
-
-.role-badge {
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.role-admin { background-color: #dbeafe; color: #1e40af; }
-.role-manager { background-color: #fef08a; color: #a16207; }
-.role-employee { background-color: #e0e0e0; color: #333; }
-
-.btn-action.btn-edit { background-color: var(--primary-color); }
-.btn-action.btn-edit:hover { background-color: var(--primary-hover); }
-.btn-action.btn-delete { background-color: var(--red); }
-.btn-action.btn-delete:hover { background-color: #c82333; }
-.btn-action.btn-delete:disabled { background-color: #ccc; cursor: not-allowed; }
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: var(--widget-bg);
-    padding: 2rem;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-light);
-    cursor: pointer;
-}
-
-.modal-content h2 {
-    margin-bottom: 1.5rem;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.btn-secondary-app {
-    padding: 0.75rem 1.2rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--widget-bg);
-    color: var(--text-dark);
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-.btn-secondary-app:hover {
-    background-color: var(--app-bg);
-}
-
-/* Modificación para que .btn-primary-app no sea siempre 100% */
-.btn-primary-app {
-    width: auto; /* Cambio: era 100% */
-    padding: 0.85rem;
-    border: none;
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-/* Si se quiere 100% en un form, el form puede forzarlo */
-form .btn-primary-app {
-     width: 100%;
-}
-/* Re-aplicar estilos del modal que eran específicos */
-.modal-actions .btn-primary-app {
-    width: auto;
-    font-size: 0.9rem;
-    padding: 0.75rem 1.2rem;
-}
-
-.btn-primary-app:hover {
-    background-color: var(--primary-hover);
-}
-
-.modal-hidden {
-    display: none;
-}
-
-/* --- ESTILOS PARA FOTO DE PERFIL --- */
-.profile-pic-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-.profile-pic-display {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background-color: var(--app-bg);
-    border: 3px solid var(--border-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-light);
-    font-size: 4rem; /* Icono más grande */
-    overflow: hidden;
-    margin-bottom: 1rem;
-}
-.profile-pic-display img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Hace que la imagen encaje bien */
-}
-.profile-pic-actions {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-}
-/* Oculta el input de archivo feo */
-#input-pic-upload {
-    display: none;
-}
-
-/* --- ESTILOS NUEVOS PARA FOTO DE PERFIL EN TABLA --- */
-.table-profile-pic {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--app-bg);
-    border: 2px solid var(--border-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-light);
-    font-size: 1.5rem; /* Icono */
-    overflow: hidden;
-    vertical-align: middle; 
-}
-.table-profile-pic img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-/* --- FIN DE ESTILOS NUEVOS --- */
-
-
+/* --- RESPONSIVE DESIGN (MÓVIL) --- */
 @media (max-width: 992px) {
-    .page-grid-solicitudes {
-        grid-template-columns: 1fr;
-    }
+    .page-grid-solicitudes { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -870,120 +319,71 @@ form .btn-primary-app {
         flex-direction: column;
         height: auto;
     }
+
+    /* Sidebar Off-Canvas */
     .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+        transform: translateX(-100%); /* Oculto por defecto a la izquierda */
+        width: 260px; /* Ancho fijo para móvil */
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
     }
+
+    /* Clase para mostrar sidebar */
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-footer {
+        display: block; /* Volvemos a mostrar el footer en el menú lateral */
+        margin-top: auto;
+    }
+    
+    .sidebar-close-btn {
+        display: block; /* Mostrar la X para cerrar */
+    }
+
+    /* Ajuste del contenido principal */
     .main-content {
         margin-left: 0;
         width: 100%;
         padding: 1rem;
-        min-height: auto;
+        padding-top: 1rem;
     }
-    .sidebar-footer {
-        display: none;
-    }
+
     .main-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+        position: sticky; /* Opcional: cabecera pegajosa */
+        top: 0;
+        background-color: var(--app-bg);
+        z-index: 100;
+        padding-top: 0.5rem;
     }
-    .date-inputs {
-        grid-template-columns: 1fr;
+    
+    /* Mostrar botón hamburguesa */
+    .menu-toggle-btn {
+        display: block;
     }
-    .kanban-board {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    .kanban-column {
-        min-width: 100%;
-    }
-    .calendar-grid {
-        font-size: 0.8rem;
-    }
-    .day-cell {
-        min-height: 70px;
-        padding: 4px;
-    }
-    .calendar-event {
-        font-size: 0.7rem;
-    }
-    .modal-content {
-        width: 90%;
-        margin: 1rem;
-    }
-}
-/* --- Banner de Cookies --- */
-.cookie-banner {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #1e293b;
-    color: #e2e8f0;
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1001;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
-}
-.cookie-banner-content p {
-    margin: 0;
-    padding-right: 1rem;
-}
-.cookie-banner-content a {
-    color: #00ffee;
-    text-decoration: underline;
-}
-.cookie-banner-buttons {
-    display: flex;
-    gap: 1rem;
-}
-.btn-cookie {
-    padding: 0.6rem 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-.btn-cookie-accept {
-    background-color: #007bff;
-    color: #fff;
-}
-.btn-cookie-decline {
-    background-color: #475569;
-    color: #fff;
-}
 
-/* --- Footer Legal (Actualizado) --- */
-.legal-footer {
-    text-align: center;
-    padding: 2rem 1rem 1rem 1rem; 
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    background-color: var(--app-bg);
-    color: #666;
-    margin-left: 250px; 
-    width: calc(100% - 250px);
-}
-.legal-footer a {
-    color: #666;
-    margin: 0 0.5rem;
-    text-decoration: none;
-}
-.legal-footer a:hover {
-    text-decoration: underline;
-}
+    /* Ajuste de título */
+    .main-header h1 {
+        font-size: 1.5rem;
+    }
 
-@media (max-width: 768px) {
+    /* Ajuste Footer Legal */
     .legal-footer {
         margin-left: 0;
         width: 100%;
     }
-}
 
-.cookie-banner-hidden {
-    display: none !important;
+    /* Ajustes generales móvil */
+    .date-inputs { grid-template-columns: 1fr; }
+    .kanban-board { flex-direction: column; gap: 1.5rem; }
+    .kanban-column { min-width: 100%; }
+    .calendar-grid { font-size: 0.8rem; }
+    .day-cell { min-height: 70px; padding: 4px; }
+    .calendar-event { font-size: 0.7rem; }
+    .modal-content { width: 90%; margin: 1rem; }
 }
