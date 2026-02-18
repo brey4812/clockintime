@@ -48,6 +48,7 @@ a {
     left: 0;
     height: 100%;
     transition: width 0.3s ease;
+    z-index: 100;
 }
 
 .sidebar-header {
@@ -283,6 +284,7 @@ a {
 .table-container {
     width: 100%;
     overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -296,7 +298,6 @@ th, td {
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
-/* REGLA AÑADIDA PARA ALINEAR FOTOS */
 table td {
     vertical-align: middle;
 }
@@ -768,39 +769,20 @@ hr.sidebar-divider {
     background-color: var(--app-bg);
 }
 
-/* Modificación para que .btn-primary-app no sea siempre 100% */
-.btn-primary-app {
-    width: auto; /* Cambio: era 100% */
-    padding: 0.85rem;
-    border: none;
-    border-radius: 6px;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-/* Si se quiere 100% en un form, el form puede forzarlo */
 form .btn-primary-app {
      width: 100%;
 }
-/* Re-aplicar estilos del modal que eran específicos */
+
 .modal-actions .btn-primary-app {
     width: auto;
     font-size: 0.9rem;
     padding: 0.75rem 1.2rem;
 }
 
-.btn-primary-app:hover {
-    background-color: var(--primary-hover);
-}
-
 .modal-hidden {
     display: none;
 }
 
-/* --- ESTILOS PARA FOTO DE PERFIL --- */
 .profile-pic-container {
     display: flex;
     flex-direction: column;
@@ -817,26 +799,24 @@ form .btn-primary-app {
     justify-content: center;
     align-items: center;
     color: var(--text-light);
-    font-size: 4rem; /* Icono más grande */
+    font-size: 4rem;
     overflow: hidden;
     margin-bottom: 1rem;
 }
 .profile-pic-display img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Hace que la imagen encaje bien */
+    object-fit: cover;
 }
 .profile-pic-actions {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
 }
-/* Oculta el input de archivo feo */
 #input-pic-upload {
     display: none;
 }
 
-/* --- ESTILOS NUEVOS PARA FOTO DE PERFIL EN TABLA --- */
 .table-profile-pic {
     width: 40px;
     height: 40px;
@@ -847,7 +827,7 @@ form .btn-primary-app {
     justify-content: center;
     align-items: center;
     color: var(--text-light);
-    font-size: 1.5rem; /* Icono */
+    font-size: 1.5rem;
     overflow: hidden;
     vertical-align: middle; 
 }
@@ -856,8 +836,6 @@ form .btn-primary-app {
     height: 100%;
     object-fit: cover;
 }
-/* --- FIN DE ESTILOS NUEVOS --- */
-
 
 @media (max-width: 992px) {
     .page-grid-solicitudes {
@@ -865,30 +843,99 @@ form .btn-primary-app {
     }
 }
 
+/* --- SECCIÓN MÓVIL --- */
 @media (max-width: 768px) {
     .app-container {
         flex-direction: column;
         height: auto;
     }
+
     .sidebar {
         width: 100%;
-        height: auto;
-        position: relative;
+        height: 60px;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        flex-direction: row;
+        background-color: var(--sidebar-bg);
+        border-top: 1px solid #334155;
+        overflow-x: auto;
     }
+
+    .sidebar-header, .sidebar-footer, hr.sidebar-divider {
+        display: none;
+    }
+
+    .sidebar-nav {
+        width: 100%;
+    }
+
+    .sidebar-nav ul {
+        display: flex;
+        flex-direction: row;
+        padding-top: 0;
+        height: 100%;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .sidebar-nav li {
+        flex: 1;
+        text-align: center;
+    }
+
+    .sidebar-nav li a {
+        padding: 0.5rem 0.2rem;
+        margin: 0;
+        font-size: 0.7rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 0;
+    }
+
+    .sidebar-nav a i {
+        margin-right: 0;
+        margin-bottom: 4px;
+        font-size: 1.2rem;
+    }
+
     .main-content {
         margin-left: 0;
         width: 100%;
         padding: 1rem;
+        padding-bottom: 70px;
         min-height: auto;
     }
-    .sidebar-footer {
-        display: none;
+
+    .calendar-grid {
+        font-size: 0.7rem;
     }
+    .day-header {
+        padding: 0.2rem;
+        font-size: 0.65rem;
+    }
+    .day-cell {
+        min-height: 50px;
+        padding: 2px;
+    }
+    .calendar-event {
+        font-size: 0.6rem;
+        padding: 1px 3px;
+        margin-top: 2px;
+    }
+
     .main-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
+    
+    .main-header h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0;
+    }
+
     .date-inputs {
         grid-template-columns: 1fr;
     }
@@ -899,22 +946,136 @@ form .btn-primary-app {
     .kanban-column {
         min-width: 100%;
     }
-    .calendar-grid {
-        font-size: 0.8rem;
-    }
-    .day-cell {
-        min-height: 70px;
-        padding: 4px;
-    }
-    .calendar-event {
-        font-size: 0.7rem;
-    }
     .modal-content {
         width: 90%;
         margin: 1rem;
     }
+
+    /* --- MEJORAS ESPECÍFICAS FICHAJES MÓVIL --- */
+    .clock-in-widget {
+        padding: 2rem 1rem;
+    }
+
+    .btn-clock-in {
+        max-width: 100%;
+        height: 70px; /* Más alto para facilitar el toque */
+        font-size: 1.4rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .clock-buttons-secondary {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Dos columnas iguales para Pausa y Fin */
+        gap: 0.8rem;
+        width: 100%;
+    }
+
+    .clock-buttons-secondary button {
+        padding: 1rem 0.5rem;
+        font-size: 1rem;
+        height: 50px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    /* --- OPTIMIZACIÓN DE TABLA PARA EVITAR SCROLL --- */
+    table {
+        font-size: 0.75rem; 
+    }
+
+    th, td {
+        padding: 0.6rem 0.4rem;
+    }
+
+    /* Reducción de los badges de estado a solo iniciales en móvil */
+    .status-badge {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 0.7rem;
+        color: white !important;
+        text-indent: -9999px; /* Oculta el texto original */
+        position: relative;
+    }
+
+    .status-badge::before {
+        text-indent: 0;
+        position: absolute;
+    }
+
+    .status-badge.status-completed::before { content: 'C'; }
+    .status-badge.status-issue::before { content: 'I'; }
+    .status-badge.status-off::before { content: 'A'; }
+    .status-badge.status-pending::before { content: 'P'; color: var(--text-dark); }
+    .status-badge.status-approved::before { content: 'A'; }
+    .status-badge.status-rejected::before { content: 'R'; }
+
+    /* --- ESTILO COOKIES MEJORADO PARA MÓVIL --- */
+    .cookie-banner {
+        bottom: 75px; 
+        left: 10px;
+        right: 10px;
+        width: calc(100% - 20px);
+        flex-direction: column;
+        border-radius: 12px;
+        padding: 1rem;
+        gap: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .cookie-banner-content p {
+        padding-right: 0;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+    .cookie-banner-buttons {
+        width: 100%;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .btn-cookie {
+        flex: 1;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* --- OPTIMIZACIÓN PERFIL MÓVIL --- */
+    .profile-pic-container {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-pic-display {
+        width: 100px;
+        height: 100px;
+        font-size: 3rem;
+    }
+
+    .form-group-app {
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .profile-actions .btn-primary-app {
+        width: 100%;
+    }
 }
-/* --- Banner de Cookies --- */
+
+/* --- Banner de Cookies (Base) --- */
 .cookie-banner {
     position: fixed;
     bottom: 0;
@@ -957,7 +1118,7 @@ form .btn-primary-app {
     color: #fff;
 }
 
-/* --- Footer Legal (Actualizado) --- */
+/* --- Footer Legal --- */
 .legal-footer {
     text-align: center;
     padding: 2rem 1rem 1rem 1rem; 
@@ -981,6 +1142,7 @@ form .btn-primary-app {
     .legal-footer {
         margin-left: 0;
         width: 100%;
+        padding-bottom: 80px;
     }
 }
 
