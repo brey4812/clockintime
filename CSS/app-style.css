@@ -1135,6 +1135,70 @@ form .btn-primary-app {
     }
 }
 
+/* --- INICIO IMPLEMENTACIÓN SOLICITADA PARA MÓVIL (MAX-WIDTH 600PX) --- */
+@media (max-width: 600px) {
+    .day-cell {
+        position: relative;
+        min-height: 55px;
+        overflow: visible; /* Permite que el cartelito flote por fuera */
+    }
+
+    .calendar-event {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%; /* Los convertimos en puntos para que no ocupen espacio */
+        font-size: 0;        /* Escondemos el texto interno */
+        margin: 2px auto;
+        cursor: pointer;
+        display: block;
+        position: relative;
+    }
+
+    /* La burbuja con el nombre del evento */
+    .calendar-event::after {
+        content: attr(data-label); /* <--- AQUÍ EXTRAE EL NOMBRE REAL */
+        position: absolute;
+        bottom: 150%;
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        background: #1e293b; /* Color oscuro igual a tu sidebar */
+        color: #ffffff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+        z-index: 999;
+        transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Triangulito debajo de la burbuja */
+    .calendar-event::before {
+        content: '';
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        border: 6px solid transparent;
+        border-top-color: #1e293b;
+        transition: all 0.1s ease;
+    }
+
+    /* Mostrar al mantener presionado (active) o tocar */
+    .calendar-event:active::after, 
+    .calendar-event:hover::after {
+        transform: translateX(-50%) scale(1);
+    }
+
+    .calendar-event:active::before, 
+    .calendar-event:hover::before {
+        transform: translateX(-50%) scale(1);
+    }
+}
+/* --- FIN IMPLEMENTACIÓN SOLICITADA --- */
+
 .cookie-banner {
     position: fixed;
     bottom: 0;
