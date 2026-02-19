@@ -25,6 +25,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--app-bg);
     color: var(--text-dark);
+    overflow-x: hidden; /* Evita scroll horizontal global */
 }
 
 a {
@@ -147,6 +148,7 @@ a {
     padding: 1.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     margin-bottom: 1.5rem;
+    max-width: 100%; /* Asegura que no rompa el contenedor */
 }
 
 .clock-in-widget {
@@ -291,6 +293,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    min-width: 500px; /* Evita que las columnas se aplasten demasiado */
 }
 
 th, td {
@@ -906,6 +909,7 @@ form .btn-primary-app {
         padding: 1rem;
         padding-bottom: 70px;
         min-height: auto;
+        overflow-x: hidden; /* Evita desbordamiento del contenido principal */
     }
 
     .calendar-grid {
@@ -986,6 +990,7 @@ form .btn-primary-app {
     /* --- OPTIMIZACIÓN DE TABLA PARA EVITAR SCROLL --- */
     table {
         font-size: 0.75rem; 
+        min-width: 450px; /* Asegura que la tabla tenga un mínimo para ser legible con scroll */
     }
 
     th, td {
