@@ -458,18 +458,17 @@ hr.divider {
     font-weight: bold;
 }
 
-/* AQUÍ ESTÁ LA SOLUCIÓN AL SOBRESALTO */
 .calendar-event {
     font-size: 0.8rem;
     padding: 2px 6px;
     border-radius: 4px;
     color: #fff;
     margin-top: 4px;
-    white-space: pre-wrap; /* Permite saltos de línea y ajuste de texto */
-    overflow: visible;     /* Permite que el contenido se vea */
-    line-height: 1.2;      /* Ajusta el espacio entre líneas */
-    display: block;        /* Asegura comportamiento de bloque */
-    word-break: break-word; /* Rompe palabras largas si es necesario */
+    white-space: pre-wrap;
+    overflow: visible;
+    line-height: 1.2;
+    display: block;
+    word-break: break-word;
 }
 
 .event-personal { background-color: var(--primary-color); }
@@ -998,6 +997,7 @@ form .btn-primary-app {
         padding: 0.6rem 0.4rem;
     }
 
+    /* SOLUCIÓN AL TOOLTIP/TEXTO EN MÓVILES */
     .status-badge {
         width: 24px;
         height: 24px;
@@ -1010,6 +1010,7 @@ form .btn-primary-app {
         color: white !important;
         text-indent: -9999px;
         position: relative;
+        cursor: help; /* Indica que hay información al tocar */
     }
 
     .status-badge::before {
@@ -1017,12 +1018,32 @@ form .btn-primary-app {
         position: absolute;
     }
 
+    /* Letras dentro del círculo */
     .status-badge.status-completed::before { content: 'C'; }
     .status-badge.status-issue::before { content: 'I'; }
     .status-badge.status-off::before { content: 'A'; }
     .status-badge.status-pending::before { content: 'P'; color: var(--text-dark); }
     .status-badge.status-approved::before { content: 'A'; }
     .status-badge.status-rejected::before { content: 'R'; }
+
+    /* EL "CUADRADITO" QUE APARECE AL TOCAR */
+    .status-badge:active::after {
+        content: attr(data-label); /* Toma el texto del atributo data-label */
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        z-index: 10;
+        text-indent: 0;
+        pointer-events: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
 
     .cookie-banner {
         bottom: 75px; 
