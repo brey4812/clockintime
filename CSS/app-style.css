@@ -459,14 +459,19 @@ hr.divider {
 }
 
 .calendar-event {
-    font-size: 0.8rem;
-    padding: 2px 6px;
+    font-size: 0.7rem; /* Reducimos un poco el tamaño para que quepa mejor en móvil */
+    padding: 4px 6px;
     border-radius: 4px;
     color: #fff;
     margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    
+    /* CAMBIOS CLAVE PARA EL SALTO DE LÍNEA: */
+    white-space: normal;      /* Cambiado de nowrap a normal para permitir saltos */
+    word-wrap: break-word;    /* Fuerza la rotura de palabras si son muy largas */
+    overflow: visible;        /* Asegura que el contenido sea visible */
+    text-overflow: clip;      /* Eliminamos los puntos suspensivos (...) */
+    display: block;           /* Asegura que ocupe el ancho disponible */
+    line-height: 1.2;         /* Ajustamos el interlineado para que se vea ordenado */
 }
 .event-personal { background-color: var(--primary-color); }
 .event-holiday { background-color: var(--green); }
