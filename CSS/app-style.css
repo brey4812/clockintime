@@ -469,10 +469,12 @@ hr.divider {
     line-height: 1.2;
     display: block;
     word-break: break-word;
+    cursor: pointer;
 }
 
 .event-personal { background-color: var(--primary-color); }
 .event-holiday { background-color: var(--green); }
+.event-solicitud { background-color: var(--yellow); color: var(--text-dark); }
 
 .kanban-board-container {
     flex-grow: 1;
@@ -925,10 +927,47 @@ form .btn-primary-app {
         min-height: 50px;
         padding: 2px;
     }
+
+    /* CAMBIOS EN EVENTOS PARA MÓVIL */
     .calendar-event {
-        font-size: 0.6rem;
-        padding: 1px 3px;
-        margin-top: 2px;
+        font-size: 0; /* Ocultamos el texto original */
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        margin: 2px auto;
+        padding: 0;
+        position: relative;
+    }
+
+    /* VENTANILLA AL TOCAR (TOOLTIP) */
+    .calendar-event:active::after {
+        content: attr(data-label); /* Necesitas que el HTML tenga data-label="Texto de la solicitud" */
+        position: fixed; /* Lo fijamos a la pantalla para que no se corte */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #334155;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        white-space: normal;
+        min-width: 200px;
+        text-align: center;
+    }
+
+    /* Fondo oscuro tras la ventanilla al tocar */
+    .calendar-event:active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.3);
+        z-index: 9998;
     }
 
     .main-header {
@@ -997,7 +1036,6 @@ form .btn-primary-app {
         padding: 0.6rem 0.4rem;
     }
 
-    /* SOLUCIÓN AL TOOLTIP/TEXTO EN MÓVILES */
     .status-badge {
         width: 24px;
         height: 24px;
@@ -1010,7 +1048,7 @@ form .btn-primary-app {
         color: white !important;
         text-indent: -9999px;
         position: relative;
-        cursor: help; /* Indica que hay información al tocar */
+        cursor: help; 
     }
 
     .status-badge::before {
@@ -1018,7 +1056,6 @@ form .btn-primary-app {
         position: absolute;
     }
 
-    /* Letras dentro del círculo */
     .status-badge.status-completed::before { content: 'C'; }
     .status-badge.status-issue::before { content: 'I'; }
     .status-badge.status-off::before { content: 'A'; }
@@ -1026,9 +1063,8 @@ form .btn-primary-app {
     .status-badge.status-approved::before { content: 'A'; }
     .status-badge.status-rejected::before { content: 'R'; }
 
-    /* EL "CUADRADITO" QUE APARECE AL TOCAR */
     .status-badge:active::after {
-        content: attr(data-label); /* Toma el texto del atributo data-label */
+        content: attr(data-label); 
         position: absolute;
         bottom: 30px;
         left: 50%;
