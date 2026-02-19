@@ -25,7 +25,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--app-bg);
     color: var(--text-dark);
-    overflow-x: hidden; /* Evita scroll horizontal global */
+    overflow-x: hidden;
 }
 
 a {
@@ -148,7 +148,7 @@ a {
     padding: 1.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     margin-bottom: 1.5rem;
-    max-width: 100%; /* Asegura que no rompa el contenedor */
+    max-width: 100%;
 }
 
 .clock-in-widget {
@@ -293,7 +293,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
-    min-width: 500px; /* Evita que las columnas se aplasten demasiado */
+    min-width: 500px;
 }
 
 th, td {
@@ -458,21 +458,20 @@ hr.divider {
     font-weight: bold;
 }
 
+/* AQUÍ ESTÁ LA SOLUCIÓN AL SOBRESALTO */
 .calendar-event {
-    font-size: 0.7rem; /* Reducimos un poco el tamaño para que quepa mejor en móvil */
-    padding: 4px 6px;
+    font-size: 0.8rem;
+    padding: 2px 6px;
     border-radius: 4px;
     color: #fff;
     margin-top: 4px;
-    
-    /* CAMBIOS CLAVE PARA EL SALTO DE LÍNEA: */
-    white-space: normal;      /* Cambiado de nowrap a normal para permitir saltos */
-    word-wrap: break-word;    /* Fuerza la rotura de palabras si son muy largas */
-    overflow: visible;        /* Asegura que el contenido sea visible */
-    text-overflow: clip;      /* Eliminamos los puntos suspensivos (...) */
-    display: block;           /* Asegura que ocupe el ancho disponible */
-    line-height: 1.2;         /* Ajustamos el interlineado para que se vea ordenado */
+    white-space: pre-wrap; /* Permite saltos de línea y ajuste de texto */
+    overflow: visible;     /* Permite que el contenido se vea */
+    line-height: 1.2;      /* Ajusta el espacio entre líneas */
+    display: block;        /* Asegura comportamiento de bloque */
+    word-break: break-word; /* Rompe palabras largas si es necesario */
 }
+
 .event-personal { background-color: var(--primary-color); }
 .event-holiday { background-color: var(--green); }
 
@@ -851,7 +850,6 @@ form .btn-primary-app {
     }
 }
 
-/* --- SECCIÓN MÓVIL --- */
 @media (max-width: 768px) {
     .app-container {
         flex-direction: column;
@@ -914,7 +912,7 @@ form .btn-primary-app {
         padding: 1rem;
         padding-bottom: 70px;
         min-height: auto;
-        overflow-x: hidden; /* Evita desbordamiento del contenido principal */
+        overflow-x: hidden;
     }
 
     .calendar-grid {
@@ -960,14 +958,13 @@ form .btn-primary-app {
         margin: 1rem;
     }
 
-    /* --- MEJORAS ESPECÍFICAS FICHAJES MÓVIL --- */
     .clock-in-widget {
         padding: 2rem 1rem;
     }
 
     .btn-clock-in {
         max-width: 100%;
-        height: 70px; /* Más alto para facilitar el toque */
+        height: 70px;
         font-size: 1.4rem;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -975,7 +972,7 @@ form .btn-primary-app {
 
     .clock-buttons-secondary {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Dos columnas iguales para Pausa y Fin */
+        grid-template-columns: 1fr 1fr;
         gap: 0.8rem;
         width: 100%;
     }
@@ -992,17 +989,15 @@ form .btn-primary-app {
         font-size: 1rem;
     }
 
-    /* --- OPTIMIZACIÓN DE TABLA PARA EVITAR SCROLL --- */
     table {
         font-size: 0.75rem; 
-        min-width: 450px; /* Asegura que la tabla tenga un mínimo para ser legible con scroll */
+        min-width: 450px;
     }
 
     th, td {
         padding: 0.6rem 0.4rem;
     }
 
-    /* Reducción de los badges de estado a solo iniciales en móvil */
     .status-badge {
         width: 24px;
         height: 24px;
@@ -1013,7 +1008,7 @@ form .btn-primary-app {
         padding: 0;
         font-size: 0.7rem;
         color: white !important;
-        text-indent: -9999px; /* Oculta el texto original */
+        text-indent: -9999px;
         position: relative;
     }
 
@@ -1029,7 +1024,6 @@ form .btn-primary-app {
     .status-badge.status-approved::before { content: 'A'; }
     .status-badge.status-rejected::before { content: 'R'; }
 
-    /* --- ESTILO COOKIES MEJORADO PARA MÓVIL --- */
     .cookie-banner {
         bottom: 75px; 
         left: 10px;
@@ -1057,7 +1051,6 @@ form .btn-primary-app {
         font-size: 0.85rem;
     }
 
-    /* --- OPTIMIZACIÓN PERFIL MÓVIL --- */
     .profile-pic-container {
         margin-top: 1rem;
         margin-bottom: 2rem;
@@ -1085,7 +1078,6 @@ form .btn-primary-app {
     }
 }
 
-/* --- Banner de Cookies (Base) --- */
 .cookie-banner {
     position: fixed;
     bottom: 0;
@@ -1128,7 +1120,6 @@ form .btn-primary-app {
     color: #fff;
 }
 
-/* --- Footer Legal --- */
 .legal-footer {
     text-align: center;
     padding: 2rem 1rem 1rem 1rem; 
