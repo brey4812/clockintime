@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // TEXTO: categoría + tipo real
                         const tipoTexto = item.type  ? `: ${item.type }` : '';
-                        note.textContent = `${item.category}${tipoTexto}`;
+                        note.textContent = `${item.category}`;
 
                         // Color por estado
                         let color = eventColors['Otro'];
@@ -193,3 +193,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     renderCalendar();
 });
+
