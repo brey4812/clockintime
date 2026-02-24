@@ -6,18 +6,10 @@
     <title>Bienvenido a clockInTime</title>
     
     <meta name="description" content="Portal de gestión de empleados, control horario, fichajes y tareas para empresas.">
-    <meta name="keywords" content="fichaje, control horario, gestión empleados, rrhh, clockintime">
     <meta name="author" content="clockInTime">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta property="og:title" content="Bienvenido a clockInTime">
-    <meta property="og:type" content="website">
-
     <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
     <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
     <meta name="theme-color" content="#87CEEB">
-
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 
     <script>
         (function() {
@@ -27,16 +19,14 @@
     </script>
 
     <link rel="stylesheet" href="CSS/index.css">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
             <a href="index.html" class="logo">clockInTime</a>
             <div class="nav-links">
-                <button type="button" onclick="toggleTheme()" class="btn-theme-nav">
+                <button type="button" id="theme-toggle-btn" class="btn-theme-nav">
                     <i class="fas fa-moon"></i>
                     <span>Modo</span>
                 </button>
@@ -104,7 +94,47 @@
         </div>
     </div>
 
-    <script src="JS/theme.js"></script>
-    <script src="JS/main.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = themeBtn.querySelector('i');
+
+            function updateIcon(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                }
+            }
+
+            updateIcon(document.documentElement.getAttribute('data-theme'));
+
+            themeBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateIcon(newTheme);
+            });
+
+            const banner = document.getElementById('cookie-banner');
+            const acceptBtn = document.getElementById('cookie-accept');
+            const declineBtn = document.getElementById('cookie-decline');
+
+            if (!localStorage.getItem('cookies-accepted')) {
+                banner.style.display = 'flex';
+            }
+
+            acceptBtn.addEventListener('click', () => {
+                localStorage.setItem('cookies-accepted', 'true');
+                banner.style.display = 'none';
+            });
+
+            declineBtn.addEventListener('click', () => {
+                banner.style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>
