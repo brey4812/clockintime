@@ -42,20 +42,26 @@ Este proyecto ha sido optimizado agresivamente para obtener la máxima puntuaci�
 
 ---
 
-## 📂 Estructura
+# 📂 Estructura del Proyecto
 
 ```text
 clockInTime/
-├── 📄 index.html           # Landing Page (Optimizada)
-├── 📁 CSS/
-│   ├── index.css          # Estilos de la landing
-│   ├── login.css          # Estilos de autenticación
-│   └── app-style.css      # Estilos globales de la App
-├── 📁 JS/
-│   └── main.js            # Lógica principal (Cookies, etc.)
-├── 📁 login/
-│   ├── login.html         # Inicio de sesión
-│   ├── register.html      # Registro de usuarios
-│   └── recuperar.html     # Recuperación de contraseña
-├── 📁 legal/              # Documentación legal (Cookies, Privacidad...)
-└── 📄 dashboard.html       # Panel principal (App)
+├── 📄 index.html             # Landing Page (Optimizada)
+├── 📁 CSS/                   # Hojas de estilo
+│   ├── index.css            # Estilos de la landing
+│   ├── login.css            # Estilos de autenticación
+│   └── app-style.css        # Estilos globales de la App
+├── 📁 JS/                    # Lógica de programación
+│   ├── main.js              # Lógica principal (Cookies y scroll)
+│   ├── theme.js             # Control de Modo Claro/Oscuro (Global)
+│   ├── auth.js              # Validación de formularios Login/Registro
+│   └── dashboard.js         # Lógica del panel (Reloj, tareas, etc.)
+├── 📁 login/                 # Vistas de acceso
+│   ├── login.html           # Inicio de sesión
+│   ├── register.html        # Registro de usuarios
+│   └── recuperar.html       # Recuperación de contraseña
+├── 📁 legal/                 # Documentación legal
+│   ├── terminos-servicio.html
+│   ├── politica-privacidad.html
+│   └── politica-cookies.html
+└── 📄 dashboard.html         # Panel principal (App)
