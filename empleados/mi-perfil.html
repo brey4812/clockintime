@@ -22,12 +22,19 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     <link rel="stylesheet" href="../CSS/app-style.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
 </head>    
-    <body>
+<body>
 
     <div class="app-container">
 
@@ -37,24 +44,12 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li>
-                        <a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-                    </li>
-                    <li>
-                        <a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a>
-                    </li>
-                    <li>
-                        <a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a>
-                    </li>
-                    <li>
-                        <a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a>
-                    </li>
-                    <li>
-                        <a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a>
-                    </li>
-                    <li>
-                        <a id="nav-perfil" href="mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
-                    </li>
+                    <li><a id="nav-dashboard" href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a id="nav-fichajes" href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a></li>
+                    <li><a id="nav-solicitudes" href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a></li>
+                    <li><a id="nav-calendario" href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
+                    <li><a id="nav-tareas" href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a></li>
+                    <li><a id="nav-perfil" href="mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -75,14 +70,13 @@
                 <div class="widget">
                     <h2>Datos Personales</h2>
                     <form id="profile-form">
-
                         <div class="profile-pic-container">
                             <div class="profile-pic-display" id="profile-pic-preview">
                                 <i class="fas fa-user"></i>
                             </div>
                             <div class="profile-pic-actions">
                                 <button type="button" class="btn-outline" id="btn-upload-pic">Cambiar foto</button>
-                                <input type="file" id="input-pic-upload" accept="image/*">
+                                <input type="file" id="input-pic-upload" style="display:none" accept="image/*">
                                 <button type="button" class="btn-action btn-delete" id="btn-remove-pic">Quitar</button>
                             </div>
                         </div>
@@ -109,9 +103,7 @@
                             <label for="current-password">Contraseña Actual</label>
                             <input type="password" id="current-password" required>
                         </div>
-                        
                         <hr class="divider">
-
                         <div class="form-group-app">
                             <label for="new-password">Nueva Contraseña</label>
                             <input type="password" id="new-password" required>
@@ -124,17 +116,52 @@
                     </form>
                 </div>
 
-            </div> </main>
+                <div class="widget">
+                    <h2>Apariencia</h2>
+                    <div class="form-group-app">
+                        <button type="button" class="btn-outline" id="theme-toggle-btn">
+                            <i class="fas fa-moon"></i> <span id="theme-text">Modo Oscuro</span>
+                        </button>
+                    </div>
+                </div>
 
-    </div> <footer class="legal-footer">
+            </div> 
+        </main>
+    </div> 
+
+    <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
         <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const themeText = document.getElementById('theme-text');
+            const themeIcon = themeBtn.querySelector('i');
+
+            function updateBtnUI(theme) {
+                if (theme === 'dark') {
+                    themeText.innerText = "Modo Claro";
+                    themeIcon.className = "fas fa-sun";
+                } else {
+                    themeText.innerText = "Modo Oscuro";
+                    themeIcon.className = "fas fa-moon";
+                }
+            }
+
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            updateBtnUI(currentTheme);
+
+            themeBtn.addEventListener('click', () => {
+                const theme = document.documentElement.getAttribute('data-theme');
+                const newTheme = theme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateBtnUI(newTheme);
+            });
+        });
+    </script>
 </body>
-
 </html>
-
-
-

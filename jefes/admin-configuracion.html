@@ -3,49 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    
-    <title>Configuración Jefes - clockInTime</title>
-
+    <title>Configuración Admin - clockInTime</title>
     <meta name="robots" content="noindex, nofollow">
-    <meta name="description" content="Panel de configuración para Jefes de Equipo. Gestiona permisos, notificaciones y ajustes de tu departamento en clockInTime.">
-    <meta name="author" content="clockInTime">
-
-    <meta property="og:title" content="Configuración Jefes - clockInTime">
-    <meta property="og:description" content="Ajustes y configuración de equipo para managers.">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta property="og:type" content="website">
-
     <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
     <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
     <meta name="theme-color" content="#1e293b">
-
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
-
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="../CSS/app-style.css">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
-    <body>
+<body>
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
             </div>
             <nav class="sidebar-nav">
-                <ul>
-                    <li><a id="nav-dashboard" href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
-                    <li><a id="nav-gestion-usuarios" href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
-                    <li><a id="nav-configuracion" href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
-                    <li>
-                        <a id="nav-perfil" href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
-                    </li>
+                <ul id="main-nav">
+                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
+                    <li><a href="admin-mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
                     <hr class="sidebar-divider">
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -81,15 +69,36 @@
             </div>
         </main>
     </div>
-        <footer class="legal-footer">
+
+    <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
+        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
-        </footer>
+    </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname.split("/").pop();
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            document.getElementById('btn-generar-codigo').addEventListener('click', () => {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let randomCode = '';
+                for (let i = 0; i < 6; i++) {
+                    randomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                const newCode = `EMPRESA-2026-${randomCode}`;
+                document.getElementById('invite-code-display').innerText = newCode;
+                alert('Nuevo código generado: ' + newCode);
+            });
+        });
+    </script>
 </body>
-
 </html>
-
-
-

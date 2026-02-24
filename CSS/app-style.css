@@ -15,10 +15,27 @@
     --yellow: #ffc107;
 }
 
+[data-theme="dark"] {
+    --app-bg: #0f172a;           
+    --widget-bg: #1e293b;        
+    --text-dark: #f1f5f9;        
+    --text-light: #94a3b8;       
+    --border-color: #334155;    
+    --sidebar-active-bg: #334155;
+    --primary-color: #3b82f6; 
+}
+
+[data-theme="dark"] thead th, 
+[data-theme="dark"] .day-header { background-color: #1e293b; color: var(--text-dark); }
+[data-theme="dark"] tbody tr:hover { background-color: #2d3748; }
+[data-theme="dark"] .day-cell.other-month { background-color: #161e2e; }
+[data-theme="dark"] .day-cell.today { background-color: #1e3a8a; }
+[data-theme="dark"] input, 
+[data-theme="dark"] select, 
+[data-theme="dark"] textarea { background-color: #1e293b; color: white; border-color: #334155; }
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    margin: 0; padding: 0; box-sizing: border-box;
 }
 
 body {
@@ -26,6 +43,7 @@ body {
     background-color: var(--app-bg);
     color: var(--text-dark);
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -268,6 +286,8 @@ a {
     border: 1px solid var(--border-color);
     border-radius: 5px;
     font-family: inherit;
+    background-color: var(--widget-bg);
+    color: var(--text-dark);
 }
 
 .btn-filter {
@@ -354,6 +374,8 @@ td.text-center {
     border-radius: 6px;
     font-family: inherit;
     font-size: 0.95rem;
+    background-color: var(--widget-bg);
+    color: var(--text-dark);
 }
 
 .form-group-app textarea {
@@ -361,7 +383,7 @@ td.text-center {
 }
 
 .form-group-app input:disabled {
-    background-color: #f1f5f9;
+    background-color: var(--app-bg);
     color: var(--text-light);
     cursor: not-allowed;
 }
@@ -928,9 +950,8 @@ form .btn-primary-app {
         padding: 2px;
     }
 
-    /* CAMBIOS EN EVENTOS PARA MÓVIL */
     .calendar-event {
-        font-size: 0; /* Ocultamos el texto original */
+        font-size: 0; 
         height: 10px;
         width: 10px;
         border-radius: 50%;
@@ -939,10 +960,9 @@ form .btn-primary-app {
         position: relative;
     }
 
-    /* VENTANILLA AL TOCAR (TOOLTIP) */
     .calendar-event:active::after {
-        content: attr(data-label); /* Necesitas que el HTML tenga data-label="Texto de la solicitud" */
-        position: fixed; /* Lo fijamos a la pantalla para que no se corte */
+        content: attr(data-label); 
+        position: fixed; 
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -958,7 +978,6 @@ form .btn-primary-app {
         text-align: center;
     }
 
-    /* Fondo oscuro tras la ventanilla al tocar */
     .calendar-event:active::before {
         content: '';
         position: fixed;
@@ -1135,33 +1154,31 @@ form .btn-primary-app {
     }
 }
 
-/* --- INICIO IMPLEMENTACIÓN SOLICITADA PARA MÓVIL (MAX-WIDTH 600PX) --- */
 @media (max-width: 600px) {
     .day-cell {
         position: relative;
         min-height: 55px;
-        overflow: visible; /* Permite que el cartelito flote por fuera */
+        overflow: visible; 
     }
 
     .calendar-event {
         width: 10px;
         height: 10px;
-        border-radius: 50%; /* Los convertimos en puntos para que no ocupen espacio */
-        font-size: 0;        /* Escondemos el texto interno */
+        border-radius: 50%;
+        font-size: 0; 
         margin: 2px auto;
         cursor: pointer;
         display: block;
         position: relative;
     }
 
-    /* La burbuja con el nombre del evento */
     .calendar-event::after {
-        content: attr(data-label); /* <--- AQUÍ EXTRAE EL NOMBRE REAL */
+        content: attr(data-label); 
         position: absolute;
         bottom: 150%;
         left: 50%;
         transform: translateX(-50%) scale(0);
-        background: #1e293b; /* Color oscuro igual a tu sidebar */
+        background: #1e293b; 
         color: #ffffff;
         padding: 6px 10px;
         border-radius: 6px;
@@ -1174,7 +1191,6 @@ form .btn-primary-app {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }
 
-    /* Triangulito debajo de la burbuja */
     .calendar-event::before {
         content: '';
         position: absolute;
@@ -1186,7 +1202,6 @@ form .btn-primary-app {
         transition: all 0.1s ease;
     }
 
-    /* Mostrar al mantener presionado (active) o tocar */
     .calendar-event:active::after, 
     .calendar-event:hover::after {
         transform: translateX(-50%) scale(1);
@@ -1197,7 +1212,6 @@ form .btn-primary-app {
         transform: translateX(-50%) scale(1);
     }
 }
-/* --- FIN IMPLEMENTACIÓN SOLICITADA --- */
 
 .cookie-banner {
     position: fixed;
@@ -1270,4 +1284,39 @@ form .btn-primary-app {
 
 .cookie-banner-hidden {
     display: none !important;
+}
+
+.form-footer a {
+    color: var(--primary-color) !important; 
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-footer a:visited, 
+.legal-footer a:visited {
+    color: var(--primary-color) !important;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .form-footer a {
+    color: var(--primary-color) !important;
+}
+
+.legal-footer {
+    margin-top: 1rem;
+    display: flex;
+    gap: 15px;
+}
+
+.legal-footer a {
+    color: var(--primary-color) !important;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+[data-theme="dark"] .legal-footer a {
+    color: #93c5fd !important;
 }

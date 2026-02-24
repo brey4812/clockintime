@@ -3,31 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    
     <title>Mi Perfil (Admin) - clockInTime</title>
-
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="description" content="Gestiona tu cuenta de administrador, actualiza tu contraseña y configura tus preferencias personales en el panel de clockInTime.">
-    <meta name="author" content="clockInTime">
-
-    <meta property="og:title" content="Mi Perfil (Admin) - clockInTime">
-    <meta property="og:description" content="Configuración de cuenta de administrador.">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta property="og:type" content="website">
-
     <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
     <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
     <meta name="theme-color" content="#1e293b">
-
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
-
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="../CSS/app-style.css">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>    
-    <body>
+<body>
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -35,17 +24,14 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a id="nav-dashboard" href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
-                    <li><a id="nav-gestion-usuarios" href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
-                    <li><a id="nav-configuracion" href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
-                    <li>
-                        <a id="nav-perfil" href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a>
-                    </li>
-                    <hr class="sidebar-divider">
+                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
+                    <li><a href="admin-mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a id="nav-logout" href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -58,24 +44,22 @@
             </header>
 
             <div class="page-grid-solicitudes">
-
                 <div class="widget">
                     <h2>Datos Personales</h2>
                     <form id="profile-form">
-                        
                         <div class="profile-pic-container">
                             <div class="profile-pic-display" id="profile-pic-preview">
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-user-shield"></i>
                             </div>
                             <div class="profile-pic-actions">
                                 <button type="button" class="btn-outline" id="btn-upload-pic">Cambiar foto</button>
-                                <input type="file" id="input-pic-upload" accept="image/*">
+                                <input type="file" id="input-pic-upload" style="display:none" accept="image/*">
                                 <button type="button" class="btn-action btn-delete" id="btn-remove-pic">Quitar</button>
                             </div>
                         </div>
                         <div class="form-group-app">
                             <label for="fullname">Nombre Completo</label>
-                            <input type="text" id="fullname" value="Nombre del Admin">
+                            <input type="text" id="fullname" value="Nombre del Administrador">
                         </div>
                         <div class="form-group-app">
                             <label for="email">Email</label>
@@ -83,45 +67,120 @@
                         </div>
                         <div class="form-group-app">
                             <label for="role">Rol</label>
-                            <input type="text" id="role" value="Administrador" disabled>
+                            <input type="text" id="role" value="Administrador Maestro" disabled>
                         </div>
                         <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
                     </form>
                 </div>
 
                 <div class="widget">
-                    <h2>Cambiar Contraseña</h2>
+                    <h2>Seguridad</h2>
                     <form id="password-form">
                         <div class="form-group-app">
                             <label for="current-password">Contraseña Actual</label>
-                            <input type="password" id="current-password" required>
+                            <input type="password" id="current-password" required placeholder="••••••••">
                         </div>
-                        
                         <hr class="divider">
-
                         <div class="form-group-app">
                             <label for="new-password">Nueva Contraseña</label>
-                            <input type="password" id="new-password" required>
+                            <input type="password" id="new-password" required placeholder="Mínimo 8 caracteres">
                         </div>
                         <div class="form-group-app">
                             <label for="repeat-password">Repetir Nueva Contraseña</label>
-                            <input type="password" id="repeat-password" required>
+                            <input type="password" id="repeat-password" required placeholder="Repite la contraseña">
                         </div>
                         <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
                     </form>
                 </div>
 
-            </div> </main>
+                <div class="widget">
+                    <h2>Personalización</h2>
+                    <div class="form-group-app">
+                        <button type="button" class="btn-outline" id="theme-toggle-btn" style="width: 100%;">
+                            <i class="fas fa-moon"></i> <span id="theme-text">Modo Oscuro</span>
+                        </button>
+                    </div>
+                </div>
+            </div> 
+        </main>
+    </div> 
 
-    </div> <footer class="legal-footer">
+    <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
         <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const url = window.location.href;
+            const links = document.querySelectorAll('.sidebar-nav a');
+            
+            links.forEach(l => {
+                l.classList.remove('active');
+                if (url.includes(l.getAttribute('href'))) {
+                    l.classList.add('active');
+                }
+            });
+
+            const tBtn = document.getElementById('theme-toggle-btn');
+            const tText = document.getElementById('theme-text');
+            const tIcon = tBtn.querySelector('i');
+
+            function upUI(t) {
+                if (t === 'dark') {
+                    tText.innerText = "Modo Claro";
+                    tIcon.className = "fas fa-sun";
+                } else {
+                    tText.innerText = "Modo Oscuro";
+                    tIcon.className = "fas fa-moon";
+                }
+            }
+
+            const cT = document.documentElement.getAttribute('data-theme') || 'light';
+            upUI(cT);
+
+            tBtn.addEventListener('click', () => {
+                const t = document.documentElement.getAttribute('data-theme');
+                const nT = t === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', nT);
+                localStorage.setItem('theme', nT);
+                upUI(nT);
+            });
+
+            const bU = document.getElementById('btn-upload-pic');
+            const iU = document.getElementById('input-pic-upload');
+            const pC = document.getElementById('profile-pic-preview');
+
+            bU.addEventListener('click', () => iU.click());
+
+            iU.addEventListener('change', function() {
+                if (this.files[0]) {
+                    const r = new FileReader();
+                    r.onload = e => pC.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    r.readAsDataURL(this.files[0]);
+                }
+            });
+
+            document.getElementById('btn-remove-pic').addEventListener('click', () => {
+                pC.innerHTML = `<i class="fas fa-user-shield"></i>`;
+                iU.value = "";
+            });
+
+            document.getElementById('profile-form').addEventListener('submit', e => {
+                e.preventDefault();
+                alert('¡Datos actualizados!');
+            });
+
+            document.getElementById('password-form').addEventListener('submit', e => {
+                e.preventDefault();
+                if(document.getElementById('new-password').value !== document.getElementById('repeat-password').value) {
+                    alert('No coinciden');
+                } else {
+                    alert('Éxito');
+                }
+            });
+        });
+    </script>
 </body>
-
 </html>
-
-
-
