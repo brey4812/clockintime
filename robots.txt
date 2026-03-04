@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /legal/
+Disallow: /dashboard.html
+Disallow: /JS/
+Disallow: /CSS/
+
+Sitemap: https://clockintime.vercel.app/sitemap.xml
