@@ -44,24 +44,40 @@ Este proyecto ha sido optimizado agresivamente para obtener la máxima puntuaci�
 
 # 📂 Estructura del Proyecto
 
-```text
 clockInTime/
-├── 📄 index.html             # Landing Page (Optimizada)
-├── 📁 CSS/                   # Hojas de estilo
-│   ├── index.css            # Estilos de la landing
-│   ├── login.css            # Estilos de autenticación
-│   └── app-style.css        # Estilos globales de la App
-├── 📁 JS/                    # Lógica de programación
-│   ├── main.js              # Lógica principal (Cookies y scroll)
-│   ├── theme.js             # Control de Modo Claro/Oscuro (Global)
-│   ├── auth.js              # Validación de formularios Login/Registro
-│   └── dashboard.js         # Lógica del panel (Reloj, tareas, etc.)
-├── 📁 login/                 # Vistas de acceso
-│   ├── login.html           # Inicio de sesión
-│   ├── register.html        # Registro de usuarios
-│   └── recuperar.html       # Recuperación de contraseña
-├── 📁 legal/                 # Documentación legal
-│   ├── terminos-servicio.html
-│   ├── politica-privacidad.html
-│   └── politica-cookies.html
-└── 📄 dashboard.html         # Panel principal (App)
+├── 📄 index.html                # Landing Page (Optimizada para SEO/WPO)
+├── 📄 manifest.json             # Configuración PWA (Instalación en dispositivos)
+├── 📄 robots.txt                # Reglas de rastreo para buscadores
+├── 📄 sitemap.xml               # Mapa del sitio para indexación
+├── 📄 README.md                 # Documentación técnica del proyecto
+├── 📁 CSS/                      # Hojas de estilo
+│   ├── app-style.css            # Estilos globales de la App
+│   ├── index.css                # Estilos específicos de la Landing
+│   └── login.css                # Estilos de autenticación
+├── 📁 js/                       # Lógica de programación (JavaScript)
+│   ├── calendario.js            # Gestión del calendario
+│   ├── dashboard.js             # Lógica del panel principal
+│   ├── fichajes.js              # Control de registros horarios
+│   ├── solicitudes.js           # Gestión de ausencias
+│   ├── tareas.js                # Lógica del tablero Kanban
+│   └── theme.js                 # Control de Modo Claro/Oscuro (Global)
+├── 📁 empleados/                # Vistas del usuario trabajador
+│   ├── calendario.html
+│   ├── dashboard.html
+│   ├── fichajes.html
+│   ├── mi-perfil.html
+│   ├── solicitudes.html
+│   └── tareas.html
+├── 📁 jefes/                    # Vistas de administración (Admin)
+│   ├── admin-configuracion.html
+│   ├── admin-dashboard.html
+│   ├── admin-gestion-usuarios.html
+│   └── admin-mi-perfil.html
+├── 📁 login/                    # Vistas de acceso y autenticación
+│   ├── forgot-password.html     # Recuperación de cuenta
+│   ├── login.html               # Inicio de sesión
+│   └── register.html            # Registro de nuevos usuarios
+└── 📁 legal/                    # Documentación y cumplimiento
+    ├── politica-cookies.html
+    ├── politica-privacidad.html
+    └── terminos-servicio.html
