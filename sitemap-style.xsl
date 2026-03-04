@@ -6,18 +6,47 @@
       <head>
         <title>XML Sitemap - ClockInTime</title>
         <style type="text/css">
-          body { font-family: sans-serif; font-size: 14px; color: #333; margin: 0; padding: 20px; background: #f4f7f9; }
-          table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+          /* Variables de color para modo claro */
+          :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-header: #2c3e50;
+            --border: #eeeeee;
+            --accent: #27ae60;
+            --link: #3498db;
+          }
+
+          /* Variables para modo oscuro (detección de sistema) */
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --bg-color: #121212;
+              --card-bg: #1e1e1e;
+              --text-main: #e0e0e0;
+              --text-header: #87CEEB;
+              --border: #333333;
+              --accent: #2ecc71;
+              --link: #64b5f6;
+            }
+          }
+
+          body { font-family: sans-serif; font-size: 14px; color: var(--text-main); margin: 0; padding: 20px; background: var(--bg-color); }
+          table { border-collapse: collapse; width: 100%; background: var(--card-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
           th { background: #2c3e50; color: #fff; text-align: left; padding: 12px; }
-          td { padding: 10px; border-bottom: 1px solid #eee; }
-          tr:hover { background: #f9f9f9; }
-          h1 { color: #2c3e50; }
-          .priority { font-weight: bold; color: #27ae60; }
+          td { padding: 10px; border-bottom: 1px solid var(--border); }
+          tr:hover { background: rgba(255,255,255,0.05); }
+          h1 { color: var(--text-header); }
+          a { color: var(--link); text-decoration: none; }
+          a:hover { text-decoration: underline; }
+          .priority { font-weight: bold; color: var(--accent); }
+          .info { margin-bottom: 20px; color: var(--text-main); }
         </style>
       </head>
       <body>
         <h1>ClockInTime Sitemap</h1>
-        <p>Este mapa del sitio contiene <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs para buscadores.</p>
+        <div class="info">
+          Este mapa del sitio contiene <strong><xsl:value-of select="count(sitemap:urlset/sitemap:url)"/></strong> URLs para buscadores.
+        </div>
         <table>
           <tr>
             <th>URL (Ubicación)</th>
