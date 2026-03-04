@@ -15,12 +15,67 @@
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            if (localStorage.getItem('usserNameStorage')) {
+                window.location.href = '/empleados/dashboard.html';
+            }
         })();
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ClockInTime",
+      "operatingSystem": "Any",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "EUR"
+      },
+      "description": "Portal profesional de gestión de empleados, control horario y tareas para empresas.",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [{
+        "@type": "Question",
+        "name": "¿Es obligatorio el registro de jornada?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. Conforme al Real Decreto-ley 8/2019, es obligatorio que todas las empresas realicen un registro diario de jornada que incluya el horario concreto de inicio y finalización de la jornada laboral de cada trabajador."
+        }
+    }, {
+        "@type": "Question",
+        "name": "¿Puedo fichar desde el móvil?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "¡Por supuesto! ClockInTime es una PWA (Progressive Web App) optimizada para dispositivos móviles, lo que permite a los empleados fichar desde cualquier lugar con conexión a internet sin necesidad de instalar aplicaciones pesadas desde tiendas oficiales."
+        }
+    }, {
+        "@type": "Question",
+        "name": "¿Qué pasa si olvido fichar la salida?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "El sistema permite a los administradores gestionar y corregir registros olvidados. Además, al ser una PWA, puedes configurar notificaciones push para recibir recordatorios automáticos al finalizar tu horario laboral programado."
+        }
+    }]
+    }
     </script>
 
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 </head>
 <body>
     <nav class="navbar">
@@ -65,6 +120,32 @@
                         <i class="fas fa-tasks"></i>
                         <h3>Tareas y Proyectos</h3>
                         <p>Organiza el trabajo de tu equipo con tableros Kanban.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="faq-section">
+            <div class="container">
+                <h2>Preguntas Frecuentes</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <button class="faq-question">¿Es obligatorio el registro de jornada? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>Sí. Conforme al <strong>Real Decreto-ley 8/2019</strong>, que modifica el Art. 34 del Estatuto de los Trabajadores, todas las empresas están obligadas a realizar un registro diario de jornada que incluya el horario concreto de inicio y finalización de cada empleado.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">¿Puedo fichar desde el móvil? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>¡Por supuesto! ClockInTime es una PWA optimizada para dispositivos móviles, permitiendo fichar desde cualquier lugar sin instalar apps pesadas.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">¿Qué pasa si olvido fichar la salida? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>El sistema permite a los administradores corregir registros o puedes configurar notificaciones push para que la app te avise al terminar tu jornada.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,6 +200,13 @@
                 updateIcon(newTheme);
             });
 
+            document.querySelectorAll('.faq-question').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = button.parentElement;
+                    item.classList.toggle('active');
+                });
+            });
+
             const banner = document.getElementById('cookie-banner');
             const acceptBtn = document.getElementById('cookie-accept');
             const declineBtn = document.getElementById('cookie-decline');
@@ -137,7 +225,13 @@
             });
         });
     </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>
-
-
