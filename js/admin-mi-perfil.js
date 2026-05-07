@@ -1,190 +1,114 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { supabase } from './supabase-client.js';
 
-    // =============================
+document.addEventListener('DOMContentLoaded', async () => {
     // ELEMENTOS DEL DOM
-    // =============================
-    const userNameHeader    = document.getElementById('user-name-header');
-    const profileForm       = document.getElementById('profile-form');
-    const passwordForm      = document.getElementById('password-form');
-    const inputFullname     = document.getElementById('fullname');
-    const inputEmail        = document.getElementById('email');
-    const inputRol          = document.getElementById('role');
+    const userNameHeader = document.getElementById('user-name-header');
+    const profileForm = document.getElementById('profile-form');
+    const passwordForm = document.getElementById('password-form');
+    const inputFullname = document.getElementById('fullname');
+    const inputEmail = document.getElementById('email');
+    const inputRol = document.getElementById('role');
     const profilePicPreview = document.getElementById('profile-pic-preview');
-    const btnUploadPic      = document.getElementById('btn-upload-pic');
-    const inputPicUpload    = document.getElementById('input-pic-upload');
-    const btnRemovePic      = document.getElementById('btn-remove-pic');
-    const inputCurrentPass  = document.getElementById('current-password');
-    const inputNewPass      = document.getElementById('new-password');
-    const inputRepeatPass   = document.getElementById('repeat-password');
+    const inputPicUpload = document.getElementById('input-pic-upload');
+    const btnUploadPic = document.getElementById('btn-upload-pic');
+    const btnRemovePic = document.getElementById('btn-remove-pic');
 
-    // =============================
-    // CARGAR JEFE ACTUAL
-    // =============================
-    function getJefeActual() {
-        const email = localStorage.getItem('currentUserEmail');
-        if (!email) return null;
-        return JSON.parse(localStorage.getItem(email));
+    // 1. OBTENER SESIÓN ACTUAL
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '../login/login.html';
+        return;
     }
+    const user = session.user;
 
-    // =============================
-    // CARGAR DATOS EN EL FORMULARIO
-    // (rellenamos los campos con los datos guardados del jefe)
-    // =============================
-    function cargarDatosPerfil() {
+    // 2. CARGAR DATOS DESDE SUPABASE
+    async function cargarPerfil() {
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*, roles(nombre_rol)')
+            .eq('id', user.id)
+            .single();
 
-        const jefe = getJefeActual();
-        if (!jefe) return;
+        if (profile) {
+            inputFullname.value = `${profile.nombre} ${profile.apellido}`.trim();
+            inputEmail.value = profile.email;
+            inputRol.value = profile.roles?.nombre_rol || 'Usuario';
+            userNameHeader.textContent = profile.nombre;
 
-        if (inputFullname)  inputFullname.value = jefe.fullname || '';
-        if (inputEmail)     inputEmail.value    = jefe.email    || '';
-        if (inputRol)       inputRol.value      = jefe.boss ? 'Administrador' : 'Jefe de equipo';
-        if (userNameHeader) userNameHeader.textContent = jefe.fullname || jefe.email;
-
-        // Cargamos la foto de perfil si existe
-        const fotoKey  = `profilePic_${jefe.email}`;
-        const fotoData = localStorage.getItem(fotoKey);
-
-        if (fotoData && profilePicPreview) {
-            profilePicPreview.innerHTML = `<img src="${fotoData}" alt="Foto de perfil">`;
+            if (profile.avatar_url) {
+                profilePicPreview.innerHTML = `<img src="${profile.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            }
         }
     }
 
-    // =============================
-    // GUARDAR DATOS DEL PERFIL
-    // =============================
-    function guardarPerfil(event) {
+    // 3. ACTUALIZAR NOMBRE
+    profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const [nuevoNombre, ...apellidos] = inputFullname.value.split(" ");
+        
+        const { error } = await supabase
+            .from('profiles')
+            .update({ 
+                nombre: nuevoNombre, 
+                apellido: apellidos.join(" ") 
+            })
+            .eq('id', user.id);
 
-        event.preventDefault();
+        if (error) alert("Error: " + error.message);
+        else alert("Perfil actualizado");
+    });
 
-        const email = localStorage.getItem('currentUserEmail');
-        if (!email) return;
+    // 4. SUBIR FOTO A STORAGE
+    btnUploadPic.addEventListener('click', () => inputPicUpload.click());
 
-        const jefe = JSON.parse(localStorage.getItem(email));
-        if (!jefe)  return;
-
-        const nuevoNombre = inputFullname ? inputFullname.value.trim() : '';
-
-        if (!nuevoNombre) {
-            alert('El nombre no puede estar vacío.');
-            return;
-        }
-
-        jefe.fullname = nuevoNombre;
-        localStorage.setItem(email, JSON.stringify(jefe));
-
-        if (userNameHeader) userNameHeader.textContent = nuevoNombre;
-
-        alert('Perfil actualizado correctamente.');
-    }
-
-    // =============================
-    // CAMBIAR CONTRASEÑA
-    // =============================
-    function cambiarPassword(event) {
-
-        event.preventDefault();
-
-        const email = localStorage.getItem('currentUserEmail');
-        if (!email) return;
-
-        const jefe = JSON.parse(localStorage.getItem(email));
-        if (!jefe)  return;
-
-        const currentPass = inputCurrentPass ? inputCurrentPass.value : '';
-        const newPass     = inputNewPass     ? inputNewPass.value     : '';
-        const repeatPass  = inputRepeatPass  ? inputRepeatPass.value  : '';
-
-        // Comprobamos que la contraseña actual sea correcta
-        if (jefe.password !== currentPass) {
-            alert('La contraseña actual no es correcta.');
-            return;
-        }
-
-        if (!newPass || newPass.length < 4) {
-            alert('La nueva contraseña debe tener al menos 4 caracteres.');
-            return;
-        }
-
-        if (newPass !== repeatPass) {
-            alert('Las contraseñas nuevas no coinciden.');
-            return;
-        }
-
-        jefe.password = newPass;
-        localStorage.setItem(email, JSON.stringify(jefe));
-
-        // Limpiamos los campos de contraseña
-        if (inputCurrentPass) inputCurrentPass.value = '';
-        if (inputNewPass)     inputNewPass.value     = '';
-        if (inputRepeatPass)  inputRepeatPass.value  = '';
-
-        alert('Contraseña actualizada correctamente.');
-    }
-
-    // =============================
-    // SUBIR FOTO DE PERFIL
-    // (leemos el archivo como base64 y lo guardamos en localStorage)
-    // =============================
-    function subirFoto(event) {
-
-        const file = event.target.files[0];
+    inputPicUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
         if (!file) return;
 
-        // Solo permitimos imágenes
-        if (!file.type.startsWith('image/')) {
-            alert('Por favor selecciona un archivo de imagen.');
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Subir a la carpeta 'avatars' que creaste en Supabase
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            alert("Error subiendo foto: " + uploadError.message);
             return;
         }
 
-        const reader = new FileReader();
+        // Obtener la URL pública
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
 
-        reader.onload = (e) => {
+        // Guardar URL en la tabla profiles
+        await supabase
+            .from('profiles')
+            .update({ avatar_url: publicUrl })
+            .eq('id', user.id);
 
-            const base64 = e.target.result;
-            const email  = localStorage.getItem('currentUserEmail');
+        location.reload(); // Recargar para ver cambios
+    });
 
-            if (email) {
-                localStorage.setItem(`profilePic_${email}`, base64);
-            }
+    // 5. CAMBIAR CONTRASEÑA (Real)
+    passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('new-password').value;
+        const repeatPass = document.getElementById('repeat-password').value;
 
-            // Actualizamos la previsualización en pantalla
-            if (profilePicPreview) {
-                profilePicPreview.innerHTML = `<img src="${base64}" alt="Foto de perfil">`;
-            }
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-    // =============================
-    // QUITAR FOTO DE PERFIL
-    // =============================
-    function quitarFoto() {
-
-        const email = localStorage.getItem('currentUserEmail');
-
-        if (email) {
-            localStorage.removeItem(`profilePic_${email}`);
+        if (newPass !== repeatPass) {
+            alert("Las contraseñas no coinciden");
+            return;
         }
 
-        if (profilePicPreview) {
-            profilePicPreview.innerHTML = `<i class="fas fa-user"></i>`;
-        }
-    }
+        const { error } = await supabase.auth.updateUser({ password: newPass });
 
-    // =============================
-    // EVENTOS PRINCIPALES
-    // =============================
-    profileForm?.addEventListener('submit', guardarPerfil);
-    passwordForm?.addEventListener('submit', cambiarPassword);
+        if (error) alert(error.message);
+        else alert("Contraseña actualizada con éxito");
+    });
 
-    // El botón "Cambiar foto" abre el input file oculto
-    btnUploadPic?.addEventListener('click', () => inputPicUpload?.click());
-    inputPicUpload?.addEventListener('change', subirFoto);
-    btnRemovePic?.addEventListener('click', quitarFoto);
-
-    // =============================
-    // INIT
-    // =============================
-    cargarDatosPerfil();
+    cargarPerfil();
 });
