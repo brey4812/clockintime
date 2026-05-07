@@ -70,14 +70,6 @@ a {
 }
 
 /* Botón cerrar menú (Solo visible en móvil) */
-.sidebar-close-btn {
-    display: none; 
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
 
 .sidebar-nav {
     flex-grow: 1;
@@ -331,10 +323,6 @@ form .btn-primary-app { width: 100%; }
     .sidebar-footer {
         display: block; /* Volvemos a mostrar el footer en el menú lateral */
         margin-top: auto;
-    }
-    
-    .sidebar-close-btn {
-        display: block; /* Mostrar la X para cerrar */
     }
 
     /* Ajuste del contenido principal */

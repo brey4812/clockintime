@@ -28,7 +28,6 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
-                <button class="sidebar-close-btn" id="sidebar-close"><i class="fas fa-times"></i></button>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -112,10 +111,8 @@
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const closeBtn = document.getElementById('sidebar-close');
         menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
         overlay?.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
-        closeBtn?.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
         const currentEmail = localStorage.getItem('currentUserEmail');
         if (currentEmail) { const u = JSON.parse(localStorage.getItem(currentEmail)); if (u) document.getElementById('user-name-header').textContent = u.fullname || u.email; }
     </script>
