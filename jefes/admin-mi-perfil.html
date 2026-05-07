@@ -41,7 +41,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -52,7 +52,9 @@
                 <div class="header-left">
                     <h1>Mi Perfil de Administrador</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Admin</strong></div>
+                <div class="user-info">
+                    <strong id="user-name-header">Cargando...</strong>
+                </div>
             </header>
 
             <div class="page-grid-solicitudes">
@@ -64,43 +66,44 @@
                             <div class="profile-pic-display" id="profile-pic-preview">
                                 <i class="fas fa-user" style="font-size:3rem;color:#94a3b8;"></i>
                             </div>
+                            
                             <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
                                 <button type="button" id="btn-upload-pic" class="btn-filter">Cambiar foto</button>
                                 <input type="file" id="input-pic-upload" accept="image/*" style="display:none;">
+                                
                                 <button type="button" id="btn-remove-pic" class="btn-filter"
                                     style="background:#dc3545;color:#fff;border-color:#dc3545;">Quitar</button>
                             </div>
                         </div>
+
                         <div class="form-group-app">
                             <label for="fullname">Nombre Completo</label>
-                            <input type="text" id="fullname" placeholder="Tu nombre">
+                            <input type="text" id="fullname" placeholder="Cargando nombre...">
                         </div>
                         <div class="form-group-app">
                             <label for="email">Email</label>
-                            <input type="email" id="email" disabled>
+                            <input type="email" id="email" disabled title="El email no se puede cambiar">
                         </div>
                         <div class="form-group-app">
-                            <label for="role">Rol</label>
-                            <input type="text" id="role" value="Administrador" disabled>
+                            <label for="role">Rol asignado</label>
+                            <input type="text" id="role" disabled>
                         </div>
                         <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
                     </form>
                 </div>
 
                 <div class="widget">
-                    <h2>Cambiar Contraseña</h2>
+                    <h2>Seguridad y Contraseña</h2>
                     <form id="password-form">
-                        <div class="form-group-app">
-                            <label for="current-password">Contraseña Actual</label>
-                            <input type="password" id="current-password" placeholder="Contraseña actual" required>
-                        </div>
-                        <hr style="margin:1rem 0;border-color:#e2e8f0;">
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+                            La nueva contraseña debe tener al menos 6 caracteres.
+                        </p>
                         <div class="form-group-app">
                             <label for="new-password">Nueva Contraseña</label>
-                            <input type="password" id="new-password" placeholder="Mínimo 4 caracteres" required>
+                            <input type="password" id="new-password" placeholder="Mínimo 6 caracteres" required>
                         </div>
                         <div class="form-group-app">
-                            <label for="repeat-password">Repetir Nueva Contraseña</label>
+                            <label for="repeat-password">Confirmar Nueva Contraseña</label>
                             <input type="password" id="repeat-password" placeholder="Repite la nueva contraseña" required>
                         </div>
                         <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
@@ -117,13 +120,23 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/admin-mi-perfil.js"></script>
+    <script type="module" src="../js/admin-mi-perfil.js"></script>
+    
     <script>
+        // Lógica simple para el menú móvil
         const menuToggle = document.getElementById('menu-toggle');
-        const sidebar    = document.getElementById('sidebar');
-        const overlay    = document.getElementById('sidebar-overlay');
-        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
-        overlay?.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        menuToggle?.addEventListener('click', () => { 
+            sidebar.classList.add('active'); 
+            overlay.classList.add('active'); 
+        });
+        
+        overlay?.addEventListener('click', () => { 
+            sidebar.classList.remove('active'); 
+            overlay.classList.remove('active'); 
+        });
     </script>
 </body>
 </html>
