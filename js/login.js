@@ -97,6 +97,8 @@ function handleLogin(event) {
     passwordInput.value = '';
 
     // Login correcto
+    // Guardamos el email del usuario en sesión para que jefes puedan identificarse
+    localStorage.setItem('currentUserEmail', storedUser.email);
     redirectUser(storedUser);
 
 }

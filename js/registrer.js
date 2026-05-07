@@ -181,7 +181,6 @@ function saveUser(){
 
     localStorage.setItem(user.email, JSON.stringify(user));
 
-    console.log(user);
 
     alert('Usuario registrado correctamente');
 

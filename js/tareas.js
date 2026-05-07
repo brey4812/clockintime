@@ -1,173 +1,213 @@
-//cogemos todos los elementos necesarios ( boton, contenedor oculto y sus inputs del contenedor oculto)
-const botonNuevaTarea = document.getElementById("btn-open-task-modal");
-const contenedorDeNuevaTarea = document.getElementById("task-modal");
-const inputTitulo = document.getElementById("task-title");
-const inputDescripcion = document.getElementById("task-desc");
-const inputPrioridad = document.getElementById("task-priority");
-const inputEstado = document.getElementById("task-column");
-const btnGuardarTarea = document.getElementById("btn-submit-task");
-const btnCloseIcon = document.getElementById("btn-close-task-modal");
+document.addEventListener('DOMContentLoaded', () => {
 
-btnCloseIcon.addEventListener("click", cerrarModal);
+    // =============================
+    // ELEMENTOS DEL DOM
+    // =============================
+    const btnAbrirModal   = document.getElementById('btn-open-task-modal');
+    const btnCerrarModal  = document.getElementById('btn-close-task-modal');
+    const btnCancelar     = document.getElementById('btn-cancel-task');
+    const formNuevaTarea  = document.getElementById('new-task-form');
+    const modalTarea      = document.getElementById('task-modal');
 
+    const inputTitulo     = document.getElementById('task-title');
+    const inputDesc       = document.getElementById('task-desc');
+    const selectPrioridad = document.getElementById('task-priority');
+    const selectColumna   = document.getElementById('task-column');
 
+    // Contenidos de las columnas kanban
+    const colTodo         = document.getElementById('kanban-content-todo');
+    const colDoing        = document.getElementById('kanban-content-doing');
+    const colDone         = document.getElementById('kanban-content-done');
 
-//cuando carga la página que ocurre
-document.addEventListener("DOMContentLoaded", () => {
-    //cargamos las tareas guardadas en el localStorage y las mostramos (la clave del localStorage es "tareas")
-    const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
-    tareasGuardadas.forEach(tarea => {
-        agregarTareaAlDOM(tarea);
-    });
-    //ocultamos el contenedor de nueva tarea verificando que la clase sea modal-overlay modal-hidden
-    contenedorDeNuevaTarea.classList.add("modal-hidden");
-});
-
-//eventos
-//cuando se hace click en el boton de nueva tarea, se muestra el contenedor de nueva tarea
-botonNuevaTarea.addEventListener("click", () => {
-    contenedorDeNuevaTarea.classList.remove("modal-hidden");
-});
-
-//cuando se hace click en el boton de guardar tarea, se crea un objeto tarea con los valores de los inputs, se guarda en el localStorage y se muestra en el DOM
-btnGuardarTarea.addEventListener("click", () => {
-    const nuevaTarea = {
-        id: Date.now(),
-        titulo: inputTitulo.value,
-        descripcion: inputDescripcion.value,
-        prioridad: inputPrioridad.value,
-        estado: inputEstado.value
+    // =============================
+    // COLORES POR PRIORIDAD
+    // =============================
+    const priorityConfig = {
+        high:   { label: 'Alta',  clase: 'priority-high'   },
+        medium: { label: 'Media', clase: 'priority-medium' },
+        low:    { label: 'Baja',  clase: 'priority-low'    }
     };
-    //validamos que el titulo no esté vacío o repetido dentro de el localStorage de tareas
-    if (nuevaTarea.titulo.trim() === "") {
-        alert("El título de la tarea no puede estar vacío.");
-        return;
-    };
-    const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
-    if (tareasGuardadas.some(tarea => tarea.titulo === nuevaTarea.titulo)) {
-        alert("Ya existe una tarea con ese título. Por favor, elige otro título.");
-        return;
-    };
-    //si la validación es correcta, se guarda la tarea en el localStorage y se muestra en el DOM
-    tareasGuardadas.push(nuevaTarea);
-    localStorage.setItem("tareas", JSON.stringify(tareasGuardadas));
-    agregarTareaAlDOM(nuevaTarea);
-    //se oculta el contenedor de nueva tarea y se reinician los inputs
-    cerrarModal();
-});
 
-//editar tarea
-//coge toda la informacion de la tarea a editar y la muestra en el contenedor de nueva tarea,
-//cuando se hace click en el boton de guardar tarea, se actualiza la tarea en el localStorage y se muestra en el DOM y si le da a cancelar se oculta el contenedor de nueva tarea y se reinician los inputs
-document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("edit-btn")) {
-        const card = e.target.closest(".task-card");
-        const tareaId = parseInt(card.getAttribute("data-id"));
-        const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
-        const tareaAEditar = tareasGuardadas.find(tarea => tarea.id === tareaId);
-        if (tareaAEditar) {
-            inputTitulo.value = tareaAEditar.titulo;
-            inputDescripcion.value = tareaAEditar.descripcion;
-            inputPrioridad.value = tareaAEditar.prioridad;
-            inputEstado.value = tareaAEditar.estado;
-            contenedorDeNuevaTarea.classList.remove("modal-hidden");
-            btnGuardarTarea.onclick = () => {
-                tareaAEditar.titulo = inputTitulo.value;
-                tareaAEditar.descripcion = inputDescripcion.value;
-                tareaAEditar.prioridad = inputPrioridad.value;
-                tareaAEditar.estado = inputEstado.value;
-                localStorage.setItem("tareas", JSON.stringify(tareasGuardadas));
-                //actualizamos el DOM eliminando la tarea antigua y agregando la tarea editada
-                card.remove();
-                agregarTareaAlDOM(tareaAEditar);
-                cerrarModal();
-            };
-            btnCerrarModal.onclick = () => {
-                cerrarModal();
-            };
+    // =============================
+    // CARGAR TAREAS DEL LOCALSTORAGE
+    // (al iniciar renderizamos las tareas guardadas en cada columna)
+    // =============================
+    function cargarTareas() {
+
+        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+
+        // Limpiamos las columnas antes de pintar (dejamos las hardcodeadas del HTML si no hay tareas)
+        if (tareas.length > 0) {
+            colTodo.innerHTML  = '';
+            colDoing.innerHTML = '';
+            colDone.innerHTML  = '';
+        }
+
+        tareas.forEach(tarea => renderTarjeta(tarea, false));
+    }
+
+    // =============================
+    // RENDERIZAR TARJETA KANBAN
+    // (creamos la tarjeta visual y la añadimos a la columna correspondiente)
+    // =============================
+    function renderTarjeta(tarea, guardar = true) {
+
+        const columna = getColumna(tarea.columna);
+        if (!columna) return;
+
+        const prio    = priorityConfig[tarea.prioridad] || priorityConfig['medium'];
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.dataset.id = tarea.id;
+
+        card.innerHTML = `
+            <h3>${tarea.titulo}</h3>
+            ${tarea.descripcion ? `<p>${tarea.descripcion}</p>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                <span class="badge-priority ${prio.clase}">${prio.label}</span>
+                <div>
+                    <button class="btn-mover" data-id="${tarea.id}" title="Mover a siguiente columna"
+                        style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:0.8rem;">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button class="btn-borrar-tarea" data-id="${tarea.id}" title="Eliminar"
+                        style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.8rem;margin-left:4px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+
+        columna.appendChild(card);
+
+        // Asignamos eventos a los botones de la tarjeta recién creada
+        card.querySelector('.btn-mover').addEventListener('click', () => moverTarea(tarea.id));
+        card.querySelector('.btn-borrar-tarea').addEventListener('click', () => borrarTarea(tarea.id));
+
+        if (guardar) guardarTareas();
+    }
+
+    // =============================
+    // OBTENER COLUMNA POR NOMBRE
+    // =============================
+    function getColumna(nombre) {
+        if (nombre === 'todo')  return colTodo;
+        if (nombre === 'doing') return colDoing;
+        if (nombre === 'done')  return colDone;
+        return null;
+    }
+
+    // =============================
+    // MOVER TAREA A LA SIGUIENTE COLUMNA
+    // (todo → doing → done, si ya está en done no hace nada)
+    // =============================
+    function moverTarea(id) {
+
+        let tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+        const idx  = tareas.findIndex(t => t.id === id);
+        if (idx === -1) return;
+
+        const orden = ['todo', 'doing', 'done'];
+        const actual = tareas[idx].columna;
+        const posActual = orden.indexOf(actual);
+
+        if (posActual < orden.length - 1) {
+            tareas[idx].columna = orden[posActual + 1];
+            localStorage.setItem('tareas', JSON.stringify(tareas));
+            reconstruirTablero();
+        }
+    }
+
+    // =============================
+    // BORRAR TAREA
+    // =============================
+    function borrarTarea(id) {
+
+        if (!confirm('¿Eliminar esta tarea?')) return;
+
+        let tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+        tareas = tareas.filter(t => t.id !== id);
+        localStorage.setItem('tareas', JSON.stringify(tareas));
+        reconstruirTablero();
+    }
+
+    // =============================
+    // RECONSTRUIR EL TABLERO COMPLETO
+    // (borramos todo y volvemos a pintar desde localStorage)
+    // =============================
+    function reconstruirTablero() {
+        colTodo.innerHTML  = '';
+        colDoing.innerHTML = '';
+        colDone.innerHTML  = '';
+        cargarTareas();
+    }
+
+    // =============================
+    // GUARDAR TAREAS EN LOCALSTORAGE
+    // =============================
+    function guardarTareas() {
+        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+        localStorage.setItem('tareas', JSON.stringify(tareas));
+    }
+
+    // =============================
+    // CREAR NUEVA TAREA DESDE EL FORMULARIO
+    // =============================
+    function crearTarea(event) {
+
+        event.preventDefault();
+
+        const titulo = inputTitulo ? inputTitulo.value.trim() : '';
+        if (!titulo) {
+            alert('El título es obligatorio.');
+            return;
+        }
+
+        const nuevaTarea = {
+            id:          Date.now().toString(),
+            titulo:      titulo,
+            descripcion: inputDesc       ? inputDesc.value.trim()   : '',
+            prioridad:   selectPrioridad ? selectPrioridad.value    : 'medium',
+            columna:     selectColumna   ? selectColumna.value      : 'todo'
         };
-    } else if (e.target.classList.contains("delete-btn")) {
-        const card = e.target.closest(".task-card");
-        const tareaId = parseInt(card.getAttribute("data-id"));
-        eliminarTarea(tareaId);
-    };
+
+        // Guardamos en localStorage
+        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
+        tareas.push(nuevaTarea);
+        localStorage.setItem('tareas', JSON.stringify(tareas));
+
+        // Pintamos la tarjeta
+        renderTarjeta(nuevaTarea, false);
+
+        cerrarModal();
+    }
+
+    // =============================
+    // CONTROL DEL MODAL
+    // =============================
+    function abrirModal() {
+        if (modalTarea) modalTarea.classList.remove('modal-hidden');
+    }
+
+    function cerrarModal() {
+        if (modalTarea) modalTarea.classList.add('modal-hidden');
+        if (formNuevaTarea) formNuevaTarea.reset();
+    }
+
+    // =============================
+    // EVENTOS
+    // =============================
+    btnAbrirModal?.addEventListener('click',  abrirModal);
+    btnCerrarModal?.addEventListener('click', cerrarModal);
+    btnCancelar?.addEventListener('click',    cerrarModal);
+    formNuevaTarea?.addEventListener('submit', crearTarea);
+
+    modalTarea?.addEventListener('click', (e) => {
+        if (e.target === modalTarea) cerrarModal();
+    });
+
+    // =============================
+    // INIT
+    // =============================
+    cargarTareas();
 });
-
-//eliminar tarea
-function eliminarTarea(tareaId) {
-    const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
-    const tareasActualizadas = tareasGuardadas.filter(tarea => tarea.id !== tareaId);
-    localStorage.setItem("tareas", JSON.stringify(tareasActualizadas));
-    const card = document.querySelector(`.task-card[data-id="${tareaId}"]`);
-    if (card) {
-        card.remove();
-    };
-};
-    
-//funcion para oculta el contenedor de nueva tarea y se reinician los inputs
-function cerrarModal() {
-    contenedorDeNuevaTarea.classList.add("modal-hidden");
-    inputTitulo.value = "";
-    inputDescripcion.value = "";
-    inputEstado.value = "Pendiente";
-    inputPrioridad.value = "media";
-};
-
-//funcion para agregar una tarea al DOM, recibe un objeto tarea como parametro
-function agregarTareaAlDOM(tarea) {
-
-    // Crear tarjeta
-    const card = document.createElement("div");
-    card.classList.add("task-card");
-    card.setAttribute("data-id", tarea.id);
-
-    // Badge dinámico de prioridad
-    let clasePrioridad = "";
-    let textoPrioridad = "";
-
-    if (tarea.prioridad === "high") {
-        clasePrioridad = "priority-high";
-        textoPrioridad = "Alta";
-    } else if (tarea.prioridad === "medium") {
-        clasePrioridad = "priority-medium";
-        textoPrioridad = "Media";
-    } else {
-        clasePrioridad = "priority-low";
-        textoPrioridad = "Baja";
-    }
-
-    // Contenido interno
-card.classList.add("kanban-card");
-
-card.innerHTML = `
-    <h3>${tarea.titulo}</h3>
-    <p>${tarea.descripcion || ""}</p>
-    <span class="badge-priority ${clasePrioridad}">
-        ${textoPrioridad}
-    </span>
-
-    <div style="display:flex; gap:8px; margin-top:10px;">
-        <button class="edit-btn" 
-            style="background:#28a745;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-            Editar
-        </button>
-
-        <button class="delete-btn" 
-            style="background:#dc3545;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-            Eliminar
-        </button>
-    </div>
-`;
-
-
-    // 🔥 AQUÍ ESTABA EL ERROR → ahora coincide con tu HTML
-    const contenedor = document.getElementById(`kanban-content-${tarea.estado}`);
-
-    if (!contenedor) {
-        console.error("No se encontró el contenedor:", tarea.estado);
-        return;
-    }
-
-    contenedor.appendChild(card);
-}
-

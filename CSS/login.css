@@ -1,26 +1,3 @@
-:root {
-    --primary-color: #007bff;
-    --primary-hover: #0056b3;
-    --bg-body: #f0f2f5; 
-    --bg-card: #ffffff;
-    --text-main: #333;
-    --text-secondary: #666;
-    --text-titles: #111;
-    --input-border: #ddd;
-    --input-bg: #ffffff;
-}
-
-[data-theme="dark"] {
-    --bg-body: #0f172a;
-    --bg-card: #1e293b;
-    --text-main: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-titles: #ffffff;
-    --input-border: #334155;
-    --input-bg: #1e293b;
-    --primary-color: #60a5fa;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -29,19 +6,19 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-body);
+    background-color: #f0f2f5; 
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    color: var(--text-main);
+    color: #333;
     padding: 2rem 0;
+    /* Añadido para que el footer se vea bien */
     flex-direction: column;
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .form-container {
-    background-color: var(--bg-card);
+    background-color: #ffffff;
     padding: 2.5rem; 
     border-radius: 10px; 
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
@@ -49,17 +26,16 @@ body {
     max-width: 420px; 
     text-align: center;
     margin: 1rem; 
-    transition: background-color 0.3s ease;
 }
 
 .form-container h2 {
     margin-bottom: 0.5rem;
-    color: var(--text-titles);
+    color: #111;
 }
 
 .form-container p {
     margin-bottom: 1.5rem;
-    color: var(--text-secondary);
+    color: #666;
 }
 
 .form-group {
@@ -75,23 +51,20 @@ body {
 
 .form-group label i {
     margin-right: 5px; 
-    color: var(--primary-color);
+    color: #007bff; 
 }
 
 .form-group input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid var(--input-border);
-    background-color: var(--input-bg);
-    color: var(--text-main);
+    border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--primary-color); 
+    border-color: #007bff; 
     box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
 }
 
@@ -100,7 +73,7 @@ body {
     padding: 0.85rem;
     border: none;
     border-radius: 5px;
-    background-color: var(--primary-color); 
+    background-color: #007bff; 
     color: white;
     font-size: 1rem;
     font-weight: bold;
@@ -109,45 +82,44 @@ body {
 }
 
 .btn-submit:hover {
-    background-color: var(--primary-hover);
+    background-color: #0056b3; 
 }
 
-.form-footer {
+.extra-links {
     margin-top: 1.5rem;
     font-size: 0.9rem;
-    color: var(--text-secondary) !important;
 }
 
-.form-footer a, 
-.form-footer a:link, 
-.form-footer a:visited, 
-.legal-footer a, 
-.legal-footer a:link, 
-.legal-footer a:visited {
-    color: var(--primary-color) !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
-    transition: color 0.3s ease;
+.extra-links p {
+    margin-bottom: 0.5rem;
+    color: #666;
 }
 
-.form-footer a:hover, 
-.legal-footer a:hover {
-    text-decoration: underline !important;
-    filter: brightness(1.2);
+.extra-links a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-[data-theme="dark"] .form-footer a,
-[data-theme="dark"] .form-footer a:visited,
-[data-theme="dark"] .legal-footer a,
-[data-theme="dark"] .legal-footer a:visited {
-    color: #93c5fd !important;
+.extra-links a:hover {
+    text-decoration: underline;
 }
 
 .legal-footer {
-    margin-top: 1rem;
     text-align: center;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.legal-footer a {
+    color: #666;
+    margin: 0 0.5rem;
+    text-decoration: none;
+}
+.legal-footer a:hover {
+    text-decoration: underline;
 }
 
-.legal-footer a {
-    margin: 0 10px;
+.cookie-banner-hidden {
+    display: none !important;
 }

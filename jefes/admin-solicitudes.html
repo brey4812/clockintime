@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - clockInTime</title>
+    <title>Solicitudes - clockInTime Admin</title>
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -16,9 +16,9 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="admin-dashboard.html" class="active"><i class="fas fa-shield-alt"></i> Dashboard</a></li>
+                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard</a></li>
                     <li><a href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
-                    <li><a href="admin-solicitudes.html"><i class="fas fa-calendar-check"></i> Solicitudes</a></li>
+                    <li><a href="admin-solicitudes.html" class="active"><i class="fas fa-calendar-check"></i> Solicitudes</a></li>
                     <li><a href="admin-calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
                     <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
                     <li><a href="admin-mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
@@ -35,42 +35,37 @@
             <header class="main-header">
                 <div class="header-left">
                     <button class="menu-toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-                    <h1>Dashboard Administrador</h1>
+                    <h1>Solicitudes de Ausencia</h1>
                 </div>
                 <div class="user-info"><strong id="user-name-header">Admin</strong></div>
             </header>
 
-            <section class="widget-grid">
-                <div class="widget summary-widget">
-                    <h3>Usuarios Totales</h3>
-                    <div id="summary-usuarios-totales" class="summary-value">0</div>
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>Todas las solicitudes</h2>
+                    <div class="filtros-solicitudes">
+                        <button id="filtro-todas"      class="btn-filtro active">Todas</button>
+                        <button id="filtro-pendientes" class="btn-filtro">Pendientes</button>
+                        <button id="filtro-aprobadas"  class="btn-filtro">Aprobadas</button>
+                        <button id="filtro-rechazadas" class="btn-filtro">Rechazadas</button>
+                    </div>
                 </div>
-                <div class="widget summary-widget">
-                    <h3>Solicitudes Pendientes</h3>
-                    <div id="summary-solicitudes-pendientes" class="summary-value">0</div>
-                </div>
-                <div class="widget summary-widget">
-                    <h3>Fichados Hoy</h3>
-                    <div id="summary-fichados-hoy" class="summary-value">0</div>
-                </div>
-            </section>
-
-            <section class="widget">
-                <h2>Solicitudes Pendientes Recientes</h2>
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th>Empleado</th><th>Tipo</th><th>Fechas</th><th>Estado</th></tr>
+                            <tr>
+                                <th>Empleado</th>
+                                <th>Tipo</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
                         </thead>
-                        <tbody id="lista-solicitudes-pendientes"></tbody>
+                        <tbody id="solicitudes-admin-tbody"></tbody>
                     </table>
                 </div>
-            </section>
-
-            <section class="widget">
-                <h2>Bienvenido al Panel de Administración</h2>
-                <p style="color:var(--text-light);">Desde aquí puedes gestionar usuarios, aprobar solicitudes y añadir proyectos al calendario del equipo.</p>
-            </section>
+            </div>
         </main>
     </div>
 
@@ -80,7 +75,7 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/admin-dashboard.js"></script>
+    <script src="../js/admin-solicitudes.js"></script>
     <script>
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar    = document.getElementById('sidebar');

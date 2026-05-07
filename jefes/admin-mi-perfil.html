@@ -2,55 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Mi Perfil (Admin) - clockInTime</title>
-    <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
-    <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
-    <meta name="theme-color" content="#1e293b">
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        })();
-    </script>
-
-    <script type="application/ld+json">
-    {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "ClockInTime",
-    "operatingSystem": "Any",
-    "applicationCategory": "BusinessApplication",
-    "offers": {
-        "@type": "Offer",
-        "price": "0.00",
-        "priceCurrency": "EUR"
-    },
-    "description": "Portal profesional de gestión de empleados, control horario y tareas para empresas.",
-    "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "150"
-        }
-    }
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - clockInTime Admin</title>
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="manifest" href="/manifest.json">
-</head>    
+</head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard Admin</a></li>
+                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard</a></li>
                     <li><a href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+                    <li><a href="admin-solicitudes.html"><i class="fas fa-calendar-check"></i> Solicitudes</a></li>
+                    <li><a href="admin-calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
                     <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
-                    <li><a href="admin-mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
+                    <li><a href="admin-mi-perfil.html" class="active"><i class="fas fa-user"></i> Mi Perfil</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -58,75 +29,72 @@
             </div>
         </aside>
 
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
         <main class="main-content">
             <header class="main-header">
-                <h1>Mi Perfil de Administrador</h1>
-                <div class="user-info">
-                    <span><strong id="user-name-header">Nombre del Admin</strong></span>
+                <div class="header-left">
+                    <button class="menu-toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                    <h1>Mi Perfil de Administrador</h1>
                 </div>
+                <div class="user-info"><strong id="user-name-header">Admin</strong></div>
             </header>
 
             <div class="page-grid-solicitudes">
+
                 <div class="widget">
                     <h2>Datos Personales</h2>
                     <form id="profile-form">
-                        <div class="profile-pic-container">
+                        <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:1.5rem;">
                             <div class="profile-pic-display" id="profile-pic-preview">
-                                <i class="fas fa-user-shield"></i>
+                                <i class="fas fa-user" style="font-size:3rem;color:#94a3b8;"></i>
                             </div>
-                            <div class="profile-pic-actions">
-                                <button type="button" class="btn-outline" id="btn-upload-pic">Cambiar foto</button>
-                                <input type="file" id="input-pic-upload" style="display:none" accept="image/*">
-                                <button type="button" class="btn-action btn-delete" id="btn-remove-pic">Quitar</button>
+                            <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                                <button type="button" id="btn-upload-pic" class="btn-filter">Cambiar foto</button>
+                                <input type="file" id="input-pic-upload" accept="image/*" style="display:none;">
+                                <button type="button" id="btn-remove-pic" class="btn-filter"
+                                    style="background:#dc3545;color:#fff;border-color:#dc3545;">Quitar</button>
                             </div>
                         </div>
                         <div class="form-group-app">
                             <label for="fullname">Nombre Completo</label>
-                            <input type="text" id="fullname" value="Nombre del Administrador">
+                            <input type="text" id="fullname" placeholder="Tu nombre">
                         </div>
                         <div class="form-group-app">
                             <label for="email">Email</label>
-                            <input type="email" id="email" value="admin@empresa.com" disabled>
+                            <input type="email" id="email" disabled>
                         </div>
                         <div class="form-group-app">
                             <label for="role">Rol</label>
-                            <input type="text" id="role" value="Administrador Maestro" disabled>
+                            <input type="text" id="role" value="Administrador" disabled>
                         </div>
                         <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
                     </form>
                 </div>
 
                 <div class="widget">
-                    <h2>Seguridad</h2>
+                    <h2>Cambiar Contraseña</h2>
                     <form id="password-form">
                         <div class="form-group-app">
                             <label for="current-password">Contraseña Actual</label>
-                            <input type="password" id="current-password" required placeholder="••••••••">
+                            <input type="password" id="current-password" placeholder="Contraseña actual" required>
                         </div>
-                        <hr class="divider">
+                        <hr style="margin:1rem 0;border-color:#e2e8f0;">
                         <div class="form-group-app">
                             <label for="new-password">Nueva Contraseña</label>
-                            <input type="password" id="new-password" required placeholder="Mínimo 8 caracteres">
+                            <input type="password" id="new-password" placeholder="Mínimo 4 caracteres" required>
                         </div>
                         <div class="form-group-app">
                             <label for="repeat-password">Repetir Nueva Contraseña</label>
-                            <input type="password" id="repeat-password" required placeholder="Repite la contraseña">
+                            <input type="password" id="repeat-password" placeholder="Repite la nueva contraseña" required>
                         </div>
                         <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
                     </form>
                 </div>
 
-                <div class="widget">
-                    <h2>Personalización</h2>
-                    <div class="form-group-app">
-                        <button type="button" class="btn-outline" id="theme-toggle-btn" style="width: 100%;">
-                            <i class="fas fa-moon"></i> <span id="theme-text">Modo Oscuro</span>
-                        </button>
-                    </div>
-                </div>
-            </div> 
+            </div>
         </main>
-    </div> 
+    </div>
 
     <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
@@ -134,77 +102,13 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
+    <script src="../js/admin-mi-perfil.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const url = window.location.href;
-            const links = document.querySelectorAll('.sidebar-nav a');
-            
-            links.forEach(l => {
-                l.classList.remove('active');
-                if (url.includes(l.getAttribute('href'))) {
-                    l.classList.add('active');
-                }
-            });
-
-            const tBtn = document.getElementById('theme-toggle-btn');
-            const tText = document.getElementById('theme-text');
-            const tIcon = tBtn.querySelector('i');
-
-            function upUI(t) {
-                if (t === 'dark') {
-                    tText.innerText = "Modo Claro";
-                    tIcon.className = "fas fa-sun";
-                } else {
-                    tText.innerText = "Modo Oscuro";
-                    tIcon.className = "fas fa-moon";
-                }
-            }
-
-            const cT = document.documentElement.getAttribute('data-theme') || 'light';
-            upUI(cT);
-
-            tBtn.addEventListener('click', () => {
-                const t = document.documentElement.getAttribute('data-theme');
-                const nT = t === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', nT);
-                localStorage.setItem('theme', nT);
-                upUI(nT);
-            });
-
-            const bU = document.getElementById('btn-upload-pic');
-            const iU = document.getElementById('input-pic-upload');
-            const pC = document.getElementById('profile-pic-preview');
-
-            bU.addEventListener('click', () => iU.click());
-
-            iU.addEventListener('change', function() {
-                if (this.files[0]) {
-                    const r = new FileReader();
-                    r.onload = e => pC.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-                    r.readAsDataURL(this.files[0]);
-                }
-            });
-
-            document.getElementById('btn-remove-pic').addEventListener('click', () => {
-                pC.innerHTML = `<i class="fas fa-user-shield"></i>`;
-                iU.value = "";
-            });
-
-            document.getElementById('profile-form').addEventListener('submit', e => {
-                e.preventDefault();
-                alert('¡Datos actualizados!');
-            });
-
-            document.getElementById('password-form').addEventListener('submit', e => {
-                e.preventDefault();
-                if(document.getElementById('new-password').value !== document.getElementById('repeat-password').value) {
-                    alert('No coinciden');
-                } else {
-                    alert('Éxito');
-                }
-            });
-        });
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar    = document.getElementById('sidebar');
+        const overlay    = document.getElementById('sidebar-overlay');
+        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
+        overlay?.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
     </script>
 </body>
-
 </html>

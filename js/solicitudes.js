@@ -1,11 +1,9 @@
-
-//elementos del DOM (request-type, start-date, end-date, comments y btn-submit-request)
+//elementos del DOM
 const requestTypeSelect = document.getElementById('request-type');
-const startDateInput = document.getElementById('start-date');
-const endDateInput = document.getElementById('end-date');
-const commentsInput = document.getElementById('comments');
-const submitButton = document.getElementById('btn-submit-request');
-//elemento para el historial de solicitudes
+const startDateInput    = document.getElementById('start-date');
+const endDateInput      = document.getElementById('end-date');
+const commentsInput     = document.getElementById('comments');
+const submitButton      = document.getElementById('btn-submit-request');
 const requestHistoryElement = document.getElementById('historial-solicitudes-tbody');
 
 //objeto de solicitud
@@ -17,82 +15,103 @@ let request = {
     estado: 'Pendiente'
 };
 
-//eventos
-    //se actualiza el tipo de solicitud y se mete en el objeto
-    requestTypeSelect.addEventListener('change', function() {
-    request.type = requestTypeSelect.value;
-    });
-    //se actualiza la fecha de inicio y se mete en el objeto
-    startDateInput.addEventListener('change', function() {
-    request.startDate = startDateInput.value;
-    
-    });
-    //se actualiza la fecha de final y se mete en el objeto
-    endDateInput.addEventListener('change', function() {
-    request.endDate = endDateInput.value;
-    });
-    //se actualizan los comentarios y se meten en el objeto
-    commentsInput.addEventListener('input', function() {
-    request.comments = commentsInput.value;
-    });
+//eventos — sincronizamos el objeto con el formulario en tiempo real
+requestTypeSelect.addEventListener('change', () => { request.type = requestTypeSelect.value; });
+startDateInput.addEventListener('change',   () => { request.startDate = startDateInput.value; });
+endDateInput.addEventListener('change',     () => { request.endDate = endDateInput.value; });
+commentsInput.addEventListener('input',     () => { request.comments = commentsInput.value; });
 
-    //al hacer eviar la solicitud verificamos que los campos obligatorios esten completos
-    submitButton.addEventListener('click', function(event) {
+submitButton.addEventListener('click', function(event) {
     event.preventDefault();
     if (validateRequest()) {
-        //se envia la solicitud a la base de datos(localStorage de momento y se actualiza el historial)
         saveRequest(request);
         updateRequestHistory();
-        //se resetea el formulario
         resetForm();
     }
-    });
+});
 
-//inicializamos el historial de solicitudes al cargar la pagina
+//inicializamos el historial al cargar la página
 updateRequestHistory();
-//funciones
 
-    //comprobamos que los campos de tipo de solicitud, fecha de inicio y fecha de fin no esten vacios si esta vacio sacamos una alerta 
-    // y no dejamos enviar la solicitud
-    function validateRequest() {
-    if (request.type === '' || request.startDate === '' || request.endDate === '') {
-        alert('Por favor, complete todos los campos obligatorios.');
+// ==========================
+// VALIDAR SOLICITUD
+// ==========================
+function validateRequest() {
+    if (!request.type || !request.startDate || !request.endDate) {
+        alert('Por favor, completa todos los campos obligatorios.');
+        return false;
+    }
+    if (request.endDate < request.startDate) {
+        alert('La fecha de fin no puede ser anterior a la de inicio.');
         return false;
     }
     return true;
-    };
-    //guardamos la solicitud en el localStorage con la clave 'solicitudes'
-    function saveRequest(request) {
-    let requests = JSON.parse(localStorage.getItem('solicitudes')) || [];
-    requests.push(request);
-    localStorage.setItem('solicitudes', JSON.stringify(requests));
+}
+
+// ==========================
+// GUARDAR SOLICITUD
+// (guardamos SOLO en la clave individual del empleado para evitar duplicados en el panel de jefes)
+// ==========================
+function saveRequest(req) {
+
+    const currentEmail = localStorage.getItem('currentUserEmail') || '';
+
+    // Añadimos el email al objeto para que el jefe sepa de quién es
+    const solicitud = { ...req, emailEmpleado: currentEmail };
+
+    if (currentEmail) {
+        const key      = 'solicitudes_' + currentEmail;
+        const requests = JSON.parse(localStorage.getItem(key)) || [];
+        requests.push(solicitud);
+        localStorage.setItem(key, JSON.stringify(requests));
     }
-    //actualizamos el historial de solicitudes usando el localStorage y ponemos el estado de pendiente
-    function updateRequestHistory() {
-    let requests = JSON.parse(localStorage.getItem('solicitudes')) || [];
+}
+
+// ==========================
+// ACTUALIZAR HISTORIAL EN PANTALLA
+// (leemos las solicitudes individuales del empleado en sesión)
+// ==========================
+function updateRequestHistory() {
+
+    const currentEmail = localStorage.getItem('currentUserEmail') || '';
+    let requests = [];
+
+    if (currentEmail) {
+        requests = JSON.parse(localStorage.getItem('solicitudes_' + currentEmail)) || [];
+    }
+
     requestHistoryElement.innerHTML = '';
-    requests.forEach(function(req, index) {
-        let row = document.createElement('tr');
+
+    if (requests.length === 0) {
+        requestHistoryElement.innerHTML = `
+            <tr><td colspan="4" class="text-center">No tienes solicitudes registradas.</td></tr>`;
+        return;
+    }
+
+    // Mostramos las más recientes primero
+    [...requests].reverse().forEach(function(req) {
+
+        let estadoClase = 'status-pending';
+        if (req.estado === 'Aprobada')  estadoClase = 'status-approved';
+        if (req.estado === 'Rechazada') estadoClase = 'status-rejected';
+
+        const row = document.createElement('tr');
         row.innerHTML = `
-        <td>${req.type}</td>
-        <td>${req.startDate}</td>
-        <td>${req.endDate}</td>
-        <td><span class="status-badge status-pending">${req.estado}</span></td>
-        `;
+            <td>${req.type || '-'}</td>
+            <td>${req.startDate || '-'}</td>
+            <td>${req.endDate || '-'}</td>
+            <td><span class="status-badge ${estadoClase}">${req.estado || 'Pendiente'}</span></td>`;
         requestHistoryElement.appendChild(row);
     });
-    }
-    //reseteamos el formulario y el objeto solicitud
-    function resetForm() {
-    requestTypeSelect.value = "vacaciones";
-    startDateInput.value = '';
-    endDateInput.value = '';
-    commentsInput.value = '';
-    request = {
-        type: '',
-        startDate: '',
-        endDate: '',
-        comments: '',
-        estado: 'Pendiente'
-    };
-    }
+}
+
+// ==========================
+// RESETEAR FORMULARIO
+// ==========================
+function resetForm() {
+    requestTypeSelect.value = 'vacaciones';
+    startDateInput.value    = '';
+    endDateInput.value      = '';
+    commentsInput.value     = '';
+    request = { type: 'vacaciones', startDate: '', endDate: '', comments: '', estado: 'Pendiente' };
+}
