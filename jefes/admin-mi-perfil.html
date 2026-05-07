@@ -22,6 +22,49 @@
     <title>Mi Perfil - clockInTime Admin</title>
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Estilos para el Avatar Circular */
+        #profile-pic-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #e2e8f0;
+            background-color: #f8fafc;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        #profile-pic-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #profile-pic-preview i {
+            font-size: 3.5rem;
+            color: #94a3b8;
+        }
+        /* Contenedor de la URL externa */
+        .url-input-group {
+            margin-top: 1.5rem;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+        .url-input-wrapper {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .url-input-wrapper input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
