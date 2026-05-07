@@ -1,12 +1,18 @@
 import { supabase } from './supabase-client.js';
 
-// Cogemos los elementos del formulario
+// Elementos del DOM
 const fullnameInput = document.getElementById('fullname');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const registerButton = document.getElementById('btn-register-submit');
 const companyInput = document.getElementById('company');
 const companyCodeInput = document.getElementById('company-code');
+
+// Nuevos elementos para la verificación
+const registerSection = document.getElementById('register-section');
+const verifySection = document.getElementById('verify-section');
+const verifyTokenInput = document.getElementById('verify-token');
+const verifyButton = document.getElementById('btn-verify-submit');
 
 const user = {
     fullname: '',
@@ -41,67 +47,77 @@ function checkUserRole() {
         user.boss = false;
         return true;
     } else {
-        alert('Rellena solo empresa (si eres jefe) o código de empresa (si eres empleado)');
+        alert('Rellena solo empresa o código de empresa');
         return false;
     }
 }
 
-// --- NUEVA LÓGICA DE SUPABASE ---
-
+// PASO 1: Lanzar el registro y enviar el código
 async function handleRegistration() {
     updateUserFromForm();
     if (!checkRequiredFields() || !checkUserRole()) return;
 
-    // 1. Crear el usuario en la Autenticación de Supabase
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
         email: user.email,
         password: user.password
     });
 
-    if (authError) {
-        alert('Error al registrar: ' + authError.message);
+    if (error) {
+        alert('Error al registrar: ' + error.message);
         return;
     }
 
-    const userId = authData.user.id;
+    // Si todo va bien, ocultamos registro y mostramos verificación
+    registerSection.style.display = 'none';
+    verifySection.style.display = 'block';
+    alert('Código enviado a tu email. Por favor, revísalo.');
+}
+
+// PASO 2: Verificar el código e insertar en la DB
+async function handleVerification() {
+    const token = verifyTokenInput.value.trim();
+
+    if (!token) {
+        alert("Introduce el código de 6 dígitos.");
+        return;
+    }
+
+    const { data: { session }, error: verifyError } = await supabase.auth.verifyOtp({
+        email: user.email,
+        token: token,
+        type: 'signup'
+    });
+
+    if (verifyError) {
+        alert('Código incorrecto: ' + verifyError.message);
+        return;
+    }
+
+    // Si el código es correcto, ahora sí creamos el perfil en la tabla 'profiles'
+    await createProfile(session.user.id);
+}
+
+async function createProfile(userId) {
     let finalEmpresaId = null;
-    let rolId = 3; // Por defecto Empleado (según tu tabla roles)
+    let rolId = user.boss ? 1 : 3;
 
     try {
         if (user.boss) {
-            // REGISTRAR JEFE: Crear empresa nueva
-            rolId = 1; // Admin
             const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
             const { data: newCo, error: coErr } = await supabase
                 .from('empresas')
-                .insert([{ 
-                    nombre: user.company, 
-                    codigo_invitacion: generatedCode 
-                }])
+                .insert([{ nombre: user.company, codigo_invitacion: generatedCode }])
                 .select().single();
-
             if (coErr) throw coErr;
             finalEmpresaId = newCo.id;
-            alert('Empresa creada. Tu código para empleados es: ' + generatedCode);
         } else {
-            // REGISTRAR EMPLEADO: Buscar empresa por código
-            const { data: coData, error: findErr } = await supabase
+            const { data: coData } = await supabase
                 .from('empresas')
-                .select('id')
-                .eq('codigo_invitacion', user.companyCode)
-                .single();
-
-            if (!coData) {
-                alert('El código de empresa no existe');
-                return;
-            }
-            finalEmpresaId = coData.id;
+                .select('id').eq('codigo_invitacion', user.companyCode).single();
+            finalEmpresaId = coData?.id;
         }
 
-        // 2. Crear el Perfil en la tabla 'profiles' (la de tu imagen)
         const [nombre, ...apellidos] = user.fullname.split(" ");
-        
         const { error: profileError } = await supabase
             .from('profiles')
             .insert([{
@@ -111,22 +127,27 @@ async function handleRegistration() {
                 email: user.email,
                 rol_id: rolId,
                 empresa_id: finalEmpresaId,
-                disponibilidad_id: 3, // Fuera de jornada
-                departamento_id: 1    // General
+                disponibilidad_id: 3,
+                departamento_id: 1
             }]);
 
         if (profileError) throw profileError;
 
-        alert('Registro completado. ¡Inicia sesión!');
+        alert('¡Cuenta verificada y perfil creado correctamente!');
         window.location.href = 'login.html';
 
     } catch (err) {
-        alert('Error en la base de datos: ' + err.message);
+        alert('Error al crear el perfil: ' + err.message);
     }
 }
 
-// Evento del botón
-registerButton.addEventListener('click', function(event) {
-    event.preventDefault();
+// Eventos
+registerButton.addEventListener('click', (e) => {
+    e.preventDefault();
     handleRegistration();
+});
+
+verifyButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleVerification();
 });
