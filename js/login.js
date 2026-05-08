@@ -1,47 +1,36 @@
 import { supabase } from './supabase-client.js';
 
-// 1. REFERENCIAS AL DOM
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const loginButton = document.getElementById('btn-login-submit');
-const loginForm = document.querySelector('form'); // Por si prefieres capturar el submit del form
+const loginForm = document.getElementById('login-form');
 
-/**
- * Función principal de manejo de Login
- */
 async function handleLogin(event) {
     event.preventDefault();
 
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
-    // Validación básica inicial
     if (!email || !password) {
         alert('Por favor, introduce tu correo electrónico y contraseña.');
         return;
     }
 
     try {
-        // --- PASO 1: AUTENTICACIÓN CON SUPABASE ---
-        // Esto valida el email y password contra la tabla auth.users de Supabase
+        // PASO 1: Iniciar sesión
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (authError) {
-            // Error típico: "Invalid login credentials" (email o pass incorrectos)
-            console.error("Error de Auth:", authError.message);
             alert('Credenciales incorrectas: ' + authError.message);
             return;
         }
 
-        // Si llegamos aquí, el login fue exitoso. 
-        // Supabase ya ha guardado el token de sesión en el navegador automáticamente.
         const user = authData.user;
 
-        // --- PASO 2: OBTENER DATOS ADICIONALES (ROL) DEL PERFIL ---
-        // Buscamos en nuestra tabla pública 'profiles' para saber si es Jefe o Empleado
+        // PASO 2: Obtener el perfil y el rol
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('rol_id')
@@ -50,34 +39,34 @@ async function handleLogin(event) {
 
         if (profileError || !profile) {
             console.error("Error al obtener perfil:", profileError);
-            alert('Login correcto, pero no se encontró tu perfil de usuario. Contacta con soporte.');
+            alert('Perfil no encontrado en la base de datos.');
             return;
         }
 
-        // --- PASO 3: LIMPIEZA DE DATOS ANTIGUOS (OPCIONAL) ---
-        // Borramos rastro del sistema viejo de localStorage para evitar conflictos
-        localStorage.removeItem('currentUserEmail'); 
+        // --- DEPURACIÓN: Ver qué rol tiene ---
+        console.log("ID de rol detectado:", profile.rol_id);
 
-        // --- PASO 4: REDIRECCIÓN SEGÚN ROL ---
-        // Supongamos: rol_id 1 = Admin/Jefe, rol_id 3 = Empleado
-        // Ajusta los números según tu tabla 'roles'
+        // PASO 3: Redirección lógica
+        // ¡IMPORTANTE! Revisa en tu tabla 'roles' de Supabase qué ID tiene el empleado.
+        // Si el ID de empleado es 2, cambia el 3 por un 2 abajo.
+        
         if (profile.rol_id === 1) {
-            console.log("Acceso como Administrador/Jefe");
+            console.log("Redirigiendo a Jefe...");
             window.location.href = '../jefes/admin-dashboard.html';
-        } else {
-            console.log("Acceso como Empleado");
+        } else if (profile.rol_id === 2 || profile.rol_id === 3) { 
+            // He añadido el 2 y el 3 por si acaso
+            console.log("Redirigiendo a Empleado...");
             window.location.href = '../empleados/dashboard.html';
+        } else {
+            alert("Tu rol (" + profile.rol_id + ") no tiene una página asignada.");
         }
 
     } catch (err) {
-        console.error("Error inesperado:", err);
-        alert('Ocurrió un error inesperado durante el inicio de sesión.');
+        console.error("Error crítico:", err);
+        alert('Error inesperado.');
     }
 }
 
-// 2. ASIGNACIÓN DE EVENTOS
-// Escuchamos el clic en el botón
+// Eventos
 loginButton?.addEventListener('click', handleLogin);
-
-// También permitimos que funcione al pulsar "Enter" dentro del formulario
 loginForm?.addEventListener('submit', handleLogin);
