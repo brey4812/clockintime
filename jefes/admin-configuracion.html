@@ -22,6 +22,7 @@
     <title>Configuración - clockInTime Admin</title>
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="../js/theme.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -87,9 +88,21 @@
                     </div>
                 </div>
 
+                <div class="widget">
+                    <h2>Apariencia</h2>
+                    <p style="color:var(--text-light);margin-bottom:1rem;">
+                        Personaliza la interfaz cambiando entre el modo claro y oscuro.
+                    </p>
+                    <button class="btn-outline btn-toggle-theme" onclick="toggleTheme()" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; justify-content: center;">
+                        <i class="fas fa-moon"></i> 
+                        <span>Cambiar modo de color</span>
+                    </button>
+                </div>
+
             </div>
         </main>
     </div>
+    
 
     <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
