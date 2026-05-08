@@ -1,108 +1,83 @@
+import { supabase } from './supabase-client.js';
 
-//pedimos los elementos del DOM
+// 1. REFERENCIAS AL DOM
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const loginButton = document.getElementById('btn-login-submit');
+const loginForm = document.querySelector('form'); // Por si prefieres capturar el submit del form
 
-
-
-//pedimos a localStorage todos los usuarios registrados y los convertimos cada uno en un objeto para compararlos con el usuario que intenta loguearse
-function getAllStoredUsers() {
-    const users = [];
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-
-        if (!key || !key.includes('@')) continue;
-
-        try {
-            const storedUser = JSON.parse(localStorage.getItem(key));
-
-            if (storedUser && storedUser.email) {
-                users.push(storedUser);
-            }
-
-        } catch (error) {
-            console.warn("Clave ignorada en localStorage:", key);
-        }
-    }
-
-    return users;
-}
-
-
-// Verificar si el código de empresa es válido
-function isCompanyCodeValid(code) {
-
-    const companies = JSON.parse(localStorage.getItem('empresas')) || [];
-
-    return companies.some(company => company.code === code);
-}
-
-
-// Buscar usuario por email o fullname
-function findUser(loginValue) {
-
-    const users = getAllStoredUsers();
-
-    return users.find(user =>
-        user.email === loginValue ||
-        user.fullname === loginValue
-    );
-}
-
-
-//Redirigimos al usuario a su dashboard correspondiente según su rol (jefe o empleado) 
-function redirectUser(user) {
-
-    if (user.boss) {
-        window.location.href = '../jefes/admin-dashboard.html';
-    } else {
-        window.location.href = '../empleados/dashboard.html';
-    }
-
-}
-
-
-// vemos si el usuario existe y la contraseña es correcta, si es así redirigimos al dashboard correspondiente según su rol (jefe o empleado)
-function handleLogin(event) {
-
+/**
+ * Función principal de manejo de Login
+ */
+async function handleLogin(event) {
     event.preventDefault();
 
-    const loginValue = emailInput.value.trim();
+    const email = emailInput.value.trim();
     const password = passwordInput.value;
 
-    // Validar campos vacíos
-    if (!loginValue || !password) {
-        alert('Por favor introduce usuario y contraseña');
+    // Validación básica inicial
+    if (!email || !password) {
+        alert('Por favor, introduce tu correo electrónico y contraseña.');
         return;
     }
 
-    const storedUser = findUser(loginValue);
+    try {
+        // --- PASO 1: AUTENTICACIÓN CON SUPABASE ---
+        // Esto valida el email y password contra la tabla auth.users de Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
 
-    // Validar usuario y contraseña
-    if (!storedUser || storedUser.password !== password) {
-        alert('Usuario o contraseña incorrectos');
-        return;
+        if (authError) {
+            // Error típico: "Invalid login credentials" (email o pass incorrectos)
+            console.error("Error de Auth:", authError.message);
+            alert('Credenciales incorrectas: ' + authError.message);
+            return;
+        }
+
+        // Si llegamos aquí, el login fue exitoso. 
+        // Supabase ya ha guardado el token de sesión en el navegador automáticamente.
+        const user = authData.user;
+
+        // --- PASO 2: OBTENER DATOS ADICIONALES (ROL) DEL PERFIL ---
+        // Buscamos en nuestra tabla pública 'profiles' para saber si es Jefe o Empleado
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('rol_id')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || !profile) {
+            console.error("Error al obtener perfil:", profileError);
+            alert('Login correcto, pero no se encontró tu perfil de usuario. Contacta con soporte.');
+            return;
+        }
+
+        // --- PASO 3: LIMPIEZA DE DATOS ANTIGUOS (OPCIONAL) ---
+        // Borramos rastro del sistema viejo de localStorage para evitar conflictos
+        localStorage.removeItem('currentUserEmail'); 
+
+        // --- PASO 4: REDIRECCIÓN SEGÚN ROL ---
+        // Supongamos: rol_id 1 = Admin/Jefe, rol_id 3 = Empleado
+        // Ajusta los números según tu tabla 'roles'
+        if (profile.rol_id === 1) {
+            console.log("Acceso como Administrador/Jefe");
+            window.location.href = '../jefes/admin-dashboard.html';
+        } else {
+            console.log("Acceso como Empleado");
+            window.location.href = '../empleados/dashboard.html';
+        }
+
+    } catch (err) {
+        console.error("Error inesperado:", err);
+        alert('Ocurrió un error inesperado durante el inicio de sesión.');
     }
-
-    // Validar código de empresa si existe
-    if (storedUser.companyCode && !isCompanyCodeValid(storedUser.companyCode)) {
-        alert('El código de empresa no es válido');
-        return;
-    }
-
-    //Reseteamos eñ formulario
-    emailInput.value = '';
-    passwordInput.value = '';
-
-    // Login correcto
-    // Guardamos el email del usuario en sesión para que jefes puedan identificarse
-    localStorage.setItem('currentUserEmail', storedUser.email);
-    redirectUser(storedUser);
-
 }
 
+// 2. ASIGNACIÓN DE EVENTOS
+// Escuchamos el clic en el botón
+loginButton?.addEventListener('click', handleLogin);
 
-// Agregar evento al botón de login
-loginButton.addEventListener('click', handleLogin);
+// También permitimos que funcione al pulsar "Enter" dentro del formulario
+loginForm?.addEventListener('submit', handleLogin);
