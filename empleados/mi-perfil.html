@@ -124,24 +124,25 @@
     </footer>
 
     <script type="module" src="../js/admin-mi-perfil.js"></script>
-    <script>
-        // Lógica de UI (Menú lateral)
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        
-        // Función para abrir/cerrar menú si existiera el botón hamburguesa
-        document.getElementById('menu-toggle')?.addEventListener('click', () => { 
-            sidebar.classList.add('active'); 
-            overlay.classList.add('active'); 
-        });
-        
-        overlay?.addEventListener('click', () => { 
-            sidebar.classList.remove('active'); 
-            overlay.classList.remove('active'); 
-        });
+        <script type="module">
+        import { supabase } from '../js/supabase-client.js';
 
-        // NOTA: He eliminado el código de localStorage de aquí. 
-        // El archivo js/admin-mi-perfil.js se encargará de cargar los datos reales de Supabase.
+        async function cargarNombreUsuario() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('nombre')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                if (profile && profile.nombre) {
+                    document.getElementById('user-name-header').textContent = profile.nombre;
+                }
+            }
+        }
+        cargarNombreUsuario();
     </script>
+
 </body>
 </html>

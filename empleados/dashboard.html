@@ -104,20 +104,24 @@
 
     <script src="../js/cooky.js"></script>
     <script src="../js/dashboard.js"></script>
-    <script>
-        // Menú hamburguesa
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
-        overlay?.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+    <script type="module">
+        import { supabase } from '../js/supabase-client.js';
 
-        // Nombre en header
-        const currentEmail = localStorage.getItem('currentUserEmail');
-        if (currentEmail) {
-            const user = JSON.parse(localStorage.getItem(currentEmail));
-            if (user) document.getElementById('user-name-header').textContent = user.fullname || user.email;
+        async function cargarNombreUsuario() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('nombre')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                if (profile && profile.nombre) {
+                    document.getElementById('user-name-header').textContent = profile.nombre;
+                }
+            }
         }
+        cargarNombreUsuario();
     </script>
 </body>
 </html>
