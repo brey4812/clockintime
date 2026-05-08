@@ -12,16 +12,28 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="clockInTime">
-    <meta property="og:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="clockInTime">
-    <meta name="twitter:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "clockInTime",
+      "operatingSystem": "Web",
+      "applicationCategory": "BusinessApplication",
+      "description": "Plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "EUR"
+      }
+    }
+    </script>
+
     <title>clockInTime - Gestión de Equipo Simplificada</title>
+    
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <script src="js/theme.js"></script>
 </head>
 <body>
 
@@ -29,6 +41,10 @@
         <div class="container">
             <a href="index.html" class="logo">clockInTime</a>
             <div class="nav-links">
+                <button class="btn-theme-nav" onclick="toggleTheme()" aria-label="Cambiar modo de color" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0 15px; font-size: 1.2rem;">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
                 <a href="login/login.html" class="btn btn-secondary">Iniciar Sesión</a>
                 <a href="login/register.html" class="btn btn-primary">Registrarse</a>
             </div>
@@ -73,7 +89,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 clockInTime. Todos los derechos reservados.</p>
+            <p>&copy; 2026 clockInTime. Todos los derechos reservados.</p>
         </div>
     </footer>
 
@@ -96,5 +112,15 @@
     </div>
 
     <script src="js/cooky.js"></script>
+    <script>
+        // Registro del Service Worker para PWA y Offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registrado', reg))
+                    .catch(err => console.log('Error registro SW', err));
+            });
+        }
+    </script>
 </body>
 </html>
