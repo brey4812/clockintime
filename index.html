@@ -12,6 +12,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <meta property="og:type" content="website">
+    <meta property="og:title" content="clockInTime">
+    <meta property="og:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
+    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="clockInTime">
+    <meta name="twitter:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
+    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -19,17 +27,11 @@
       "name": "clockInTime",
       "operatingSystem": "Web",
       "applicationCategory": "BusinessApplication",
-      "description": "Plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0.00",
-        "priceCurrency": "EUR"
-      }
+      "description": "Plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos."
     }
     </script>
 
     <title>clockInTime - Gestión de Equipo Simplificada</title>
-    
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     
@@ -44,7 +46,6 @@
                 <button class="btn-theme-nav" onclick="toggleTheme()" aria-label="Cambiar modo de color" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0 15px; font-size: 1.2rem;">
                     <i class="fas fa-moon"></i>
                 </button>
-                
                 <a href="login/login.html" class="btn btn-secondary">Iniciar Sesión</a>
                 <a href="login/register.html" class="btn btn-primary">Registrarse</a>
             </div>
@@ -87,6 +88,22 @@
         </div>
     </section>
 
+    <section class="faq-section" id="faq" style="padding: 60px 0; background-color: var(--bg-secondary);">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 40px;">Preguntas Frecuentes</h2>
+            <div class="faq-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="faq-item">
+                    <h3>¿Cómo funciona el control horario?</h3>
+                    <p>Los empleados pueden fichar desde cualquier dispositivo, registrando su entrada, pausas y salida de forma legal.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>¿Es seguro para mi empresa?</h3>
+                    <p>Utilizamos cifrado de alta seguridad y Supabase para proteger todos los datos de tu equipo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 clockInTime. Todos los derechos reservados.</p>
@@ -113,12 +130,12 @@
 
     <script src="js/cooky.js"></script>
     <script>
-        // Registro del Service Worker para PWA y Offline
+        // Registro del Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registrado', reg))
-                    .catch(err => console.log('Error registro SW', err));
+                    .then(reg => console.log('SW registrado con éxito'))
+                    .catch(err => console.error('Error al registrar SW', err));
             });
         }
     </script>
