@@ -44,6 +44,7 @@
                 <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-content">
@@ -51,7 +52,7 @@
                 <div class="header-left">
                     <h1>Mi Perfil</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Cargando...</strong></div>
+                <div class="user-info">Bienvenido, <strong id="user-name-header">Cargando...</strong></div>
             </header>
 
             <div class="page-grid-solicitudes">
@@ -70,21 +71,22 @@
                         </div>
                         <div class="form-group-app">
                             <label for="fullname">Nombre Completo</label>
-                            <input type="text" id="fullname" placeholder="Tu nombre completo">
+                            <input type="text" id="fullname">
                         </div>
                         <div class="form-group-app">
                             <label for="email">Email</label>
                             <input type="email" id="email" disabled>
                         </div>
                         <div class="form-group-app">
-                            <label for="role">Rol</label> <input type="text" id="role" disabled>
+                            <label for="role">Rol</label>
+                            <input type="text" id="role" disabled>
                         </div>
                         <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
                     </form>
                 </div>
 
                 <div class="widget">
-                    <h2>Cambiar Contraseña</h2>
+                    <h2>Seguridad</h2>
                     <form id="password-form">
                         <div class="form-group-app">
                             <label for="current-password">Contraseña Actual</label>
@@ -96,7 +98,7 @@
                             <input type="password" id="new-password" required minlength="6">
                         </div>
                         <div class="form-group-app">
-                            <label for="repeat-password">Repetir Nueva Contraseña</label>
+                            <label for="repeat-password">Confirmar Nueva Contraseña</label>
                             <input type="password" id="repeat-password" required minlength="6">
                         </div>
                         <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
@@ -106,7 +108,7 @@
                 <div class="widget">
                     <h2>Apariencia</h2>
                     <p style="color:var(--text-light);margin-bottom:1rem;">
-                        Personaliza la interfaz cambiando entre el modo claro y oscuro.
+                        Cambia entre el modo claro y oscuro.
                     </p>
                     <button class="btn-outline btn-toggle-theme" onclick="toggleTheme()" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; justify-content: center;">
                         <i class="fas fa-moon"></i> 
@@ -117,32 +119,6 @@
         </main>
     </div>
 
-    <footer class="legal-footer">
-        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
-        <a href="../legal/politica-cookies.html">Política de Cookies</a>
-    </footer>
-
     <script type="module" src="../js/admin-mi-perfil.js"></script>
-        <script type="module">
-        import { supabase } from '../js/supabase-client.js';
-
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
-        }
-        cargarNombreUsuario();
-    </script>
-
 </body>
 </html>
