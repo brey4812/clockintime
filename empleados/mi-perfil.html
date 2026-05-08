@@ -41,7 +41,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -51,7 +51,7 @@
                 <div class="header-left">
                     <h1>Mi Perfil</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Empleado</strong></div>
+                <div class="user-info"><strong id="user-name-header">Cargando...</strong></div>
             </header>
 
             <div class="page-grid-solicitudes">
@@ -77,8 +77,7 @@
                             <input type="email" id="email" disabled>
                         </div>
                         <div class="form-group-app">
-                            <label for="department">Empresa</label>
-                            <input type="text" id="department" disabled>
+                            <label for="role">Rol</label> <input type="text" id="role" disabled>
                         </div>
                         <button id="btn-save-profile" type="submit" class="btn-primary-app">Guardar Cambios</button>
                     </form>
@@ -94,28 +93,26 @@
                         <hr style="margin:1rem 0;border-color:#e2e8f0;">
                         <div class="form-group-app">
                             <label for="new-password">Nueva Contraseña</label>
-                            <input type="password" id="new-password" required>
+                            <input type="password" id="new-password" required minlength="6">
                         </div>
                         <div class="form-group-app">
                             <label for="repeat-password">Repetir Nueva Contraseña</label>
-                            <input type="password" id="repeat-password" required>
+                            <input type="password" id="repeat-password" required minlength="6">
                         </div>
                         <button id="btn-update-password" type="submit" class="btn-primary-app">Actualizar Contraseña</button>
-
                     </form>
                 </div>
 
                 <div class="widget">
                     <h2>Apariencia</h2>
                     <p style="color:var(--text-light);margin-bottom:1rem;">
-                                Personaliza la interfaz cambiando entre el modo claro y oscuro.
+                        Personaliza la interfaz cambiando entre el modo claro y oscuro.
                     </p>
                     <button class="btn-outline btn-toggle-theme" onclick="toggleTheme()" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; justify-content: center;">
-                            <i class="fas fa-moon"></i> 
-                            <span>Cambiar modo de color</span>
+                        <i class="fas fa-moon"></i> 
+                        <span>Cambiar modo de color</span>
                     </button>
                 </div>
-
             </div>
         </main>
     </div>
@@ -126,25 +123,25 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/admin-mi-perfil.js"></script>
+    <script type="module" src="../js/admin-mi-perfil.js"></script>
     <script>
-        const menuToggle = document.getElementById('menu-toggle');
+        // Lógica de UI (Menú lateral)
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
-        overlay?.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        
+        // Función para abrir/cerrar menú si existiera el botón hamburguesa
+        document.getElementById('menu-toggle')?.addEventListener('click', () => { 
+            sidebar.classList.add('active'); 
+            overlay.classList.add('active'); 
+        });
+        
+        overlay?.addEventListener('click', () => { 
+            sidebar.classList.remove('active'); 
+            overlay.classList.remove('active'); 
+        });
 
-        // Cargar datos del perfil del empleado
-        const currentEmail = localStorage.getItem('currentUserEmail');
-        if (currentEmail) {
-            const u = JSON.parse(localStorage.getItem(currentEmail));
-            if (u) {
-                document.getElementById('fullname').value    = u.fullname || '';
-                document.getElementById('email').value      = u.email    || '';
-                document.getElementById('department').value = u.company  || 'Sin empresa';
-                document.getElementById('user-name-header').textContent = u.fullname || u.email;
-            }
-        }
+        // NOTA: He eliminado el código de localStorage de aquí. 
+        // El archivo js/admin-mi-perfil.js se encargará de cargar los datos reales de Supabase.
     </script>
 </body>
 </html>
