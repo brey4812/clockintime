@@ -11,22 +11,106 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Mis Tareas - clockInTime">
     <meta property="og:description" content="Organiza tus tareas, proyectos y pendientes en el tablero de clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Mis Tareas - clockInTime">
-    <meta name="twitter:description" content="Organiza tus tareas, proyectos y pendientes en el tablero de clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    
     <title>Mis Tareas - clockInTime</title>
+    
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+
+    <style>
+        /* Kanban Styling */
+        .board-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .board-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .board-select {
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .kanban-column {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            min-height: 500px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .kanban-column-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .kanban-column-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Task Cards */
+        .kanban-card {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .badge-priority {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .priority-high { background: #fee2e2; color: #dc3545; }
+        .priority-medium { background: #fef3c7; color: #d97706; }
+        .priority-low { background: #dcfce7; color: #16a34a; }
+
+        .modal-hidden { display: none; }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
             </div>
@@ -41,33 +125,44 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <h1>Mis Tareas</h1>
+                    <h1>Tablero de Tareas</h1>
                 </div>
-                <button id="btn-open-task-modal" class="btn-primary-app" style="padding:0.5rem 1rem;font-size:0.9rem;">
-                    <i class="fas fa-plus"></i> Nueva Tarea
-                </button>
+                <div class="user-info">Hola, <strong id="user-name-header">Empleado</strong></div>
             </header>
+
+            <div class="board-header-actions">
+                <div class="board-select-wrapper">
+                    <label for="board-selector">Tablero actual:</label>
+                    <select id="board-selector" class="board-select">
+                        <option value="">Cargando tableros...</option>
+                    </select>
+                </div>
+                <button id="btn-open-task-modal" class="btn-primary-app">
+                    <i class="fas fa-plus"></i> Añadir Tarea
+                </button>
+            </div>
 
             <div class="kanban-board-container">
                 <div class="kanban-board">
                     <div class="kanban-column">
-                        <h2 class="kanban-column-title">Pendientes</h2>
+                        <h2 class="kanban-column-title">Pendientes <span class="count-badge" id="count-todo">0</span></h2>
                         <div id="kanban-content-todo" class="kanban-column-content"></div>
                     </div>
                     <div class="kanban-column">
-                        <h2 class="kanban-column-title">En Progreso</h2>
+                        <h2 class="kanban-column-title">En Progreso <span class="count-badge" id="count-doing">0</span></h2>
                         <div id="kanban-content-doing" class="kanban-column-content"></div>
                     </div>
                     <div class="kanban-column">
-                        <h2 class="kanban-column-title">Terminado</h2>
+                        <h2 class="kanban-column-title">Terminado <span class="count-badge" id="count-done">0</span></h2>
                         <div id="kanban-content-done" class="kanban-column-content"></div>
                     </div>
                 </div>
@@ -75,19 +170,18 @@
         </main>
     </div>
 
-    <!-- Modal Nueva Tarea -->
     <div class="modal-overlay modal-hidden" id="task-modal">
         <div class="modal-content">
             <button id="btn-close-task-modal" class="modal-close"><i class="fas fa-times"></i></button>
             <h2>Nueva Tarea</h2>
             <form id="new-task-form">
                 <div class="form-group-app">
-                    <label for="task-title">Título *</label>
-                    <input type="text" id="task-title" placeholder="Ej. Diseñar la landing page" required>
+                    <label for="task-title">Título de la tarea *</label>
+                    <input type="text" id="task-title" placeholder="Ej. Revisar inventario" required>
                 </div>
                 <div class="form-group-app">
-                    <label for="task-desc">Descripción</label>
-                    <textarea id="task-desc" rows="3" placeholder="Más detalles..."></textarea>
+                    <label for="task-desc">Descripción / Notas</label>
+                    <textarea id="task-desc" rows="3" placeholder="Detalles adicionales..."></textarea>
                 </div>
                 <div class="form-group-app">
                     <label for="task-priority">Prioridad</label>
@@ -98,16 +192,16 @@
                     </select>
                 </div>
                 <div class="form-group-app">
-                    <label for="task-column">Estado</label>
+                    <label for="task-column">Mover a columna:</label>
                     <select id="task-column">
                         <option value="todo" selected>Pendiente</option>
                         <option value="doing">En Progreso</option>
                         <option value="done">Terminado</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:1rem;margin-top:1rem;">
-                    <button id="btn-cancel-task" type="button" class="btn-primary-app" style="background:#64748b;">Cancelar</button>
-                    <button id="btn-submit-task" type="submit" class="btn-primary-app">Crear Tarea</button>
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button id="btn-cancel-task" type="button" class="btn-primary-app" style="background:#64748b; border:none;">Cancelar</button>
+                    <button id="btn-submit-task" type="submit" class="btn-primary-app">Guardar Tarea</button>
                 </div>
             </form>
         </div>
@@ -119,25 +213,21 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/tareas.js"></script>
-       <script type="module">
-        import { supabase } from '../js/supabase-client.js';
+    <script type="module" src="../js/tareas.js"></script>
 
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
+    <script>
+        // Menú móvil
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
-        cargarNombreUsuario();
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
     </script>
 </body>
 </html>
