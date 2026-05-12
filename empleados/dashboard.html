@@ -11,22 +11,31 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Dashboard - clockInTime">
     <meta property="og:description" content="Resumen de fichajes, estado del equipo y accesos rápidos en clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Dashboard - clockInTime">
-    <meta name="twitter:description" content="Resumen de fichajes, estado del equipo y accesos rápidos en clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    
     <title>Dashboard - clockInTime</title>
+    
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+
+    <style>
+        .summary-value { font-variant-numeric: tabular-nums; font-weight: bold; }
+        .btn-clock-green { background-color: #28a745; color: white; border: none; }
+        .btn-clock-green:disabled { background-color: #a8d5b4; cursor: not-allowed; }
+        .status-badge { padding: 5px 10px; border-radius: 15px; font-size: 0.85rem; font-weight: 600; }
+        .status-in { background: #e6fffa; color: #28a745; border: 1px solid #28a745; }
+        .status-out { background: #fff5f5; color: #dc3545; border: 1px solid #dc3545; }
+        .status-pause { background: #fffaf0; color: #f5a623; border: 1px solid #f5a623; }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
             </div>
@@ -36,12 +45,11 @@
                     <li><a href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a></li>
                     <li><a href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a></li>
                     <li><a href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
-                    <li><a href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a></li>
                     <li><a href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -57,71 +65,49 @@
 
             <section class="widget clock-in-widget">
                 <h2>Registra tu jornada</h2>
-                <div class="clock-status">
+                <div class="clock-status" style="margin-bottom: 1.5rem;">
                     Estado actual: <span id="clock-status-badge" class="status-badge status-out">Fuera del trabajo</span>
                 </div>
-                <button id="btn-clock-in" class="btn-clock-in btn-clock-green">
-                    <i class="fas fa-play"></i> Fichar Entrada
-                </button>
-                <div class="clock-buttons-secondary">
-                    <button id="btn-pause" class="btn-pause" disabled><i class="fas fa-pause"></i> Pausa</button>
-                    <button id="btn-end" class="btn-end" disabled><i class="fas fa-stop"></i> Finalizar Jornada</button>
+                
+                <div class="main-clock-display" style="text-align: center; margin-bottom: 1rem;">
+                    <div id="summary-horas-hoy" style="font-size: 3rem; font-weight: bold; color: var(--primary-color);">0h 00m 00s</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                    <button id="btn-clock-in" class="btn-clock-in btn-clock-green" style="width: 100%; max-width: 300px; padding: 1rem; font-size: 1.1rem; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-play"></i> Fichar Entrada
+                    </button>
+                    
+                    <div class="clock-buttons-secondary" style="display: flex; gap: 1rem; width: 100%; max-width: 300px;">
+                        <button id="btn-pause" class="btn-pause" disabled style="flex: 1; padding: 0.8rem; border-radius: 8px; cursor: pointer;"><i class="fas fa-pause"></i> Pausa</button>
+                        <button id="btn-end" class="btn-end" disabled style="flex: 1; padding: 0.8rem; border-radius: 8px; cursor: pointer; background: #dc3545; color: white; border: none;"><i class="fas fa-stop"></i> Finalizar</button>
+                    </div>
                 </div>
             </section>
 
             <section class="widget-grid">
                 <div class="widget summary-widget">
-                    <h3>Horas Hoy</h3>
-                    <div id="summary-horas-hoy" class="summary-value">0h 00m 00s</div>
-                </div>
-                <div class="widget summary-widget">
                     <h3>Horas Semana</h3>
-                    <div id="summary-horas-semana" class="summary-value">0h 00m 00s</div>
+                    <div id="summary-horas-semana" class="summary-value" style="font-size: 1.5rem; margin-top: 0.5rem;">0h 00m 00s</div>
                 </div>
                 <div class="widget summary-widget">
-                    <h3>Próximas Ausencias</h3>
-                    <div id="summary-proximas-ausencias" class="summary-value small">No tienes ausencias programadas</div>
+                    <h3>Próximo Evento</h3>
+                    <div id="summary-proximas-ausencias" class="summary-value small" style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">No hay eventos hoy</div>
                 </div>
             </section>
         </main>
     </div>
 
-    <footer class="legal-footer">
-        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
-        <a href="../legal/politica-cookies.html">Política de Cookies</a>
-    </footer>
-
-    <div id="cookie-banner" class="cookie-banner">
-        <div class="cookie-banner-content">
-            <p>Usamos cookies para mejorar tu experiencia. <a href="../legal/politica-cookies.html">Política de Cookies</a>.</p>
-        </div>
-        <div class="cookie-banner-buttons">
-            <button id="cookie-decline" class="btn-cookie btn-cookie-decline">Rechazar</button>
-            <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Aceptar</button>
-        </div>
-    </div>
-
-    <script src="../js/cooky.js"></script>
-    <script src="../js/dashboard.js"></script>
-    <script type="module">
-        import { supabase } from '../js/supabase-client.js';
-
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
-        }
-        cargarNombreUsuario();
+    <script type="module" src="../js/empleado-dashboard.js"></script>
+    
+    <script>
+        // Menu lateral móvil
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
+        overlay?.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
     </script>
 </body>
 </html>
