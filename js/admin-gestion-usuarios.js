@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usuariosTbody = document.getElementById('usuarios-tbody');
     const userNameHeader = document.getElementById('user-name-header');
     const btnLogout = document.getElementById('btn-logout-admin') || document.getElementById('btn-logout');
+    
+    // Referencias para la creación de roles dinámicos (opcional si los tienes en esta página)
+    const selectRolesFiltro = document.getElementById('select-roles-disponibles');
 
     // 1. VERIFICAR SESIÓN
     const { data: { session } } = await supabase.auth.getSession();
@@ -21,10 +24,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (userNameHeader && adminProfile) userNameHeader.textContent = adminProfile.nombre;
 
+    // ==========================================
+    // NUEVO: CARGAR ROLES (Maestros + Personalizados)
+    // ==========================================
+    async function cargarRolesDisponibles() {
+        // Trae los roles donde empresa_id es NULL (globales) O coincida con la del admin
+        const { data: roles, error } = await supabase
+            .from('roles')
+            .select('*')
+            .or(`empresa_id.is.null, empresa_id.eq.${adminProfile.empresa_id}`)
+            .order('id', { ascending: true });
+
+        if (error) {
+            console.error("Error cargando roles:", error.message);
+            return [];
+        }
+        
+        // Si tienes un selector en el modal de "Nuevo Usuario", lo poblamos aquí
+        if (selectRolesFiltro) {
+            selectRolesFiltro.innerHTML = '';
+            roles.forEach(rol => {
+                const option = document.createElement('option');
+                option.value = rol.id;
+                option.textContent = rol.nombre_rol;
+                selectRolesFiltro.appendChild(option);
+            });
+        }
+        return roles;
+    }
+
     // 3. CARGAR EMPLEADOS
     async function cargarEmpleados() {
         if (!usuariosTbody) return;
 
+        // Seleccionamos los perfiles vinculados a la empresa del admin
         const { data: empleados, error } = await supabase
             .from('profiles')
             .select(`*, roles(nombre_rol)`)
@@ -42,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSelf = emp.id === session.user.id;
             const fila = document.createElement('tr');
             
-            // Ajuste de foto: object-fit cover para que no se vea rara/estirada
+            // Ajuste de foto con object-fit cover
             const fotoHTML = `
                 <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%; border: 2px solid var(--primary-color);">
                     <img src="${emp.avatar_url || 'https://iili.io/fzg2rNt.png'}" 
@@ -54,7 +87,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${fotoHTML}</td>
                 <td>${emp.nombre} ${emp.apellido || ''}</td>
                 <td>${emp.email}</td>
-                <td><span class="status-badge" style="background: var(--primary-light); color: var(--primary-color);">${emp.roles?.nombre_rol || 'Empleado'}</span></td>
+                <td>
+                    <span class="status-badge" style="background: var(--primary-light); color: var(--primary-color); text-transform: capitalize;">
+                        ${emp.roles?.nombre_rol || 'Empleado'}
+                    </span>
+                </td>
                 <td>
                     ${isSelf ? 
                         '<span style="font-size: 0.85rem; color: var(--text-light);">Tú (Admin)</span>' : 
@@ -66,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             usuariosTbody.appendChild(fila);
         });
 
-        // ASIGNAR EVENTOS
+        // ASIGNAR EVENTOS DE ACCIÓN
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', () => {
                 window.location.href = `admin-editar-usuario.html?id=${btn.dataset.id}`;
@@ -78,12 +115,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // ==========================================
+    // ELIMINAR USUARIO
+    // =============================
     async function eliminarUsuario(userId) {
-        if (!confirm("¿Eliminar a este empleado de la empresa?")) return;
+        if (!confirm("¿Eliminar a este empleado de la empresa? Esta acción no se puede deshacer.")) return;
 
         const { error } = await supabase.from('profiles').delete().eq('id', userId);
-        if (error) alert("Error: " + error.message);
-        else cargarEmpleados();
+        if (error) {
+            alert("Error al eliminar: " + error.message);
+        } else {
+            cargarEmpleados();
+        }
     }
 
     // 4. CERRAR SESIÓN
@@ -93,5 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = '../login/login.html';
     });
 
+    // INICIALIZACIÓN
+    await cargarRolesDisponibles();
     cargarEmpleados();
 });
