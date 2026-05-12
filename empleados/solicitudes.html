@@ -11,22 +11,39 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Solicitudes - clockInTime">
     <meta property="og:description" content="Gestiona tus solicitudes de vacaciones, bajas médicas y permisos en clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Solicitudes - clockInTime">
-    <meta name="twitter:description" content="Gestiona tus solicitudes de vacaciones, bajas médicas y permisos en clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    
     <title>Solicitudes - clockInTime</title>
+    
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+
+    <style>
+        /* Estilos para los estados de las solicitudes */
+        .status-badge { 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            color: #fff !important; 
+            display: inline-block; 
+        }
+        .status-pending { background-color: #f5a623; border: 1px solid #d48a06; } /* Naranja */
+        .status-completed { background-color: #28a745; border: 1px solid #1e7e34; } /* Verde (Aprobada) */
+        .status-issue { background-color: #dc3545; border: 1px solid #bd2130; } /* Rojo (Rechazada) */
+        
+        textarea { resize: vertical; min-height: 100px; }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
             </div>
@@ -41,18 +58,18 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-
                     <h1>Solicitudes de Ausencia</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Empleado</strong></div>
+                <div class="user-info">Bienvenido, <strong id="user-name-header">Cargando...</strong></div>
             </header>
 
             <div class="page-grid-solicitudes">
@@ -62,27 +79,29 @@
                         <div class="form-group-app">
                             <label for="request-type">Tipo de Ausencia</label>
                             <select id="request-type">
-                                <option value="vacaciones">Vacaciones</option>
-                                <option value="asuntos-propios">Asuntos Propios</option>
-                                <option value="baja-medica">Baja Médica</option>
-                                <option value="teletrabajo">Día de Teletrabajo</option>
+                                <option value="Vacaciones">Vacaciones</option>
+                                <option value="Asuntos Propios">Asuntos Propios</option>
+                                <option value="Baja Médica">Baja Médica</option>
+                                <option value="Teletrabajo">Día de Teletrabajo</option>
                             </select>
                         </div>
                         <div class="date-inputs">
                             <div class="form-group-app">
                                 <label for="start-date">Fecha Inicio</label>
-                                <input type="date" id="start-date">
+                                <input type="date" id="start-date" required>
                             </div>
                             <div class="form-group-app">
                                 <label for="end-date">Fecha Fin</label>
-                                <input type="date" id="end-date">
+                                <input type="date" id="end-date" required>
                             </div>
                         </div>
                         <div class="form-group-app">
                             <label for="comments">Comentarios (Opcional)</label>
-                            <textarea id="comments" rows="4" placeholder="Ej. Cita médica"></textarea>
+                            <textarea id="comments" rows="4" placeholder="Ej. Cita médica o motivos personales"></textarea>
                         </div>
-                        <button id="btn-submit-request" type="submit" class="btn-primary-app">Enviar Solicitud</button>
+                        <button id="btn-submit-request" type="submit" class="btn-primary-app">
+                            <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                        </button>
                     </form>
                 </div>
 
@@ -91,9 +110,16 @@
                     <div class="table-container">
                         <table>
                             <thead>
-                                <tr><th>Tipo</th><th>Desde</th><th>Hasta</th><th>Estado</th></tr>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Desde</th>
+                                    <th>Hasta</th>
+                                    <th>Estado</th>
+                                </tr>
                             </thead>
-                            <tbody id="historial-solicitudes-tbody"></tbody>
+                            <tbody id="historial-solicitudes-tbody">
+                                <tr><td colspan="4" class="text-center">Cargando historial...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -107,25 +133,21 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/solicitudes.js"></script>
-        <script type="module">
-        import { supabase } from '../js/supabase-client.js';
+    <script type="module" src="../js/solicitudes.js"></script>
 
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
+    <script>
+        // Control del menú lateral en móviles
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
-        cargarNombreUsuario();
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
     </script>
 </body>
 </html>
