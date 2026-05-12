@@ -10,16 +10,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userNameHeader      = document.getElementById('user-name-header');
     const calendarGridBody    = document.getElementById('calendar-grid-body');
     const monthYearDisplay    = document.getElementById('calendar-month-year');
+    
     const prevButton          = document.getElementById('btn-cal-prev');
     const nextButton          = document.getElementById('btn-cal-next');
 
-    // Modal Proyecto
+    // Modal y Formulario
     const btnNuevoProyecto    = document.getElementById('btn-nuevo-proyecto');
     const modalProyecto       = document.getElementById('modal-proyecto');
     const btnCerrarModalProy  = document.getElementById('btn-cerrar-modal-proyecto');
     const formProyecto        = document.getElementById('form-proyecto');
 
-    // Inputs del Formulario
+    // Inputs Formulario
     const inputTituloProy     = document.getElementById('proyecto-titulo');
     const inputDescProy       = document.getElementById('proyecto-desc');
     const inputStartProy      = document.getElementById('proyecto-start');
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentMonth = new Date().getMonth();
     let currentYear  = new Date().getFullYear();
     let userProfile  = null;
-    let filtroActual = 'todos';
+    let filtroActual = 'todos'; 
 
     // =============================
     // 1. INICIALIZACIÓN
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 2. CARGAR SELECTORES (EMPLEADOS Y ROLES)
+    // 2. CARGAR SELECTORES
     // =============================
     async function cargarFiltros() {
         const { data: empleados, error } = await supabase
@@ -66,13 +67,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (error) return console.error("Error cargando empleados:", error);
 
-        // Poblar selectores de empleados (Filtro y Formulario)
+        // Poblar selectores de empleados
         [selectEmpleadoFiltro, selectEmpleadoProy].forEach(select => {
             if (!select) return;
             const isFiltro = select.id === 'filtro-empleado-cal';
             select.innerHTML = isFiltro 
                 ? `<option value="todos">Todos los eventos</option>` 
-                : `<option value="">Sin asignar (Global)</option>`;
+                : `<option value="">Sin asignar (Global / Empresa)</option>`;
             
             empleados.forEach(emp => {
                 const opt = document.createElement('option');
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Poblar Selector de Roles
+        // Poblar Roles
         const { data: roles } = await supabase
             .from('roles')
             .select('*')
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 3. PINTAR EVENTOS
+    // 3. PINTAR EVENTOS (CON FILTRO MEJORADO)
     // =============================
     async function markEventos(month, year, dayCellMap) {
         let query = supabase
@@ -105,19 +106,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             .select('*, roles(nombre_rol)')
             .eq('empresa_id', userProfile.empresa_id);
 
-        // Filtro por empleado específico
+        // Si filtramos por un empleado, queremos ver sus eventos 
+        // Y TAMBIÉN los globales (donde user_id es null)
         if (filtroActual !== 'todos') {
-            query = query.eq('user_id', filtroActual);
+            query = query.or(`user_id.eq.${filtroActual},user_id.is.null`);
         }
 
         const { data: eventos, error } = await query;
-        if (error) return console.error("Error al obtener eventos:", error);
+        if (error) return console.error("Error eventos:", error);
 
         eventos?.forEach(event => {
             const start = new Date(event.fecha_inicio);
             const end = new Date(event.fecha_fin);
-            let d = new Date(start);
+            
+            // Ajuste para evitar problemas de zona horaria (00:00:00)
+            start.setHours(0,0,0,0);
+            end.setHours(23,59,59,999);
 
+            let d = new Date(start);
             while (d <= end) {
                 if (d.getMonth() === month && d.getFullYear() === year) {
                     const cell = dayCellMap.get(d.getDate());
@@ -126,10 +132,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         div.className = 'calendar-event';
                         div.style.backgroundColor = event.color || '#6f42c1';
                         
-                        // Etiqueta de rol si existe
-                        const tag = event.roles ? `[${event.roles.nombre_rol}] ` : '';
+                        // Etiqueta de visibilidad
+                        let tag = event.user_id ? "👤 " : (event.rol_id ? "👥 " : "🌐 ");
                         div.textContent = tag + event.titulo;
                         div.title = event.descripcion || '';
+                        
                         cell.appendChild(div);
                     }
                 }
@@ -139,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 4. GUARDAR NUEVO PROYECTO
+    // 4. GUARDAR PROYECTO
     // =============================
     async function guardarProyecto(e) {
         e.preventDefault();
@@ -161,17 +168,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             .insert([nuevoEvento]);
 
         if (error) {
-            console.error("Error al guardar:", error);
             alert("Error al guardar: " + error.message);
         } else {
-            alert("¡Evento publicado con éxito!");
-            cerrarModalProyecto();
+            alert("Evento publicado correctamente");
+            cerrarModal();
             renderCalendar();
         }
     }
 
     // =============================
-    // 5. NAVEGACIÓN Y RENDER
+    // 5. RENDERIZADO DEL GRID
     // =============================
     function renderCalendar() {
         const dayCellMap = updateCalendarGrid(currentMonth, currentYear);
@@ -180,23 +186,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateCalendarGrid(month, year) {
         const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-        if (monthYearDisplay) monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
         
         calendarGridBody.querySelectorAll('.day-cell').forEach(c => c.remove());
 
         let firstDay = new Date(year, month, 1).getDay();
-        firstDay = firstDay === 0 ? 7 : firstDay; // Ajuste para que Lunes sea 1
+        firstDay = firstDay === 0 ? 7 : firstDay; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const dayCellMap = new Map();
 
-        // Celdas mes anterior
+        // Mes anterior
         for (let i = 1; i < firstDay; i++) {
             const empty = document.createElement('div');
             empty.className = 'day-cell other-month';
             calendarGridBody.appendChild(empty);
         }
 
-        // Celdas mes actual
+        // Mes actual
         for (let day = 1; day <= daysInMonth; day++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
@@ -211,28 +217,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 6. EVENTOS DE INTERFAZ
+    // 6. EVENTOS DE NAVEGACIÓN Y UI
     // =============================
-    
-    // Filtro de vista
     selectEmpleadoFiltro?.addEventListener('change', (e) => {
         filtroActual = e.target.value;
         renderCalendar();
     });
 
-    // Navegación meses
-    prevButton.onclick = () => { currentMonth--; if(currentMonth < 0){currentMonth=11; currentYear--;} renderCalendar(); };
-    nextButton.onclick = () => { currentMonth++; if(currentMonth > 11){currentMonth=0; currentYear++;} renderCalendar(); };
+    prevButton.onclick = () => { 
+        currentMonth--; 
+        if(currentMonth < 0){currentMonth=11; currentYear--;} 
+        renderCalendar(); 
+    };
 
-    // Gestión de Modales
-    const abrirModalProyecto = () => modalProyecto?.classList.remove('modal-hidden');
-    const cerrarModalProyecto = () => {
+    nextButton.onclick = () => { 
+        currentMonth++; 
+        if(currentMonth > 11){currentMonth=0; currentYear++;} 
+        renderCalendar(); 
+    };
+
+    // Modales
+    const abrirModal = () => modalProyecto?.classList.remove('modal-hidden');
+    const cerrarModal = () => {
         modalProyecto?.classList.add('modal-hidden');
         formProyecto.reset();
     };
 
-    btnNuevoProyecto?.addEventListener('click', abrirModalProyecto);
-    btnCerrarModalProy?.addEventListener('click', cerrarModalProyecto);
+    btnNuevoProyecto?.addEventListener('click', abrirModal);
+    btnCerrarModalProy?.addEventListener('click', cerrarModal);
     formProyecto?.addEventListener('submit', guardarProyecto);
 
     // Logout
@@ -241,6 +253,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await supabase.auth.signOut();
         window.location.href = '../login/login.html';
     });
-
+    
     init();
 });
