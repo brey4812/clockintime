@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const colDoing       = document.getElementById('kanban-content-doing');
     const colDone        = document.getElementById('kanban-content-done');
     
-    const formNuevaTarea = document.getElementById('new-task-form');
+    // Elementos del Modal de Tareas
+    const btnAbrirModal  = document.getElementById('btn-open-task-modal');
+    const btnCerrarModal = document.getElementById('btn-close-task-modal');
     const modalTarea     = document.getElementById('task-modal');
+    const formNuevaTarea = document.getElementById('new-task-form');
 
     let userProfile = null;
     let currentBoardId = null;
@@ -22,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('id, nombre, empresa_id, rol_id')
+        .select('*')
         .eq('id', session.user.id)
         .single();
 
@@ -33,36 +36,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 2. CARGAR TABLEROS (POR ROL O PROYECTO)
+    // 2. LÓGICA DE TABLEROS
     // =============================
     async function cargarTableros() {
-        // Traemos tableros que: o son globales de la empresa, o son de tu rol, o fuiste invitado
+        // Traemos: 
+        // 1. Tableros creados por mí (personales)
+        // 2. Tableros de mi rol (departamento)
+        // 3. Tableros globales (null)
         const { data: tableros, error } = await supabase
             .from('tableros')
             .select('*')
             .eq('empresa_id', userProfile.empresa_id)
-            .or(`rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
+            .or(`creado_por.eq.${userProfile.id},rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
 
         if (tableros && tableros.length > 0) {
             boardSelector.innerHTML = tableros.map(b => 
                 `<option value="${b.id}">${b.nombre}</option>`
             ).join('');
             
-            currentBoardId = tableros[0].id;
-            boardTitle.textContent = tableros[0].nombre;
-            cargarTareas(currentBoardId);
+            // Añadir opción para crear uno nuevo
+            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear nuevo tablero...</option>`;
+            
+            if (!currentBoardId) currentBoardId = tableros[0].id;
+            actualizarInterfazTablero(currentBoardId);
         }
     }
 
-    // Al cambiar el selector, cargamos otro tablero
-    boardSelector.addEventListener('change', (e) => {
-        currentBoardId = e.target.value;
-        boardTitle.textContent = boardSelector.options[boardSelector.selectedIndex].text;
-        cargarTareas(currentBoardId);
+    boardSelector.addEventListener('change', async (e) => {
+        if (e.target.value === 'NEW_BOARD') {
+            const nombre = prompt('Nombre del nuevo tablero:');
+            if (nombre) {
+                const { data: nuevo, error } = await supabase
+                    .from('tableros')
+                    .insert([{ 
+                        nombre: nombre, 
+                        empresa_id: userProfile.empresa_id,
+                        creado_por: userProfile.id 
+                    }])
+                    .select()
+                    .single();
+                
+                if (!error) {
+                    currentBoardId = nuevo.id;
+                    await cargarTableros();
+                }
+            } else {
+                boardSelector.value = currentBoardId;
+            }
+        } else {
+            currentBoardId = e.target.value;
+            actualizarInterfazTablero(currentBoardId);
+        }
     });
 
+    function actualizarInterfazTablero(id) {
+        const selectedOption = boardSelector.querySelector(`option[value="${id}"]`);
+        if (selectedOption) boardTitle.textContent = selectedOption.text;
+        cargarTareas(id);
+    }
+
     // =============================
-    // 3. CARGAR Y RENDERIZAR TAREAS
+    // 3. GESTIÓN DE TAREAS
     // =============================
     async function cargarTareas(boardId) {
         colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
@@ -74,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .order('created_at', { ascending: true });
 
         tareas?.forEach(tarea => renderTarjeta(tarea));
+        actualizarContadores();
     }
 
     function renderTarjeta(tarea) {
@@ -85,54 +120,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.innerHTML = `
             <h3>${tarea.titulo}</h3>
             <p>${tarea.descripcion || ''}</p>
-            <div class="card-actions">
-                <span class="priority-badge ${tarea.prioridad}">${tarea.prioridad}</span>
-                <button class="btn-next" data-id="${tarea.id}"><i class="fas fa-arrow-right"></i></button>
-                <button class="btn-delete" data-id="${tarea.id}"><i class="fas fa-trash"></i></button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span class="badge-priority priority-${tarea.prioridad}">${tarea.prioridad}</span>
+                <div>
+                    <button class="btn-action btn-next" title="Mover"><i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-action btn-del" title="Borrar"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
         `;
 
         card.querySelector('.btn-next').onclick = () => moverTarea(tarea.id, tarea.estado);
-        card.querySelector('.btn-delete').onclick = () => borrarTarea(tarea.id);
-        
+        card.querySelector('.btn-del').onclick = () => borrarTarea(tarea.id);
         columna.appendChild(card);
     }
 
-    // =============================
-    // 4. ACCIONES (MOVER / BORRAR / CREAR)
-    // =============================
     async function moverTarea(id, estadoActual) {
         const orden = ['todo', 'doing', 'done'];
-        const nuevoEstado = orden[orden.indexOf(estadoActual) + 1];
-        if (!nuevoEstado) return;
+        const proximo = orden[orden.indexOf(estadoActual) + 1];
+        if (!proximo) return;
 
-        await supabase.from('tareas').update({ estado: nuevoEstado }).eq('id', id);
+        await supabase.from('tareas').update({ estado: proximo }).eq('id', id);
         cargarTareas(currentBoardId);
     }
 
     async function borrarTarea(id) {
-        if (!confirm('¿Borrar tarea?')) return;
-        await supabase.from('tareas').delete().eq('id', id);
-        cargarTareas(currentBoardId);
+        if (confirm('¿Eliminar tarea?')) {
+            await supabase.from('tareas').delete().eq('id', id);
+            cargarTareas(currentBoardId);
+        }
     }
 
-    formNuevaTarea.addEventListener('submit', async (e) => {
+    formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
-        const payload = {
+        const info = {
             tablero_id: currentBoardId,
             titulo: document.getElementById('task-title').value,
             descripcion: document.getElementById('task-desc').value,
             prioridad: document.getElementById('task-priority').value,
-            estado: 'todo',
-            empresa_id: userProfile.empresa_id
+            estado: document.getElementById('task-column').value,
+            empresa_id: userProfile.empresa_id,
+            creado_por: userProfile.id
         };
 
-        const { error } = await supabase.from('tareas').insert([payload]);
+        const { error } = await supabase.from('tareas').insert([info]);
         if (!error) {
             cerrarModal();
             cargarTareas(currentBoardId);
         }
-    });
+    };
 
-    // Funciones de Modal (abrirModal / cerrarModal) abreviadas...
+    function actualizarContadores() {
+        document.getElementById('count-todo').textContent = colTodo.children.length;
+        document.getElementById('count-doing').textContent = colDoing.children.length;
+        document.getElementById('count-done').textContent = colDone.children.length;
+    }
+
+    // Modal helpers
+    btnAbrirModal.onclick = () => modalTarea.classList.remove('modal-hidden');
+    btnCerrarModal.onclick = cerrarModal;
+    document.getElementById('btn-cancel-task').onclick = cerrarModal;
+    function cerrarModal() { 
+        modalTarea.classList.add('modal-hidden'); 
+        formNuevaTarea.reset(); 
+    }
 });
