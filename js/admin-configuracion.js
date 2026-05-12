@@ -2,15 +2,18 @@ import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+    // =============================
     // 1. VERIFICAR SESIÓN
+    // =============================
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         window.location.href = '../login/login.html';
         return;
     }
 
-    // 2. OBTENER PERFIL ADMIN Y SU EMPRESA
-    // Usamos los nombres de columna de tus capturas: nombre, empresa_id
+    // =============================
+    // 2. OBTENER PERFIL ADMIN
+    // =============================
     const { data: adminProfile, error: adminErr } = await supabase
         .from('profiles')
         .select('nombre, empresa_id')
@@ -22,79 +25,129 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    document.getElementById('user-name-header').textContent = adminProfile.nombre;
+    const userNameHeader = document.getElementById('user-name-header');
+    if (userNameHeader) userNameHeader.textContent = adminProfile.nombre;
     const empresaId = adminProfile.empresa_id;
 
-    // 3. CARGAR ESTADÍSTICAS REALES
-    async function cargarEstadisticas() {
-        // Usuarios totales de la misma empresa
-        const { count: totalUsers } = await supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true })
-            .eq('empresa_id', empresaId);
+    // =============================
+    // 3. CARGAR DATOS DE LA EMPRESA
+    // =============================
+    async function cargarDatosEmpresa() {
+        const { data: empresa, error } = await supabase
+            .from('empresas')
+            .select('*')
+            .eq('id', empresaId)
+            .single();
 
-        // Solicitudes pendientes de la empresa
-        const { count: totalPendientes } = await supabase
-            .from('solicitudes') 
-            .select('*', { count: 'exact', head: true })
-            .eq('empresa_id', empresaId)
-            .eq('estado', 'Pendiente');
-
-        // Fichados hoy (quien tenga jornada iniciada hoy)
-        const hoy = new Date().toISOString().split('T')[0];
-        const { count: totalFichados } = await supabase
-            .from('jornadas') 
-            .select('*', { count: 'exact', head: true })
-            .eq('empresa_id', empresaId)
-            .eq('fecha', hoy);
-
-        document.getElementById('summary-usuarios-totales').textContent = totalUsers || 0;
-        document.getElementById('summary-solicitudes-pendientes').textContent = totalPendientes || 0;
-        document.getElementById('summary-fichados-hoy').textContent = totalFichados || 0;
-    }
-
-    // 4. CARGAR TABLA DE SOLICITUDES RECIENTES
-    async function cargarSolicitudesRecientes() {
-        const listaBody = document.getElementById('lista-solicitudes-pendientes');
-        
-        // Relacionamos con la tabla profiles para obtener el nombre del empleado
-        const { data: solicitudes, error } = await supabase
-            .from('solicitudes')
-            .select(`
-                tipo,
-                fecha_inicio,
-                fecha_fin,
-                estado,
-                profiles (nombre, apellido)
-            `)
-            .eq('empresa_id', empresaId)
-            .eq('estado', 'Pendiente')
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-        if (error || !solicitudes || solicitudes.length === 0) {
-            listaBody.innerHTML = '<tr><td colspan="4" class="text-center">No hay solicitudes pendientes.</td></tr>';
+        if (error) {
+            console.error("Error al cargar empresa:", error);
             return;
         }
 
-        listaBody.innerHTML = solicitudes.map(sol => `
-            <tr>
-                <td>${sol.profiles?.nombre} ${sol.profiles?.apellido || ''}</td>
-                <td>${sol.tipo}</td>
-                <td>${sol.fecha_inicio} / ${sol.fecha_fin}</td>
-                <td><span class="status-badge status-pending">Pendiente</span></td>
-            </tr>
-        `).join('');
+        // Poblamos los inputs y el código
+        if (document.getElementById('invite-code-display')) {
+            document.getElementById('invite-code-display').textContent = empresa.codigo_invitacion || 'SIN CÓDIGO';
+        }
+        if (document.getElementById('input-nombre-empresa')) {
+            document.getElementById('input-nombre-empresa').value = empresa.nombre || '';
+        }
+        if (document.getElementById('input-plan-actual')) {
+            document.getElementById('input-plan-actual').value = empresa.plan || 'Gratis';
+        }
     }
 
-    // 5. EVENTO CERRAR SESIÓN
+    // =============================
+    // 4. GESTIÓN DE ROLES
+    // =============================
+    const rolesTbody = document.getElementById('roles-tbody');
+    const formNuevoRol = document.getElementById('form-nuevo-rol');
+    const inputNombreRol = document.getElementById('nuevo-rol-nombre');
+
+    async function cargarRolesEmpresa() {
+        if (!rolesTbody) return;
+
+        const { data: roles, error } = await supabase
+            .from('roles')
+            .select('*')
+            .or(`empresa_id.is.null,empresa_id.eq.${empresaId}`)
+            .order('id', { ascending: true });
+
+        if (error) {
+            rolesTbody.innerHTML = '<tr><td colspan="3">Error al cargar roles.</td></tr>';
+            return;
+        }
+
+        rolesTbody.innerHTML = roles.map(rol => {
+            const esMaestro = rol.empresa_id === null;
+            return `
+                <tr>
+                    <td>${rol.nombre_rol}</td>
+                    <td><span class="status-badge" style="background:var(--bg-secondary); padding:2px 8px; border-radius:4px; font-size:0.75rem;">
+                        ${esMaestro ? 'Sistema' : 'Personalizado'}
+                    </span></td>
+                    <td>
+                        ${esMaestro ? 
+                            '<i class="fas fa-lock" title="Protegido" style="opacity:0.5;"></i>' : 
+                            `<button class="btn-delete-rol" data-id="${rol.id}" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                             </button>`
+                        }
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.btn-delete-rol').forEach(btn => {
+            btn.addEventListener('click', () => eliminarRol(btn.dataset.id));
+        });
+    }
+
+    async function eliminarRol(idRol) {
+        if (!confirm("¿Eliminar este rol?")) return;
+        const { error } = await supabase.from('roles').delete().eq('id', idRol).eq('empresa_id', empresaId);
+        if (error) alert("Error: El rol podría estar asignado a un usuario.");
+        else cargarRolesEmpresa();
+    }
+
+    formNuevoRol?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nombre = inputNombreRol.value.trim();
+        if (!nombre) return;
+        const { error } = await supabase.from('roles').insert([{ nombre_rol: nombre, empresa_id: empresaId }]);
+        if (error) alert("Error al crear: " + error.message);
+        else { inputNombreRol.value = ''; cargarRolesEmpresa(); }
+    });
+
+    // =============================
+    // 5. UTILIDADES (COPIAR / GENERAR)
+    // =============================
+    document.getElementById('btn-copiar-codigo')?.addEventListener('click', () => {
+        const codigo = document.getElementById('invite-code-display').textContent;
+        navigator.clipboard.writeText(codigo);
+        alert("¡Código copiado al portapapeles!");
+    });
+
+    document.getElementById('btn-generar-codigo')?.addEventListener('click', async () => {
+        if (!confirm("Si generas un nuevo código, el anterior dejará de funcionar. ¿Continuar?")) return;
+        
+        const nuevoCodigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const { error } = await supabase
+            .from('empresas')
+            .update({ codigo_invitacion: nuevoCodigo })
+            .eq('id', empresaId);
+
+        if (error) alert("Error al generar código");
+        else cargarDatosEmpresa();
+    });
+
+    // 6. CERRAR SESIÓN
     document.getElementById('btn-logout-admin')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
         window.location.href = '../login/login.html';
     });
 
-    // Carga inicial
-    cargarEstadisticas();
-    cargarSolicitudesRecientes();
+    // Ejecución inicial
+    cargarDatosEmpresa();
+    cargarRolesEmpresa();
 });
