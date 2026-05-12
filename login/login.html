@@ -22,7 +22,6 @@
     <title>Iniciar Sesión - clockInTime</title>
 
     <script>
-        /* ESTO DETECTA EL TEMA ANTES DE PINTAR LA WEB PARA EVITAR EL DESTELLO BLANCO */
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -51,7 +50,9 @@
     </script>
 
     <link rel="stylesheet" href="../CSS/login.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></noscript>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -62,33 +63,43 @@
             </button>
         </div>
 
-        <h2><i class="fas fa-clock"></i> clockInTime</h2>
-        <p>Introduce tus credenciales para acceder</p>
+        <h2>Bienvenido de nuevo</h2>
+        <p>Inicia sesión para registrar tu jornada</p>
 
         <form id="login-form">
             <div class="form-group">
-                <label for="email"><i class="fas fa-user"></i> Email o Nombre de Usuario</label>
-                <input type="text" id="email" placeholder="tucorreo@empresa.com" required>
+                <label for="email"><i class="fas fa-user"></i> Email o Usuario</label>
+                <input type="email" id="email" name="email" placeholder="tu@empresa.com" required>
             </div>
+
             <div class="form-group">
                 <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
-                <input type="password" id="password" placeholder="Tu contraseña" required>
+                <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
             </div>
-            <button type="button" id="btn-login-submit" class="btn-submit">Iniciar Sesión</button>
-        </form>
 
-        <div class="extra-links">
-            <p><a href="forgot-password.html">¿Olvidaste tu contraseña?</a></p>
-            <p>¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
-        </div>
+            <button type="submit" id="btn-login-submit" class="btn-submit">Acceder</button>
+
+            <div class="extra-links">
+                <p>¿Aún no tienes cuenta? <a id="link-register" href="register.html">Regístrate</a></p>
+                <p><a id="link-forgot-password" href="forgot-password.html">¿Has olvidado tu contraseña?</a></p>
+            </div>
+        </form>
     </div>
 
     <footer class="legal-footer">
         <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Privacidad</a>
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
     <script type="module" src="../js/login.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>
