@@ -1,239 +1,207 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Visualiza el calendario del equipo y gestiona eventos y turnos desde clockInTime.">
-    <meta name="keywords" content="clockInTime, calendario equipo, turnos, eventos, administración">
-    <meta name="author" content="clockInTime">
-    <meta name="theme-color" content="#0056b3">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="format-detection" content="telephone=no">
+import { supabase } from './supabase-client.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // =============================
+    // ELEMENTOS DEL DOM
+    // =============================
+    const prevButton          = document.getElementById('btn-cal-prev');
+    const nextButton          = document.getElementById('btn-cal-next');
+    const monthYearDisplay    = document.getElementById('calendar-month-year');
+    const calendarGridBody    = document.getElementById('calendar-grid-body');
+    const userNameHeader      = document.getElementById('user-name-header');
     
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Calendario del Equipo - clockInTime">
-    <meta property="og:description" content="Visualiza el calendario del equipo y gestiona eventos y turnos desde clockInTime.">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    
-    <title>Calendario del Equipo - clockInTime Admin</title>
-    
-    <link rel="stylesheet" href="../CSS/app-style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="../js/theme.js"></script>
-    
-    <style>
-        /* Herramientas de filtrado superiores */
-        .cal-toolbar { 
-            display: flex; 
-            gap: 1.5rem; 
-            align-items: center; 
-            flex-wrap: wrap; 
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border-radius: 10px;
-        }
-        
-        .filter-group { display: flex; align-items: center; gap: 0.5rem; }
-        .filter-group label { font-weight: 600; font-size: 0.85rem; color: var(--text-main); }
-        
-        .cal-toolbar select { 
-            padding: 0.5rem; 
-            border: 1px solid var(--border-color); 
-            border-radius: 6px; 
-            background: var(--bg-primary); 
-            color: var(--text-main);
-            min-width: 180px;
-        }
+    const selectEmpleadoFiltro = document.getElementById('filtro-empleado-cal');
+    const selectRolProy       = document.getElementById('proyecto-rol');
+    const selectEmpleadoProy  = document.getElementById('proyecto-empleado');
 
-        /* Estilos de las barras de eventos en el calendario */
-        .calendar-event {
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            margin-bottom: 2px;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-weight: 500;
-        }
+    const modalProyecto       = document.getElementById('modal-proyecto');
+    const btnNuevoProyecto    = document.getElementById('btn-nuevo-proyecto');
+    const formProyecto        = document.getElementById('form-proyecto');
 
-        .day-cell {
-            min-height: 110px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
+    // =============================
+    // ESTADO
+    // =============================
+    let currentMonth = new Date().getMonth();
+    let currentYear  = new Date().getFullYear();
+    let userProfile  = null;
+    let filtroEmpleadoId = 'todos'; 
 
-        .leyenda { 
-            display: flex; 
-            gap: 1.2rem; 
-            flex-wrap: wrap; 
-            font-size: 0.85rem; 
-            margin-top: 1.5rem; 
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .leyenda span { display: flex; align-items: center; gap: 0.4rem; }
-        .leyenda-dot { width: 12px; height: 12px; border-radius: 3px; }
-        
-        .modal-hidden { display: none; }
-        
-        .date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    </style>
-</head>
-<body>
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="admin-dashboard.html"><i class="fas fa-shield-alt"></i> Dashboard</a></li>
-                    <li><a href="admin-gestion-usuarios.html"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
-                    <li><a href="admin-solicitudes.html"><i class="fas fa-calendar-check"></i> Solicitudes</a></li>
-                    <li><a href="admin-calendario.html" class="active"><i class="fas fa-calendar-week"></i> Calendario</a></li>
-                    <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
-                    <li><a href="admin-mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
-                </ul>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-            </div>
-        </aside>
+    // =============================
+    // 1. INICIO
+    // =============================
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return window.location.href = '../login/login.html';
 
-        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*, empresas(id)')
+        .eq('id', session.user.id)
+        .single();
 
-        <main class="main-content">
-            <header class="main-header">
-                <div class="header-left">
-                    <h1>Calendario del Equipo</h1>
-                </div>
-                <div class="user-info">Bienvenido, <strong id="user-name-header">Admin</strong></div>
-            </header>
+    if (profile) {
+        userProfile = profile;
+        if (userNameHeader) userNameHeader.textContent = profile.nombre;
+        await cargarFiltros();
+        renderCalendar();
+    }
 
-            <div class="widget">
-                <div class="cal-toolbar">
-                    <div class="filter-group">
-                        <label for="filtro-empleado-cal">Empleado:</label>
-                        <select id="filtro-empleado-cal">
-                            <option value="todos">Todos los empleados</option>
-                            </select>
-                    </div>
-                    
-                    <button id="btn-nuevo-proyecto" class="btn-primary-app">
-                        <i class="fas fa-plus"></i> Nuevo Proyecto / Evento
-                    </button>
-                </div>
+    // =============================
+    // 2. CARGAR SELECTORES
+    // =============================
+    async function cargarFiltros() {
+        // Cargar empleados de la empresa
+        const { data: empleados } = await supabase
+            .from('profiles')
+            .select('id, nombre')
+            .eq('empresa_id', userProfile.empresa_id);
 
-                <div class="calendar-header">
-                    <button id="btn-cal-prev" class="btn-calendar-nav"><i class="fas fa-chevron-left"></i></button>
-                    <h2 id="calendar-month-year">Cargando...</h2>
-                    <button id="btn-cal-next" class="btn-calendar-nav"><i class="fas fa-chevron-right"></i></button>
-                </div>
-
-                <div id="calendar-grid-body" class="calendar-grid">
-                    <div class="day-header">Lun</div>
-                    <div class="day-header">Mar</div>
-                    <div class="day-header">Mié</div>
-                    <div class="day-header">Jue</div>
-                    <div class="day-header">Vie</div>
-                    <div class="day-header">Sáb</div>
-                    <div class="day-header">Dom</div>
-                </div>
-
-                <div class="leyenda">
-                    <span><span class="leyenda-dot" style="background:#28a745;"></span> Vacaciones Aprobadas</span>
-                    <span><span class="leyenda-dot" style="background:#f5a623;"></span> Solicitudes Pendientes</span>
-                    <span><span class="leyenda-dot" style="background:#6f42c1;"></span> Proyectos de Empresa</span>
-                    <span><span class="leyenda-dot" style="background:#4a90e2;"></span> Bajas / Ausencias</span>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div class="modal-overlay modal-hidden" id="modal-proyecto">
-        <div class="modal-content">
-            <h2>Publicar Proyecto o Evento</h2>
-            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.5rem;">Crea eventos que se visualizarán en los calendarios de tus empleados según su rol o asignación individual.</p>
+        if (empleados) {
+            // Poblar selector de filtro y selector de modal
+            selectEmpleadoFiltro.innerHTML = '<option value="todos">Todos los empleados</option>';
+            selectEmpleadoProy.innerHTML = '<option value="">Evento general / Uso grupal</option>';
             
-            <form id="form-proyecto">
-                <div class="form-group-app">
-                    <label for="proyecto-titulo">Título del Evento *</label>
-                    <input type="text" id="proyecto-titulo" placeholder="Ej. Auditoría Anual o Lanzamiento Web" required>
-                </div>
-
-                <div class="form-group-app">
-                    <label for="proyecto-desc">Descripción (Interna)</label>
-                    <textarea id="proyecto-desc" placeholder="Detalles visibles al pasar el ratón..." rows="2"></textarea>
-                </div>
-
-                <div class="date-inputs">
-                    <div class="form-group-app">
-                        <label for="proyecto-start">Fecha Inicio *</label>
-                        <input type="date" id="proyecto-start" required>
-                    </div>
-                    <div class="form-group-app">
-                        <label for="proyecto-end">Fecha Fin *</label>
-                        <input type="date" id="proyecto-end" required>
-                    </div>
-                </div>
-
-                <hr style="margin: 1rem 0; border: 0; border-top: 1px solid var(--border-color);">
-
-                <div class="form-group-app">
-                    <label for="proyecto-rol">Visibilidad por Departamento (Rol)</label>
-                    <select id="proyecto-rol">
-                        <option value="">Visible para todos los roles (Global)</option>
-                        </select>
-                </div>
-
-                <div class="form-group-app">
-                    <label for="proyecto-empleado">Asignar a Empleado Específico (Opcional)</label>
-                    <select id="proyecto-empleado">
-                        <option value="">Evento general / Uso grupal</option>
-                        </select>
-                </div>
-
-                <div class="form-group-app">
-                    <label for="proyecto-color">Color de Identificación</label>
-                    <input type="color" id="proyecto-color" value="#6f42c1" style="width:100%; height:40px; border-radius:5px; border:1px solid var(--border-color); padding:2px; background:none; cursor:pointer;">
-                </div>
-
-                <button type="submit" class="btn-primary-app" style="width:100%; margin-top:1rem; padding: 0.8rem;">
-                    <i class="fas fa-calendar-plus"></i> Publicar en Calendario
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <footer class="legal-footer">
-        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
-        <a href="../legal/politica-cookies.html">Política de Cookies</a>
-    </footer>
-
-    <script type="module" src="../js/admin-calendario.js"></script>
-
-    <script>
-        // Lógica de UI para Sidebar
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        
-        function toggleMenu() {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+            empleados.forEach(emp => {
+                const opt = new Option(emp.nombre, emp.id);
+                selectEmpleadoFiltro.add(opt.cloneNode(true));
+                selectEmpleadoProy.add(opt);
+            });
         }
 
-        menuToggle?.addEventListener('click', toggleMenu);
-        overlay?.addEventListener('click', toggleMenu);
-    </script>
-</body>
-</html>
+        // Cargar Roles
+        const { data: roles } = await supabase
+            .from('roles')
+            .select('*')
+            .or(`empresa_id.is.null,empresa_id.eq.${userProfile.empresa_id}`);
+
+        if (roles) {
+            selectRolProy.innerHTML = '<option value="">Visible para todos los roles (Global)</option>';
+            roles.forEach(rol => {
+                selectRolProy.add(new Option(rol.nombre_rol, rol.id));
+            });
+        }
+    }
+
+    // =============================
+    // 3. RENDERIZADO
+    // =============================
+    async function markEventos(month, year, dayCellMap) {
+        let query = supabase
+            .from('eventos_calendario')
+            .select('*, roles(nombre_rol)')
+            .eq('empresa_id', userProfile.empresa_id);
+
+        // Si filtramos por empleado, vemos lo suyo + lo global de la empresa
+        if (filtroEmpleadoId !== 'todos') {
+            query = query.or(`user_id.eq.${filtroEmpleadoId},user_id.is.null`);
+        }
+
+        const { data: eventos, error } = await query;
+        if (error) return console.error(error);
+
+        eventos?.forEach(event => {
+            const start = new Date(event.fecha_inicio);
+            const end = new Date(event.fecha_fin);
+            
+            // Ajuste de horas para evitar desfases de día
+            start.setHours(0,0,0,0);
+            end.setHours(23,59,59,999);
+
+            let d = new Date(start);
+            while (d <= end) {
+                if (d.getMonth() === month && d.getFullYear() === year) {
+                    const cell = dayCellMap.get(d.getDate());
+                    if (cell) {
+                        const div = document.createElement('div');
+                        div.className = 'calendar-event';
+                        div.style.backgroundColor = event.color || '#6f42c1';
+                        
+                        let tag = event.user_id ? "👤 " : (event.rol_id ? "👥 " : "🌐 ");
+                        div.textContent = tag + event.titulo;
+                        div.title = event.descripcion || '';
+                        cell.appendChild(div);
+                    }
+                }
+                d.setDate(d.getDate() + 1);
+            }
+        });
+    }
+
+    function renderCalendar() {
+        const dayCellMap = updateCalendarGrid(currentMonth, currentYear);
+        markEventos(currentMonth, currentYear, dayCellMap);
+    }
+
+    function updateCalendarGrid(month, year) {
+        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+        
+        calendarGridBody.querySelectorAll('.day-cell').forEach(c => c.remove());
+
+        let firstDay = new Date(year, month, 1).getDay();
+        firstDay = firstDay === 0 ? 7 : firstDay; 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const dayCellMap = new Map();
+
+        for (let i = 1; i < firstDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'day-cell other-month';
+            calendarGridBody.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            const num = document.createElement('div');
+            num.className = 'day-number';
+            num.textContent = day;
+            cell.appendChild(num);
+            calendarGridBody.appendChild(cell);
+            dayCellMap.set(day, cell);
+        }
+        return dayCellMap;
+    }
+
+    // =============================
+    // 4. CREAR PROYECTO
+    // =============================
+    formProyecto.onsubmit = async (e) => {
+        e.preventDefault();
+
+        const nuevo = {
+            titulo: document.getElementById('proyecto-titulo').value,
+            descripcion: document.getElementById('proyecto-desc').value,
+            fecha_inicio: document.getElementById('proyecto-start').value,
+            fecha_fin: document.getElementById('proyecto-end').value,
+            color: document.getElementById('proyecto-color').value,
+            empresa_id: userProfile.empresa_id,
+            creado_por: userProfile.id,
+            rol_id: selectRolProy.value || null,
+            user_id: selectEmpleadoProy.value || null
+        };
+
+        const { error } = await supabase.from('eventos_calendario').insert([nuevo]);
+
+        if (!error) {
+            modalProyecto.classList.add('modal-hidden');
+            formProyecto.reset();
+            renderCalendar();
+        } else {
+            alert("Error: " + error.message);
+        }
+    };
+
+    // =============================
+    // 5. INTERACCIÓN
+    // =============================
+    selectEmpleadoFiltro.onchange = (e) => {
+        filtroEmpleadoId = e.target.value;
+        renderCalendar();
+    };
+
+    prevButton.onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); };
+    nextButton.onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); };
+    
+    btnNuevoProyecto.onclick = () => modalProyecto.classList.remove('modal-hidden');
+    window.onclick = (e) => { if(e.target == modalProyecto) modalProyecto.classList.add('modal-hidden'); };
+
+});
