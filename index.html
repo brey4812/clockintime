@@ -31,9 +31,11 @@
 
     <script>
         (function() {
+            // Gestión de Temas
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
+            // Redirección instantánea si ya existe sesión
             if (localStorage.getItem('usserNameStorage')) {
                 window.location.href = '/empleados/dashboard.html';
             }
@@ -180,7 +182,7 @@
         <a href="legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <div id="cookie-banner" class="cookie-banner">
+    <div id="cookie-banner" class="cookie-banner" style="display: none;">
         <div class="cookie-banner-content">
             <p>Usamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra
                 <a href="legal/politica-cookies.html">Política de Cookies</a>.
@@ -194,6 +196,28 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Lógica de Cookies ---
+            const banner = document.getElementById('cookie-banner');
+            const acceptBtn = document.getElementById('cookie-accept');
+            const declineBtn = document.getElementById('cookie-decline');
+
+            // Verificamos si ya existe una decisión guardada
+            if (!localStorage.getItem('cookies-accepted')) {
+                banner.style.display = 'flex';
+            }
+
+            acceptBtn.addEventListener('click', () => {
+                localStorage.setItem('cookies-accepted', 'true');
+                banner.style.display = 'none';
+            });
+
+            declineBtn.addEventListener('click', () => {
+                // Al rechazar, también guardamos un valor para que no vuelva a salir al recargar
+                localStorage.setItem('cookies-accepted', 'false');
+                banner.style.display = 'none';
+            });
+
+            // --- Lógica de Tema ---
             const themeBtn = document.getElementById('theme-toggle-btn');
             const themeIcon = themeBtn.querySelector('i');
 
@@ -216,28 +240,12 @@
                 updateIcon(newTheme);
             });
 
+            // --- Lógica de FAQ ---
             document.querySelectorAll('.faq-question').forEach(button => {
                 button.addEventListener('click', () => {
                     const item = button.parentElement;
                     item.classList.toggle('active');
                 });
-            });
-
-            const banner = document.getElementById('cookie-banner');
-            const acceptBtn = document.getElementById('cookie-accept');
-            const declineBtn = document.getElementById('cookie-decline');
-
-            if (!localStorage.getItem('cookies-accepted')) {
-                banner.style.display = 'flex';
-            }
-
-            acceptBtn.addEventListener('click', () => {
-                localStorage.setItem('cookies-accepted', 'true');
-                banner.style.display = 'none';
-            });
-
-            declineBtn.addEventListener('click', () => {
-                banner.style.display = 'none';
             });
         });
     </script>
