@@ -63,25 +63,39 @@
             </button>
         </div>
 
-        <h2>Bienvenido de nuevo</h2>
-        <p>Inicia sesión para registrar tu jornada</p>
+        <h2>Crea tu cuenta</h2>
+        <p>Empieza a gestionar tu equipo hoy mismo.</p>
 
-        <form id="login-form">
+        <form id="register-form">
             <div class="form-group">
-                <label for="email"><i class="fas fa-user"></i> Email o Usuario</label>
+                <label for="fullname"><i class="fas fa-user"></i> Nombre Completo</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Tu nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="company"><i class="fas fa-building"></i> Nombre de la Empresa</label>
+                <input type="text" id="company" name="company" placeholder="Mi Empresa S.L." required>
+            </div>
+
+            <div class="form-group">
+                <label for="company-code"><i class="fas fa-key"></i> Código de Empresa</label>
+                <input type="text" id="company-code" name="company-code" placeholder="Pega el código que te dio tu jefe">
+            </div>
+
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
                 <input type="email" id="email" name="email" placeholder="tu@empresa.com" required>
             </div>
 
             <div class="form-group">
                 <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
-                <input type="password" id="password" name="password" placeholder="Tu contraseña" required>
+                <input type="password" id="password" name="password" placeholder="Crea una contraseña segura" required>
             </div>
-
-            <button type="submit" id="btn-login-submit" class="btn-submit">Acceder</button>
+            
+            <button type="submit" id="btn-register-submit" class="btn-submit">Crear Cuenta</button>
 
             <div class="extra-links">
-                <p>¿Aún no tienes cuenta? <a id="link-register" href="register.html">Regístrate</a></p>
-                <p><a id="link-forgot-password" href="forgot-password.html">¿Has olvidado tu contraseña?</a></p>
+                <p>¿Ya tienes cuenta? <a id="link-login" href="login.html">Inicia sesión</a></p>
             </div>
         </form>
     </div>
@@ -92,14 +106,6 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script type="module" src="../js/login.js"></script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
-            });
-        }
-    </script>
+    <script type="module" src="../js/registrer.js"></script>
 </body>
 </html>
