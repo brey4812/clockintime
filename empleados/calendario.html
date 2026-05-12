@@ -39,7 +39,7 @@
         }
 
         .day-cell {
-            min-height: 100px; /* Un poco más de espacio para que quepan varias barras */
+            min-height: 100px;
             border: 1px solid var(--border-color);
             padding: 5px;
             display: flex;
@@ -54,6 +54,33 @@
         .other-month {
             background-color: var(--bg-secondary);
             opacity: 0.5;
+        }
+
+        /* Estilos para el selector de vista (Global/Personal) */
+        .calendar-view-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-view-toggle {
+            padding: 8px 16px;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view-toggle.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-view-toggle:hover:not(.active) {
+            background: rgba(0, 86, 179, 0.1);
         }
     </style>
 </head>
@@ -88,6 +115,11 @@
                 <div class="user-info">Hola, <strong id="user-name-header">Empleado</strong></div>
             </header>
 
+            <div class="calendar-view-selector">
+                <button id="view-global" class="btn-view-toggle active">Vista Global</button>
+                <button id="view-personal" class="btn-view-toggle">Vista Personal</button>
+            </div>
+
             <div class="widget">
                 <div class="calendar-header">
                     <button id="btn-cal-prev" class="btn-calendar-nav"><i class="fas fa-chevron-left"></i></button>
@@ -102,7 +134,7 @@
                     <div class="day-header">Viernes</div>
                     <div class="day-header">Sábado</div>
                     <div class="day-header">Domingo</div>
-                    </div>
+                </div>
             </div>
 
             <div class="widget" style="margin-top: 1rem;">
@@ -146,11 +178,6 @@
 
         menuToggle?.addEventListener('click', toggleMenu);
         overlay?.addEventListener('click', toggleMenu);
-
-        // Botón de logout (el JS de calendario.js lo gestiona, pero por seguridad)
-        document.getElementById('btn-logout')?.addEventListener('click', () => {
-            // La lógica real está en el módulo calendario.js
-        });
     </script>
 </body>
 </html>
