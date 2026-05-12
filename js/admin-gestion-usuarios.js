@@ -1,12 +1,23 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Elementos de la tabla
     const usuariosTbody = document.getElementById('usuarios-tbody');
     const userNameHeader = document.getElementById('user-name-header');
     const btnLogout = document.getElementById('btn-logout-admin') || document.getElementById('btn-logout');
     
-    // Referencias para la creación de roles dinámicos (opcional si los tienes en esta página)
-    const selectRolesFiltro = document.getElementById('select-roles-disponibles');
+    // Elementos del Modal de Edición
+    const modalEditar = document.getElementById('modal-editar-usuario');
+    const btnCerrarModal = document.getElementById('btn-cerrar-modal-edit');
+    const formEditar = document.getElementById('form-editar-usuario-modal');
+    
+    // Inputs del Modal
+    const editUserId = document.getElementById('edit-user-id');
+    const editNombre = document.getElementById('edit-nombre');
+    const editApellido = document.getElementById('edit-apellido');
+    const editEmail = document.getElementById('edit-email');
+    const editRolSelect = document.getElementById('edit-rol');
+    const editAvatarPreview = document.getElementById('edit-avatar-preview');
 
     // 1. VERIFICAR SESIÓN
     const { data: { session } } = await supabase.auth.getSession();
@@ -24,40 +35,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (userNameHeader && adminProfile) userNameHeader.textContent = adminProfile.nombre;
 
-    // ==========================================
-    // NUEVO: CARGAR ROLES (Maestros + Personalizados)
-    // ==========================================
+    // =============================
+    // CARGAR ROLES DINÁMICAMENTE
+    // =============================
     async function cargarRolesDisponibles() {
-        // Trae los roles donde empresa_id es NULL (globales) O coincida con la del admin
         const { data: roles, error } = await supabase
             .from('roles')
             .select('*')
             .or(`empresa_id.is.null, empresa_id.eq.${adminProfile.empresa_id}`)
             .order('id', { ascending: true });
 
-        if (error) {
-            console.error("Error cargando roles:", error.message);
-            return [];
-        }
+        if (error) return [];
         
-        // Si tienes un selector en el modal de "Nuevo Usuario", lo poblamos aquí
-        if (selectRolesFiltro) {
-            selectRolesFiltro.innerHTML = '';
+        if (editRolSelect) {
+            editRolSelect.innerHTML = '';
             roles.forEach(rol => {
-                const option = document.createElement('option');
-                option.value = rol.id;
-                option.textContent = rol.nombre_rol;
-                selectRolesFiltro.appendChild(option);
+                const option = new Option(rol.nombre_rol, rol.id);
+                editRolSelect.add(option);
             });
         }
         return roles;
     }
 
-    // 3. CARGAR EMPLEADOS
+    // =============================
+    // CARGAR TABLA DE EMPLEADOS
+    // =============================
     async function cargarEmpleados() {
         if (!usuariosTbody) return;
 
-        // Seleccionamos los perfiles vinculados a la empresa del admin
         const { data: empleados, error } = await supabase
             .from('profiles')
             .select(`*, roles(nombre_rol)`)
@@ -75,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSelf = emp.id === session.user.id;
             const fila = document.createElement('tr');
             
-            // Ajuste de foto con object-fit cover
             const fotoHTML = `
                 <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%; border: 2px solid var(--primary-color);">
                     <img src="${emp.avatar_url || 'https://iili.io/fzg2rNt.png'}" 
@@ -103,33 +107,78 @@ document.addEventListener('DOMContentLoaded', async () => {
             usuariosTbody.appendChild(fila);
         });
 
-        // ASIGNAR EVENTOS DE ACCIÓN
+        // Eventos Editar
         document.querySelectorAll('.btn-edit').forEach(btn => {
-            btn.addEventListener('click', () => {
-                window.location.href = `admin-editar-usuario.html?id=${btn.dataset.id}`;
-            });
+            btn.addEventListener('click', () => abrirModalEdicion(btn.dataset.id));
         });
 
+        // Eventos Eliminar
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', () => eliminarUsuario(btn.dataset.id));
         });
     }
 
-    // ==========================================
-    // ELIMINAR USUARIO
     // =============================
-    async function eliminarUsuario(userId) {
-        if (!confirm("¿Eliminar a este empleado de la empresa? Esta acción no se puede deshacer.")) return;
+    // LÓGICA DE LA MINI PESTAÑA (MODAL)
+    // =============================
+    async function abrirModalEdicion(userId) {
+        const { data: user, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
 
-        const { error } = await supabase.from('profiles').delete().eq('id', userId);
-        if (error) {
-            alert("Error al eliminar: " + error.message);
-        } else {
-            cargarEmpleados();
-        }
+        if (error) return alert("Error al obtener datos del usuario");
+
+        // Rellenar Modal
+        editUserId.value = user.id;
+        editNombre.value = user.nombre;
+        editApellido.value = user.apellido || '';
+        editEmail.value = user.email;
+        editRolSelect.value = user.rol_id;
+        editAvatarPreview.src = user.avatar_url || 'https://iili.io/fzg2rNt.png';
+
+        // Mostrar Modal
+        modalEditar.classList.remove('modal-hidden');
     }
 
-    // 4. CERRAR SESIÓN
+    btnCerrarModal?.addEventListener('click', () => {
+        modalEditar.classList.add('modal-hidden');
+    });
+
+    formEditar?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const updates = {
+            nombre: editNombre.value.trim(),
+            apellido: editApellido.value.trim(),
+            rol_id: editRolSelect.value,
+            updated_at: new Date()
+        };
+
+        const { error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', editUserId.value);
+
+        if (error) {
+            alert("Error al actualizar: " + error.message);
+        } else {
+            modalEditar.classList.add('modal-hidden');
+            cargarEmpleados(); // Recargar tabla
+        }
+    });
+
+    // =============================
+    // ELIMINAR Y LOGOUT
+    // =============================
+    async function eliminarUsuario(userId) {
+        if (!confirm("¿Eliminar a este empleado? Esta acción no se puede deshacer.")) return;
+        const { error } = await supabase.from('profiles').delete().eq('id', userId);
+        if (error) alert("Error: " + error.message);
+        else cargarEmpleados();
+    }
+
     btnLogout?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
@@ -138,5 +187,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // INICIALIZACIÓN
     await cargarRolesDisponibles();
-    cargarEmpleados();
+    await cargarEmpleados();
 });
