@@ -17,11 +17,6 @@
     <meta property="og:description" content="Visualiza el calendario del equipo y gestiona eventos y turnos desde clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
     
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Calendario del Equipo - clockInTime">
-    <meta name="twitter:description" content="Visualiza el calendario del equipo y gestiona eventos y turnos desde clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
-
     <title>Calendario del Equipo - clockInTime Admin</title>
     
     <link rel="stylesheet" href="../CSS/app-style.css">
@@ -29,18 +24,71 @@
     <script src="../js/theme.js"></script>
     
     <style>
-        .cal-toolbar { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
-        .cal-toolbar label { font-size:0.9rem; color:var(--text-light); }
-        .cal-toolbar select { padding:0.4rem 0.6rem; border:1px solid var(--border-color); border-radius:5px; font-family:inherit; background-color: var(--bg-secondary); color: var(--text-main); }
-        .leyenda { display:flex; gap:1rem; flex-wrap:wrap; font-size:0.82rem; margin-top:1rem; }
-        .leyenda span { display:flex; align-items:center; gap:0.3rem; }
-        .leyenda-dot { width:12px; height:12px; border-radius:3px; display:inline-block; }
+        /* Herramientas de filtrado superiores */
+        .cal-toolbar { 
+            display: flex; 
+            gap: 1.5rem; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+        
+        .filter-group { display: flex; align-items: center; gap: 0.5rem; }
+        .filter-group label { font-weight: 600; font-size: 0.85rem; color: var(--text-main); }
+        
+        .cal-toolbar select { 
+            padding: 0.5rem; 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            background: var(--bg-primary); 
+            color: var(--text-main);
+            min-width: 180px;
+        }
+
+        /* Estilos de las barras de eventos en el calendario */
+        .calendar-event {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .day-cell {
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .leyenda { 
+            display: flex; 
+            gap: 1.2rem; 
+            flex-wrap: wrap; 
+            font-size: 0.85rem; 
+            margin-top: 1.5rem; 
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .leyenda span { display: flex; align-items: center; gap: 0.4rem; }
+        .leyenda-dot { width: 12px; height: 12px; border-radius: 3px; }
+        
         .modal-hidden { display: none; }
+        
+        .date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     </style>
 </head>
 <body>
     <div class="app-container">
-
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
@@ -65,6 +113,9 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
+                    <button id="menu-toggle" class="btn-menu" style="background:none; border:none; font-size:1.5rem; color:var(--text-main); cursor:pointer; margin-right:1rem;">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Calendario del Equipo</h1>
                 </div>
                 <div class="user-info">Bienvenido, <strong id="user-name-header">Admin</strong></div>
@@ -72,14 +123,15 @@
 
             <div class="widget">
                 <div class="cal-toolbar">
-                    <div>
-                        <label for="filtro-empleado-cal">Filtrar Vista: </label>
+                    <div class="filter-group">
+                        <label for="filtro-empleado-cal">Empleado:</label>
                         <select id="filtro-empleado-cal">
-                            <option value="todos">Todos los eventos</option>
-                        </select>
+                            <option value="todos">Todos los empleados</option>
+                            </select>
                     </div>
-                    <button id="btn-nuevo-proyecto" class="btn-primary-app" style="padding:0.5rem 1rem;font-size:0.9rem;">
-                        <i class="fas fa-plus"></i> Nuevo Proyecto
+                    
+                    <button id="btn-nuevo-proyecto" class="btn-primary-app">
+                        <i class="fas fa-plus"></i> Nuevo Proyecto / Evento
                     </button>
                 </div>
 
@@ -100,10 +152,10 @@
                 </div>
 
                 <div class="leyenda">
-                    <span><span class="leyenda-dot" style="background:#28a745;"></span> Aprobada</span>
-                    <span><span class="leyenda-dot" style="background:#f5a623;"></span> Pendiente</span>
-                    <span><span class="leyenda-dot" style="background:#6f42c1;"></span> Proyecto Global</span>
-                    <span><span class="leyenda-dot" style="background:#dc3545;"></span> Rechazada</span>
+                    <span><span class="leyenda-dot" style="background:#28a745;"></span> Vacaciones Aprobadas</span>
+                    <span><span class="leyenda-dot" style="background:#f5a623;"></span> Solicitudes Pendientes</span>
+                    <span><span class="leyenda-dot" style="background:#6f42c1;"></span> Proyectos de Empresa</span>
+                    <span><span class="leyenda-dot" style="background:#4a90e2;"></span> Bajas / Ausencias</span>
                 </div>
             </div>
         </main>
@@ -111,17 +163,20 @@
 
     <div class="modal-overlay modal-hidden" id="modal-proyecto">
         <div class="modal-content">
-            <button id="btn-cerrar-modal-proyecto" class="modal-close"><i class="fas fa-times"></i></button>
-            <h2>Gestión de Eventos y Proyectos</h2>
+            <h2>Publicar Proyecto o Evento</h2>
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.5rem;">Crea eventos que se visualizarán en los calendarios de tus empleados según su rol o asignación individual.</p>
+            
             <form id="form-proyecto">
                 <div class="form-group-app">
-                    <label for="proyecto-titulo">Título *</label>
-                    <input type="text" id="proyecto-titulo" placeholder="Ej. Lanzamiento Marketing" required>
+                    <label for="proyecto-titulo">Título del Evento *</label>
+                    <input type="text" id="proyecto-titulo" placeholder="Ej. Auditoría Anual o Lanzamiento Web" required>
                 </div>
+
                 <div class="form-group-app">
-                    <label for="proyecto-desc">Descripción</label>
-                    <textarea id="proyecto-desc" placeholder="Detalles del proyecto..." rows="2" style="width:100%; border-radius:5px; border:1px solid var(--border-color); font-family:inherit; padding:0.5rem;"></textarea>
+                    <label for="proyecto-desc">Descripción (Interna)</label>
+                    <textarea id="proyecto-desc" placeholder="Detalles visibles al pasar el ratón..." rows="2"></textarea>
                 </div>
+
                 <div class="date-inputs">
                     <div class="form-group-app">
                         <label for="proyecto-start">Fecha Inicio *</label>
@@ -132,27 +187,31 @@
                         <input type="date" id="proyecto-end" required>
                     </div>
                 </div>
-                
+
+                <hr style="margin: 1rem 0; border: 0; border-top: 1px solid var(--border-color);">
+
                 <div class="form-group-app">
-                    <label for="proyecto-rol">Vincular a Rol (Calendario por Departamento)</label>
+                    <label for="proyecto-rol">Visibilidad por Departamento (Rol)</label>
                     <select id="proyecto-rol">
-                        <option value="">Todos los roles (Global)</option>
-                    </select>
+                        <option value="">Visible para todos los roles (Global)</option>
+                        </select>
                 </div>
 
                 <div class="form-group-app">
-                    <label for="proyecto-empleado">Asignación Personal (Opcional)</label>
+                    <label for="proyecto-empleado">Asignar a Empleado Específico (Opcional)</label>
                     <select id="proyecto-empleado">
-                        <option value="">Sin asignar (Uso general)</option>
-                    </select>
+                        <option value="">Evento general / Uso grupal</option>
+                        </select>
                 </div>
 
                 <div class="form-group-app">
-                    <label for="proyecto-color">Color de etiqueta</label>
-                    <input type="color" id="proyecto-color" value="#6f42c1"
-                        style="width:100%; height:36px; border:1px solid var(--border-color); border-radius:5px; cursor:pointer; padding:2px; background:none;">
+                    <label for="proyecto-color">Color de Identificación</label>
+                    <input type="color" id="proyecto-color" value="#6f42c1" style="width:100%; height:40px; border-radius:5px; border:1px solid var(--border-color); padding:2px; background:none; cursor:pointer;">
                 </div>
-                <button type="submit" class="btn-primary-app" style="margin-top:0.5rem; width:100%;">Publicar en Calendario</button>
+
+                <button type="submit" class="btn-primary-app" style="width:100%; margin-top:1rem; padding: 0.8rem;">
+                    <i class="fas fa-calendar-plus"></i> Publicar en Calendario
+                </button>
             </form>
         </div>
     </div>
@@ -164,21 +223,20 @@
     </footer>
 
     <script type="module" src="../js/admin-calendario.js"></script>
+
     <script>
-        // Lógica de UI para el menú móvil
+        // Lógica de UI para Sidebar
         const menuToggle = document.getElementById('menu-toggle');
-        const sidebar    = document.getElementById('sidebar');
-        const overlay    = document.getElementById('sidebar-overlay');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
         
-        menuToggle?.addEventListener('click', () => { 
-            sidebar.classList.add('active'); 
-            overlay.classList.add('active'); 
-        });
-        
-        overlay?.addEventListener('click', () => { 
-            sidebar.classList.remove('active'); 
-            overlay.classList.remove('active'); 
-        });
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
     </script>
 </body>
 </html>
