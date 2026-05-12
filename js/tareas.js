@@ -42,8 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. GESTIÓN DE TABLEROS
     // =============================
     async function cargarTableros() {
-        // Traemos tableros de la empresa (rol coincidente o globales)
-        // Nota: He quitado el filtro de creado_por en tableros para evitar errores si no lo creaste
         const { data: tableros, error } = await supabase
             .from('tableros')
             .select('*')
@@ -57,17 +55,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear tablero nuevo...</option>`;
             
+            // Si no hay tablero seleccionado, seleccionamos el primero por defecto
             if (!currentBoardId) currentBoardId = tableros[0].id;
             boardSelector.value = currentBoardId;
             cargarTareas(currentBoardId);
         } else {
-            boardSelector.innerHTML = `<option value="NEW_BOARD">+ Crear mi primer tablero...</option>`;
+            // Si la base de datos está vacía de tableros
+            boardSelector.innerHTML = `<option value="">Selecciona "+ Nuevo"</option>`;
+            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear mi primer tablero...</option>`;
+            currentBoardId = null;
+            colTodo.innerHTML = '<p style="padding:1rem; opacity:0.5;">Crea un tablero para empezar.</p>';
         }
     }
 
     boardSelector.addEventListener('change', async (e) => {
-        if (e.target.value === 'NEW_BOARD') {
-            const nombre = prompt('Nombre del nuevo tablero:');
+        const valor = e.target.value;
+
+        if (valor === 'NEW_BOARD') {
+            const nombre = window.prompt('Escribe el nombre del nuevo tablero:');
             if (nombre && nombre.trim() !== "") {
                 const { data: nuevo, error } = await supabase
                     .from('tableros')
@@ -80,12 +85,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!error) {
                     currentBoardId = nuevo.id;
                     await cargarTableros();
+                } else {
+                    alert("Error al crear tablero: " + error.message);
                 }
             } else {
-                boardSelector.value = currentBoardId;
+                // Si cancela el prompt, devolvemos el selector al tablero anterior
+                boardSelector.value = currentBoardId || "";
             }
         } else {
-            currentBoardId = e.target.value;
+            currentBoardId = valor;
             cargarTareas(currentBoardId);
         }
     });
@@ -95,7 +103,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =============================
     async function cargarTareas(boardId) {
         if (!boardId) return;
-        colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
+        
+        colTodo.innerHTML = ''; 
+        colDoing.innerHTML = ''; 
+        colDone.innerHTML = '';
 
         const { data: tareas } = await supabase
             .from('tareas')
@@ -119,23 +130,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <span class="badge-priority priority-${tarea.prioridad}">${tarea.prioridad}</span>
                 <div>
-                    <button class="btn-mover" style="background:none;border:none;cursor:pointer;color:var(--primary-color);"><i class="fas fa-arrow-right"></i></button>
-                    <button class="btn-borrar" style="background:none;border:none;cursor:pointer;color:var(--red);margin-left:8px;"><i class="fas fa-trash"></i></button>
+                    <button class="btn-mover" title="Mover a siguiente"><i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-borrar" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
 
+        // Lógica de botones de la tarjeta
         card.querySelector('.btn-mover').onclick = () => moverTarea(tarea.id, tarea.estado);
         card.querySelector('.btn-borrar').onclick = () => borrarTarea(tarea.id);
         columna.appendChild(card);
     }
 
-    // --- GUARDAR TAREA CORREGIDO ---
+    // --- GUARDAR TAREA ---
     formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
         
         if (!currentBoardId) {
-            alert("Selecciona un tablero primero");
+            alert("⚠️ Debes crear o seleccionar un tablero antes de añadir tareas.");
             return;
         }
 
@@ -146,7 +158,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             prioridad: document.getElementById('task-priority').value,
             estado: document.getElementById('task-column').value,
             empresa_id: userProfile.empresa_id
-            // NO incluimos 'creado_por' para evitar el error de Schema Cache
         };
 
         const { error } = await supabase.from('tareas').insert([payload]);
@@ -155,35 +166,58 @@ document.addEventListener('DOMContentLoaded', async () => {
             cerrarModal();
             await cargarTareas(currentBoardId);
         } else {
-            alert("Error al guardar: " + error.message);
+            alert("Error al guardar tarea: " + error.message);
         }
     };
 
     async function moverTarea(id, estadoActual) {
         const orden = ['todo', 'doing', 'done'];
-        const nuevo = orden[orden.indexOf(estadoActual) + 1];
-        if (!nuevo) return;
-        await supabase.from('tareas').update({ estado: nuevo }).eq('id', id);
-        cargarTareas(currentBoardId);
+        const indexActual = orden.indexOf(estadoActual);
+        
+        if (indexActual === -1 || indexActual === orden.length - 1) return;
+
+        const nuevoEstado = orden[indexActual + 1];
+        
+        const { error } = await supabase
+            .from('tareas')
+            .update({ estado: nuevoEstado })
+            .eq('id', id);
+
+        if (!error) cargarTareas(currentBoardId);
     }
 
     async function borrarTarea(id) {
-        if (confirm('¿Eliminar tarea?')) {
-            await supabase.from('tareas').delete().eq('id', id);
-            cargarTareas(currentBoardId);
+        if (confirm('¿Quieres eliminar esta tarea definitivamente?')) {
+            const { error } = await supabase
+                .from('tareas')
+                .delete()
+                .eq('id', id);
+            
+            if (!error) cargarTareas(currentBoardId);
         }
     }
 
     function actualizarContadores() {
-        if (document.getElementById('count-todo')) document.getElementById('count-todo').textContent = colTodo.children.length;
-        if (document.getElementById('count-doing')) document.getElementById('count-doing').textContent = colDoing.children.length;
-        if (document.getElementById('count-done')) document.getElementById('count-done').textContent = colDone.children.length;
+        const cTodo = document.getElementById('count-todo');
+        const cDoing = document.getElementById('count-doing');
+        const cDone = document.getElementById('count-done');
+
+        if (cTodo) cTodo.textContent = colTodo.children.length;
+        if (cDoing) cDoing.textContent = colDoing.children.length;
+        if (cDone) cDone.textContent = colDone.children.length;
     }
 
     // =============================
     // 4. CONTROL DEL MODAL
     // =============================
-    const abrirModal = () => modalTarea.classList.remove('modal-hidden');
+    const abrirModal = () => {
+        if (!currentBoardId) {
+            alert("Selecciona o crea un tablero primero.");
+            return;
+        }
+        modalTarea.classList.remove('modal-hidden');
+    };
+
     const cerrarModal = () => {
         modalTarea.classList.add('modal-hidden');
         formNuevaTarea.reset();
