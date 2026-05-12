@@ -2,33 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Administración de usuarios de clockInTime. Gestiona altas, bajas, edición de perfiles y asignación de roles y permisos.">
-    <meta name="keywords" content="clockInTime, usuarios, administración, roles, permisos, empleados">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    
+    <title>Gestión de Usuarios - clockInTime</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Panel de gestión de empleados y roles para administradores de clockInTime.">
     <meta name="author" content="clockInTime">
-    <meta name="theme-color" content="#0056b3">
+
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="format-detection" content="telephone=no">
-    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0056b3">
+
     <meta property="og:title" content="Gestión de Usuarios - clockInTime">
-    <meta property="og:description" content="Administración de usuarios de clockInTime. Gestiona altas, bajas, edición de perfiles y asignación de roles y permisos.">
+    <meta property="og:description" content="Administra tu equipo de trabajo de forma eficiente.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Gestión de Usuarios - clockInTime">
-    <meta name="twitter:description" content="Administración de usuarios de clockInTime. Gestiona altas, bajas, edición de perfiles y asignación de roles y permisos.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
-    <title>Gestión de Usuarios - clockInTime</title>
+    <meta property="og:type" content="website">
+
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="../js/theme.js"></script>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
+                <a href="admin-dashboard.html" class="logo">
+                    clockInTime <span class="admin-badge">Admin</span>
+                </a>
+                <button class="mobile-close" id="menu-close"><i class="fas fa-times"></i></button>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -41,7 +49,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout-admin"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -50,12 +58,17 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Gestión de Usuarios</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Admin</strong></div>
+                <div class="user-info">
+                    <strong id="user-name-header">Cargando...</strong>
+                </div>
             </header>
 
-            <div class="widget">
+            <section class="widget">
                 <div class="widget-header">
                     <h2>Empleados de tu empresa</h2>
                 </div>
@@ -64,20 +77,41 @@
                         <thead>
                             <tr>
                                 <th>Foto</th>
-                                <th>Nombre</th>
+                                <th>Nombre completo</th>
                                 <th>Email</th>
                                 <th>Rol</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
-                            </tbody>
+                            <tr>
+                                <td colspan="5" class="text-center">Conectando con el servidor...</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </main>
     </div>
 
     <script type="module" src="../js/admin-gestion-usuarios.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const menuClose = document.getElementById('menu-close');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function toggleMenu() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            }
+
+            menuToggle?.addEventListener('click', toggleMenu);
+            menuClose?.addEventListener('click', toggleMenu);
+            overlay?.addEventListener('click', toggleMenu);
+        });
+    </script>
 </body>
 </html>
