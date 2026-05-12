@@ -11,22 +11,55 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Calendario - clockInTime">
     <meta property="og:description" content="Consulta tu calendario laboral, turnos y vacaciones en clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Calendario - clockInTime">
-    <meta name="twitter:description" content="Consulta tu calendario laboral, turnos y vacaciones en clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    
     <title>Calendario - clockInTime</title>
+    
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+
+    <style>
+        /* Estilos necesarios para las barritas de eventos */
+        .calendar-event {
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: white;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .day-cell {
+            min-height: 100px; /* Un poco más de espacio para que quepan varias barras */
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-cell.today {
+            background-color: rgba(0, 86, 179, 0.1);
+            border: 2px solid var(--primary-color);
+        }
+
+        .other-month {
+            background-color: var(--bg-secondary);
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
             </div>
@@ -41,17 +74,18 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <h1>Calendario</h1>
+                    <h1>Calendario Laboral</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Empleado</strong></div>
+                <div class="user-info">Hola, <strong id="user-name-header">Empleado</strong></div>
             </header>
 
             <div class="widget">
@@ -68,6 +102,24 @@
                     <div class="day-header">Viernes</div>
                     <div class="day-header">Sábado</div>
                     <div class="day-header">Domingo</div>
+                    </div>
+            </div>
+
+            <div class="widget" style="margin-top: 1rem;">
+                <h3>Información del Calendario</h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px; font-size: 0.85rem;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 12px; height: 12px; background: #28a745; border-radius: 2px;"></span> Vacaciones Aprobadas
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 12px; height: 12px; background: #f5a623; border-radius: 2px;"></span> Solicitud Pendiente
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 12px; height: 12px; background: #6f42c1; border-radius: 2px;"></span> Proyectos / Eventos
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 12px; height: 12px; background: #e74c3c; border-radius: 2px;"></span> Festivos
+                    </div>
                 </div>
             </div>
         </main>
@@ -79,25 +131,26 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/calendario.js"></script>
-        <script type="module">
-        import { supabase } from '../js/supabase-client.js';
+    <script type="module" src="../js/calendario.js"></script>
 
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
+    <script>
+        // Control del menú móvil
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
-        cargarNombreUsuario();
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
+
+        // Botón de logout (el JS de calendario.js lo gestiona, pero por seguridad)
+        document.getElementById('btn-logout')?.addEventListener('click', () => {
+            // La lógica real está en el módulo calendario.js
+        });
     </script>
 </body>
 </html>
