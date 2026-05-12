@@ -1,163 +1,150 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // =============================
-    // ELEMENTOS DEL DOM
-    // =============================
-    const profileForm      = document.getElementById('profile-form');
-    const inputNombre      = document.getElementById('fullname');
-    const inputEmail       = document.getElementById('email');
-    const inputRol         = document.getElementById('role');
-    const imgPreview       = document.getElementById('profile-pic-preview');
-    const inputUpload      = document.getElementById('input-pic-upload');
-    const btnUpload        = document.getElementById('btn-upload-pic');
-    const btnRemove        = document.getElementById('btn-remove-pic');
-    const userNameHeader   = document.getElementById('user-name-header');
-
-    const passwordForm     = document.getElementById('password-form');
-    const inputNewPass     = document.getElementById('new-password');
-    const inputRepeatPass  = document.getElementById('repeat-password');
-
-    // =============================
-    // 1. CARGA DE DATOS
-    // =============================
+    // 1. VERIFICAR SESIÓN
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return window.location.href = '../login/login.html';
+    if (!session) {
+        window.location.href = '../login/login.html';
+        return;
+    }
 
-    async function cargarDatos() {
-        const { data: profile, error } = await supabase
+    // Elementos del DOM (IDs exactos de tu HTML)
+    const formPerfil = document.getElementById('profile-form');
+    const userHeader = document.getElementById('user-name-header');
+    const imgPreview = document.getElementById('profile-pic-preview');
+    const inputFile  = document.getElementById('input-pic-upload');
+    const btnUpload  = document.getElementById('btn-upload-pic');
+    const btnRemove  = document.getElementById('btn-remove-pic');
+
+    // 2. CARGAR DATOS
+    async function cargarDatosPerfil() {
+        // Ajustamos la consulta para que coincida con tus tablas reales
+        const { data: perfil, error } = await supabase
             .from('profiles')
             .select(`
                 nombre, 
                 avatar_url,
-                roles ( nombre )
+                rol_id,
+                roles(nombre_rol)
             `)
             .eq('id', session.user.id)
             .single();
 
         if (error) {
-            console.error("Error cargando perfil:", error.message);
+            console.error("Error al cargar perfil:", error);
+            if (userHeader) userHeader.textContent = "Error";
             return;
         }
 
-        // Rellenar campos de texto
-        inputNombre.value = profile.nombre;
-        inputEmail.value  = session.user.email;
-        inputRol.value    = profile.roles?.nombre || 'Empleado';
-        
-        if (userNameHeader) userNameHeader.textContent = profile.nombre;
+        if (perfil) {
+            // Rellenar inputs del HTML del empleado
+            if(document.getElementById('fullname')) 
+                document.getElementById('fullname').value = perfil.nombre || '';
+            
+            if(document.getElementById('email')) 
+                document.getElementById('email').value = session.user.email || '';
+            
+            if(document.getElementById('role')) {
+                // Si la relación roles(nombre_rol) funciona, lo usamos, si no, por ID
+                document.getElementById('role').value = perfil.roles?.nombre_rol || (perfil.rol_id === 1 ? 'Admin' : 'Empleado');
+            }
 
-        // Renderizar imagen de perfil
-        actualizarVistaAvatar(profile.avatar_url);
-    }
-
-    function actualizarVistaAvatar(url) {
-        if (url) {
-            imgPreview.innerHTML = `<img src="${url}" alt="Avatar">`;
-        } else {
-            imgPreview.innerHTML = `<i class="fas fa-user" style="font-size:3.5rem;color:#94a3b8;"></i>`;
+            // Actualizar Header y Foto
+            if (userHeader) userHeader.textContent = perfil.nombre;
+            if (perfil.avatar_url && imgPreview) {
+                imgPreview.innerHTML = `<img src="${perfil.avatar_url}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            }
         }
     }
 
-    // =============================
-    // 2. ACTUALIZAR NOMBRE
-    // =============================
-    profileForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nuevoNombre = inputNombre.value.trim();
+    // 3. GESTIÓN DE FOTO (SUBIR)
+    btnUpload?.addEventListener('click', () => inputFile.click());
 
-        const { error } = await supabase
-            .from('profiles')
-            .update({ nombre: nuevoNombre })
-            .eq('id', session.user.id);
-
-        if (error) {
-            alert("Error al actualizar: " + error.message);
-        } else {
-            alert("Perfil actualizado correctamente.");
-            if (userNameHeader) userNameHeader.textContent = nuevoNombre;
-        }
-    });
-
-    // =============================
-    // 3. ACTUALIZAR CONTRASEÑA
-    // =============================
-    passwordForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        if (inputNewPass.value !== inputRepeatPass.value) {
-            alert("Las contraseñas no coinciden.");
-            return;
-        }
-
-        const { error } = await supabase.auth.updateUser({
-            password: inputNewPass.value
-        });
-
-        if (error) {
-            alert("Error de seguridad: " + error.message);
-        } else {
-            alert("Contraseña actualizada con éxito.");
-            passwordForm.reset();
-        }
-    });
-
-    // =============================
-    // 4. GESTIÓN DE AVATAR (STORAGE)
-    // =============================
-    btnUpload?.addEventListener('click', () => inputUpload.click());
-
-    inputUpload?.addEventListener('change', async (e) => {
+    inputFile?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 1. Subir archivo al bucket 'avatars'
         const fileExt = file.name.split('.').pop();
-        const filePath = `public/${session.user.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${session.user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
             .from('avatars')
             .upload(filePath, file);
 
-        if (uploadError) return alert("Error al subir imagen: " + uploadError.message);
+        if (uploadError) {
+            alert("Error al subir: " + uploadError.message);
+            return;
+        }
 
-        // 2. Obtener URL pública
         const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-        // 3. Guardar URL en la tabla de perfiles
         const { error: updateError } = await supabase
             .from('profiles')
             .update({ avatar_url: publicUrl })
             .eq('id', session.user.id);
 
         if (!updateError) {
-            actualizarVistaAvatar(publicUrl);
-            alert("Foto de perfil actualizada.");
+            imgPreview.innerHTML = `<img src="${publicUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            alert("Foto actualizada");
         }
     });
 
+    // 4. ELIMINAR FOTO
     btnRemove?.addEventListener('click', async () => {
-        if (!confirm("¿Seguro que quieres quitar tu foto de perfil?")) return;
-
         const { error } = await supabase
             .from('profiles')
             .update({ avatar_url: null })
             .eq('id', session.user.id);
 
         if (!error) {
-            actualizarVistaAvatar(null);
-            alert("Foto eliminada.");
+            imgPreview.innerHTML = `<i class="fas fa-user" style="font-size:3.5rem;color:#94a3b8;"></i>`;
+            alert("Foto eliminada");
         }
     });
 
-    // =============================
-    // 5. CERRAR SESIÓN
-    // =============================
+    // 5. GUARDAR CAMBIOS DE NOMBRE
+    formPerfil?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nuevoNombre = document.getElementById('fullname').value;
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({ nombre: nuevoNombre })
+            .eq('id', session.user.id);
+
+        if (error) alert("Error: " + error.message);
+        else {
+            alert("Perfil guardado");
+            if (userHeader) userHeader.textContent = nuevoNombre;
+        }
+    });
+
+    // 6. ACTUALIZAR CONTRASEÑA
+    document.getElementById('password-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('new-password').value;
+        const repeatPass = document.getElementById('repeat-password').value;
+
+        if (newPass !== repeatPass) {
+            alert("Las contraseñas no coinciden");
+            return;
+        }
+
+        const { error } = await supabase.auth.updateUser({ password: newPass });
+        if (error) alert("Error: " + error.message);
+        else {
+            alert("Contraseña actualizada");
+            e.target.reset();
+        }
+    });
+
+    // Logout
     document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
         window.location.href = '../login/login.html';
     });
 
-    cargarDatos();
+    cargarDatosPerfil();
 });
