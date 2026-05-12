@@ -1,190 +1,52 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { supabase } from './supabase-client.js';
+import { initTheme } from './theme-handler.js';
 
-    // =============================
-    // ELEMENTOS DEL DOM
-    // =============================
-    const userNameHeader        = document.getElementById('user-name-header');
-    const statUsuariosTotales   = document.getElementById('summary-usuarios-totales');
-    const statSolicitudesPend   = document.getElementById('summary-solicitudes-pendientes');
-    const statFichadosHoy       = document.getElementById('summary-fichados-hoy');
-    const listaSolicitudesPend  = document.getElementById('lista-solicitudes-pendientes');
+document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
 
-    // =============================
-    // CARGAR JEFE ACTUAL
-    // =============================
-    function getJefeActual() {
-        const email = localStorage.getItem('currentUserEmail');
-        if (!email) return null;
-        return JSON.parse(localStorage.getItem(email));
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = '../login/login.html'; return; }
+
+    // 1. Obtener perfil del admin para filtrar por empresa_id
+    const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id, nombre')
+        .eq('id', session.user.id)
+        .single();
+
+    if (adminProfile && document.getElementById('user-name-header')) {
+        document.getElementById('user-name-header').textContent = adminProfile.nombre;
     }
 
-    // =============================
-    // OBTENER EMPLEADOS DE LA EMPRESA
-    // =============================
-    function getEmpleadosEmpresa() {
+    // 2. Cargar Estadísticas Reales
+    async function cargarEstadisticas() {
+        const empresaId = adminProfile.empresa_id;
 
-        const jefe = getJefeActual();
-        if (!jefe) return [];
+        // Total Usuarios
+        const { count: totalUsers } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('empresa_id', empresaId);
 
-        const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
-        const empresa  = empresas.find(e => e.code === jefe.companyCode);
-        if (!empresa) return [];
+        // Solicitudes Pendientes
+        const { count: totalPendientes } = await supabase
+            .from('solicitudes') // Asumiendo que tu tabla se llama 'solicitudes'
+            .select('*', { count: 'exact', head: true })
+            .eq('empresa_id', empresaId)
+            .eq('estado', 'pendiente');
 
-        const empleados = [];
-        empresa.employees.forEach(emailEmp => {
-            const userData = localStorage.getItem(emailEmp);
-            if (userData) {
-                try {
-                    empleados.push(JSON.parse(userData));
-                } catch (err) {
-                    console.warn('Error parseando usuario:', emailEmp);
-                }
-            }
-        });
+        // Fichajes de hoy (asumiendo tabla 'fichajes')
+        const hoy = new Date().toISOString().split('T')[0];
+        const { count: totalFichados } = await supabase
+            .from('fichajes')
+            .select('*', { count: 'exact', head: true })
+            .eq('empresa_id', empresaId)
+            .gte('fecha', hoy);
 
-        return empleados;
+        document.getElementById('summary-usuarios-totales').textContent = totalUsers || 0;
+        document.getElementById('summary-solicitudes-pendientes').textContent = totalPendientes || 0;
+        document.getElementById('summary-fichados-hoy').textContent = totalFichados || 0;
     }
 
-    // =============================
-    // OBTENER SOLICITUDES PENDIENTES DE LA EMPRESA
-    // (miramos tanto las solicitudes globales como las individuales por empleado)
-    // =============================
-    function getSolicitudesPendientes() {
-
-        const empleados  = getEmpleadosEmpresa();
-        const pendientes = [];
-
-        // Solicitudes en la clave global (compatibilidad)
-        const globales = JSON.parse(localStorage.getItem('solicitudes')) || [];
-        globales.forEach(sol => {
-            if ((sol.estado || 'Pendiente') === 'Pendiente') {
-                pendientes.push(sol);
-            }
-        });
-
-        // Solicitudes individuales por empleado
-        empleados.forEach(emp => {
-            const key  = `solicitudes_${emp.email}`;
-            const sols = JSON.parse(localStorage.getItem(key)) || [];
-            sols.forEach(sol => {
-                if ((sol.estado || 'Pendiente') === 'Pendiente') {
-                    pendientes.push({ ...sol, emailEmpleado: emp.email });
-                }
-            });
-        });
-
-        return pendientes;
-    }
-
-    // =============================
-    // CALCULAR FICHADOS HOY
-    // (contamos cuántos empleados han fichado hoy comparando la fecha de su jornada actual)
-    // =============================
-    function countFichadosHoy() {
-
-        const empleados = getEmpleadosEmpresa();
-        const hoy       = new Date().toDateString();
-        let count       = 0;
-
-        empleados.forEach(emp => {
-            // Miramos si tienen una jornada activa guardada
-            const keyJornada = `currentWorkDay_${emp.email}`;
-            const jornada    = localStorage.getItem(keyJornada);
-
-            if (jornada) {
-                try {
-                    const j = JSON.parse(jornada);
-                    if (j.date && new Date(j.date).toDateString() === hoy) {
-                        count++;
-                    }
-                } catch (err) {
-                    // ignoramos claves corruptas
-                }
-            }
-
-            // También miramos la clave global por si el empleado usa la clave sin prefijo
-            const jornadaGlobal = localStorage.getItem('currentWorkDay');
-            if (jornadaGlobal) {
-                try {
-                    const j = JSON.parse(jornadaGlobal);
-                    // Solo la contamos si es de este empleado (usamos email si está guardado)
-                    if (j.date && new Date(j.date).toDateString() === hoy && j.email === emp.email) {
-                        count++;
-                    }
-                } catch (err) { /* ignoramos */ }
-            }
-        });
-
-        return count;
-    }
-
-    // =============================
-    // RENDERIZAR ESTADÍSTICAS
-    // =============================
-    function renderStats() {
-
-        const empleados  = getEmpleadosEmpresa();
-        const pendientes = getSolicitudesPendientes();
-        const fichados   = countFichadosHoy();
-
-        if (statUsuariosTotales) statUsuariosTotales.textContent = empleados.length;
-        if (statSolicitudesPend) statSolicitudesPend.textContent = pendientes.length;
-        if (statFichadosHoy)     statFichadosHoy.textContent     = fichados;
-    }
-
-    // =============================
-    // RENDERIZAR LISTA DE SOLICITUDES PENDIENTES RECIENTES
-    // (mostramos las últimas solicitudes que esperan aprobación en el dashboard)
-    // =============================
-    function renderSolicitudesPendientes() {
-
-        if (!listaSolicitudesPend) return;
-
-        const pendientes = getSolicitudesPendientes();
-
-        listaSolicitudesPend.innerHTML = '';
-
-        if (pendientes.length === 0) {
-            listaSolicitudesPend.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center">No hay solicitudes pendientes.</td>
-                </tr>`;
-            return;
-        }
-
-        // Mostramos las 5 más recientes
-        pendientes.slice(-5).reverse().forEach(sol => {
-
-            const emailEmp  = sol.emailEmpleado || 'Sin asignar';
-            const userData  = emailEmp !== 'Sin asignar' ? localStorage.getItem(emailEmp) : null;
-            const empleado  = userData ? JSON.parse(userData) : null;
-            const nombre    = empleado ? (empleado.fullname || emailEmp) : emailEmp;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${nombre}</td>
-                <td>${sol.type || '-'}</td>
-                <td>${sol.startDate || '-'} / ${sol.endDate || '-'}</td>
-                <td><span class="status-badge status-pending">Pendiente</span></td>`;
-
-            listaSolicitudesPend.appendChild(row);
-        });
-    }
-
-    // =============================
-    // CARGAR NOMBRE DEL JEFE EN HEADER
-    // =============================
-    function cargarNombreHeader() {
-        const jefe = getJefeActual();
-        if (jefe && userNameHeader) {
-            userNameHeader.textContent = jefe.fullname || jefe.email;
-        }
-    }
-
-    // =============================
-    // INIT
-    // =============================
-    cargarNombreHeader();
-    renderStats();
-    renderSolicitudesPendientes();
+    cargarEstadisticas();
 });
