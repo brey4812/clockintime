@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="description" content="Consulta tu historial de fichajes, horas trabajadas y control horario en clockInTime.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Consulta tu historial de fichajes, horas trabajadas y control horario en clockInTime.">
     <meta name="keywords" content="clockInTime, fichajes, historial, control horario, empleados, horas trabajadas">
     <meta name="author" content="clockInTime">
     <meta name="theme-color" content="#0056b3">
@@ -10,21 +11,37 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Fichajes - clockInTime">
     <meta property="og:description" content="Consulta tu historial de fichajes, horas trabajadas y control horario en clockInTime.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
+    
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Fichajes - clockInTime">
     <meta name="twitter:description" content="Consulta tu historial de fichajes, horas trabajadas y control horario en clockInTime.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">    <title>Mis Fichajes - clockInTime</title>
+    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
+    
+    <title>Mis Fichajes - clockInTime</title>
+    
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+    
+    <style>
+        /* Estilos específicos para badges de estado en la tabla */
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        .status-completed { background: #e6fffa; color: #28a745; border: 1px solid #28a745; }
+        .status-issue { background: #fff5f5; color: #dc3545; border: 1px solid #dc3545; }
+        .status-in { background: #ebf8ff; color: #3182ce; border: 1px solid #3182ce; }
+        
+        .date-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .date-filter input { padding: 5px; border-radius: 5px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-main); }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="dashboard.html" class="logo">clockInTime</a>
             </div>
@@ -39,40 +56,54 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
+
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-
+                    <button id="menu-toggle" class="btn-menu" style="background:none; border:none; font-size:1.5rem; color:var(--text-main); cursor:pointer; margin-right:1rem;">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Mis Fichajes</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Empleado</strong></div>
+                <div class="user-info">Bienvenido, <strong id="user-name-header">Cargando...</strong></div>
             </header>
 
             <section class="widget">
-                <div class="widget-header">
+                <div class="widget-header" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
                     <h2>Historial de Registros</h2>
                     <div class="date-filter">
                         <label for="start-date">Desde:</label>
                         <input type="date" id="start-date">
                         <label for="end-date">Hasta:</label>
                         <input type="date" id="end-date">
-                        <button id="btn-filter-fichajes" class="btn-filter">Filtrar</button>
+                        <button id="btn-filter-fichajes" class="btn-filter" style="padding: 6px 15px; cursor: pointer; background: var(--primary-color); color: white; border: none; border-radius: 5px;">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
                     </div>
                 </div>
-                <div class="table-container">
+                
+                <div class="table-container" style="margin-top: 1.5rem;">
                     <table>
                         <thead>
                             <tr>
-                                <th>Fecha</th><th>Entrada</th><th>Salida</th>
-                                <th>Pausas</th><th>Total Horas</th><th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Entrada</th>
+                                <th>Salida</th>
+                                <th>Pausas</th>
+                                <th>Total Horas</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
-                        <tbody id="fichajes-tbody"></tbody>
+                        <tbody id="fichajes-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center">Conectando con el servidor...</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </section>
@@ -85,25 +116,21 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/fichajes.js"></script>
-        <script type="module">
-        import { supabase } from '../js/supabase-client.js';
-
-        async function cargarNombreUsuario() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('nombre')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.nombre) {
-                    document.getElementById('user-name-header').textContent = profile.nombre;
-                }
-            }
+    <script type="module" src="../js/fichajes.js"></script>
+    
+    <script>
+        // Lógica de UI para el menú lateral en dispositivos móviles
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
-        cargarNombreUsuario();
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
     </script>
 </body>
 </html>
