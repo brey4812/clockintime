@@ -20,89 +20,135 @@
     <meta name="twitter:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
     <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
 
-    <script type="application/ld+json">
+        <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "clockInTime",
-      "operatingSystem": "Web",
+      "name": "ClockInTime",
+      "operatingSystem": "Any",
       "applicationCategory": "BusinessApplication",
-      "description": "Plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos."
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "EUR"
+      },
+      "description": "Portal profesional de gestión de empleados, control horario y tareas para empresas.",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150"
+      }
     }
     </script>
 
-    <title>clockInTime - Gestión de Equipo Simplificada</title>
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [{
+        "@type": "Question",
+        "name": "¿Es obligatorio el registro de jornada?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. Conforme al Real Decreto-ley 8/2019, es obligatorio que todas las empresas realicen un registro diario de jornada que incluya el horario concreto de inicio y finalización de la jornada laboral de cada trabajador."
+        }
+    }, {
+        "@type": "Question",
+        "name": "¿Puedo fichar desde el móvil?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "¡Por supuesto! ClockInTime es una PWA (Progressive Web App) optimizada para dispositivos móviles, lo que permite a los empleados fichar desde cualquier lugar con conexión a internet sin necesidad de instalar aplicaciones pesadas desde tiendas oficiales."
+        }
+    }, {
+        "@type": "Question",
+        "name": "¿Qué pasa si olvido fichar la salida?",
+        "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "El sistema permite a los administradores gestionar y corregir registros olvidados. Además, al ser una PWA, puedes configurar notificaciones push para recibir recordatorios automáticos al finalizar tu horario laboral programado."
+        }
+    }]
+    }
+    </script>
+
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    
-    <script src="js/theme.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 </head>
 <body>
-
     <nav class="navbar">
         <div class="container">
             <a href="index.html" class="logo">clockInTime</a>
             <div class="nav-links">
-                <button class="btn-theme-nav" onclick="toggleTheme()" aria-label="Cambiar modo de color" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0 15px; font-size: 1.2rem;">
+                <button type="button" id="theme-toggle-btn" class="btn-theme-nav">
                     <i class="fas fa-moon"></i>
+                    <span>Modo</span>
                 </button>
+                
                 <a href="login/login.html" class="btn btn-secondary">Iniciar Sesión</a>
                 <a href="login/register.html" class="btn btn-primary">Registrarse</a>
             </div>
         </div>
     </nav>
+    
+    <main>
+        <header class="hero">
+            <div class="hero-content">
+                <h1>Gestión de Equipo Simplificada.</h1>
+                <p>Control de fichajes, gestión de ausencias, tareas y reportes. Todo en un solo lugar.</p>
+                <a href="login/register.html" class="btn btn-primary btn-large">Empieza ahora</a>
+            </div>
+        </header>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1>Gestión de Equipo Simplificada.</h1>
-            <p>Control de fichajes, gestión de ausencias, tareas y reportes. Todo en un solo lugar.</p>
-            <a href="login/register.html" class="btn btn-primary btn-large">Empieza ahora</a>
-        </div>
-    </header>
-
-    <section class="features">
-        <div class="container">
-            <h2>Todo lo que tu empresa necesita</h2>
-            <div class="features-grid">
-                <div class="feature-box">
-                    <i class="fas fa-clock"></i>
-                    <h3>Control Horario</h3>
-                    <p>Fichajes de entrada y salida fáciles de usar para todo el equipo.</p>
-                </div>
-                <div class="feature-box">
-                    <i class="fas fa-calendar-check"></i>
-                    <h3>Gestión de Ausencias</h3>
-                    <p>Solicita y aprueba vacaciones o bajas médicas en segundos.</p>
-                </div>
-                <div class="feature-box">
-                    <i class="fas fa-tasks"></i>
-                    <h3>Tareas y Proyectos</h3>
-                    <p>Organiza el trabajo de tu equipo con tableros Kanban y calendario compartido.</p>
-                </div>
-                <div class="feature-box">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Panel de Administración</h3>
-                    <p>Los jefes gestionan usuarios, aprueban solicitudes y asignan proyectos.</p>
+        <section class="features">
+            <div class="container">
+                <h2>Todo lo que tu empresa necesita</h2>
+                <div class="features-grid">
+                    <div class="feature-box">
+                        <i class="fas fa-clock"></i>
+                        <h3>Control Horario</h3>
+                        <p>Fichajes de entrada y salida fáciles de usar para todo el equipo.</p>
+                    </div>
+                    <div class="feature-box">
+                        <i class="fas fa-calendar-check"></i>
+                        <h3>Gestión de Ausencias</h3>
+                        <p>Solicita y aprueba vacaciones o bajas médicas en segundos.</p>
+                    </div>
+                    <div class="feature-box">
+                        <i class="fas fa-tasks"></i>
+                        <h3>Tareas y Proyectos</h3>
+                        <p>Organiza el trabajo de tu equipo con tableros Kanban.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="faq-section" id="faq" style="padding: 60px 0; background-color: var(--bg-secondary);">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 40px;">Preguntas Frecuentes</h2>
-            <div class="faq-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div class="faq-item">
-                    <h3>¿Cómo funciona el control horario?</h3>
-                    <p>Los empleados pueden fichar desde cualquier dispositivo, registrando su entrada, pausas y salida de forma legal.</p>
-                </div>
-                <div class="faq-item">
-                    <h3>¿Es seguro para mi empresa?</h3>
-                    <p>Utilizamos cifrado de alta seguridad y Supabase para proteger todos los datos de tu equipo.</p>
+        <section id="faq" class="faq-section">
+            <div class="container">
+                <h2>Preguntas Frecuentes</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <button class="faq-question">¿Es obligatorio el registro de jornada? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>Sí. Conforme al <strong>Real Decreto-ley 8/2019</strong>, que modifica el Art. 34 del Estatuto de los Trabajadores, todas las empresas están obligadas a realizar un registro diario de jornada que incluya el horario concreto de inicio y finalización de cada empleado.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">¿Puedo fichar desde el móvil? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>¡Por supuesto! ClockInTime es una PWA optimizada para dispositivos móviles, permitiendo fichar desde cualquier lugar sin instalar apps pesadas.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">¿Qué pasa si olvido fichar la salida? <i class="fas fa-chevron-down"></i></button>
+                        <div class="faq-answer">
+                            <p>El sistema permite a los administradores corregir registros o puedes configurar notificaciones push para que la app te avise al terminar tu jornada.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <footer class="footer">
         <div class="container">
