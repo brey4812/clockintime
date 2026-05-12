@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnCerrarModal = document.getElementById('btn-close-task-modal');
     const modalTarea     = document.getElementById('task-modal');
     const formNuevaTarea = document.getElementById('new-task-form');
+    const btnCancelar    = document.getElementById('btn-cancel-task');
+    const userNameHeader = document.getElementById('user-name-header');
 
     let userProfile = null;
     let currentBoardId = null;
@@ -24,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../login/login.html';
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
@@ -32,52 +34,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (profile) {
         userProfile = profile;
-        document.getElementById('user-name-header').textContent = profile.nombre;
+        if (userNameHeader) userNameHeader.textContent = profile.nombre;
         await cargarTableros();
     }
 
     // =============================
-    // 2. GESTIÓN DE TABLEROS
+    // 2. LÓGICA DE TABLEROS
     // =============================
     async function cargarTableros() {
-        // Traemos tableros personales, de rol o globales
         const { data: tableros, error } = await supabase
             .from('tableros')
             .select('*')
             .eq('empresa_id', userProfile.empresa_id)
             .or(`creado_por.eq.${userProfile.id},rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
 
-        if (error) {
-            console.error("Error cargando tableros:", error.message);
-            return;
-        }
-
         if (tableros && tableros.length > 0) {
             boardSelector.innerHTML = tableros.map(b => 
                 `<option value="${b.id}">${b.nombre}</option>`
             ).join('');
             
-            // Opción mágica para crear tablero
-            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Nuevo Tablero Personal...</option>`;
+            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear tablero personal...</option>`;
             
-            // Si no hay tablero seleccionado, cogemos el primero
             if (!currentBoardId) currentBoardId = tableros[0].id;
-            
             boardSelector.value = currentBoardId;
-            const selectedText = boardSelector.options[boardSelector.selectedIndex].text;
-            boardTitle.textContent = selectedText;
-            
             cargarTareas(currentBoardId);
         } else {
-            // Si no hay tableros, forzamos la creación de uno
             boardSelector.innerHTML = `<option value="NEW_BOARD">+ Crear mi primer tablero...</option>`;
-            boardTitle.textContent = "Sin tableros";
         }
     }
 
     boardSelector.addEventListener('change', async (e) => {
         if (e.target.value === 'NEW_BOARD') {
-            const nombre = prompt('Escribe el nombre de tu nuevo tablero personal:');
+            const nombre = prompt('Nombre del nuevo tablero personal:');
             if (nombre && nombre.trim() !== "") {
                 const { data: nuevo, error } = await supabase
                     .from('tableros')
@@ -86,19 +74,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         empresa_id: userProfile.empresa_id,
                         creado_por: userProfile.id 
                     }])
-                    .select()
-                    .single();
+                    .select().single();
                 
                 if (!error) {
                     currentBoardId = nuevo.id;
                     await cargarTableros();
                 }
             } else {
-                boardSelector.value = currentBoardId || "";
+                boardSelector.value = currentBoardId;
             }
         } else {
             currentBoardId = e.target.value;
-            boardTitle.textContent = boardSelector.options[boardSelector.selectedIndex].text;
             cargarTareas(currentBoardId);
         }
     });
@@ -107,26 +93,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. GESTIÓN DE TAREAS
     // =============================
     async function cargarTareas(boardId) {
-        if (!boardId) return;
-        
-        // Limpiar columnas
         colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
 
-        const { data: tareas, error } = await supabase
+        const { data: tareas } = await supabase
             .from('tareas')
             .select('*')
             .eq('tablero_id', boardId)
             .order('created_at', { ascending: true });
 
-        if (!error && tareas) {
-            tareas.forEach(tarea => renderTarjeta(tarea));
-        }
+        tareas?.forEach(tarea => renderTarjeta(tarea));
         actualizarContadores();
     }
 
     function renderTarjeta(tarea) {
-        const columnaId = `kanban-content-${tarea.estado}`;
-        const columna = document.getElementById(columnaId);
+        const columna = document.getElementById(`kanban-content-${tarea.estado}`);
         if (!columna) return;
 
         const card = document.createElement('div');
@@ -136,75 +116,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             <p>${tarea.descripcion || ''}</p>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <span class="badge-priority priority-${tarea.prioridad}">${tarea.prioridad}</span>
-                <div class="card-btns">
-                    <button class="btn-next" data-id="${tarea.id}" title="Mover"><i class="fas fa-arrow-right"></i></button>
-                    <button class="btn-del" data-id="${tarea.id}" title="Borrar"><i class="fas fa-trash"></i></button>
+                <div>
+                    <button class="btn-mover" data-id="${tarea.id}" style="background:none;border:none;cursor:pointer;color:var(--primary-color);"><i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-borrar" data-id="${tarea.id}" style="background:none;border:none;cursor:pointer;color:var(--red);margin-left:8px;"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
 
-        card.querySelector('.btn-next').onclick = () => moverTarea(tarea.id, tarea.estado);
-        card.querySelector('.btn-del').onclick = () => borrarTarea(tarea.id);
+        card.querySelector('.btn-mover').onclick = () => moverTarea(tarea.id, tarea.estado);
+        card.querySelector('.btn-borrar').onclick = () => borrarTarea(tarea.id);
         columna.appendChild(card);
     }
 
-    // --- ACCIÓN: GUARDAR TAREA ---
     formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
-        
-        if (!currentBoardId) {
-            alert("Selecciona un tablero primero");
-            return;
-        }
-
-        const btnSubmit = document.getElementById('btn-submit-task');
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = "Guardando...";
-
-        const nuevaTarea = {
+        const payload = {
             tablero_id: currentBoardId,
-            titulo: document.getElementById('task-title').value.trim(),
-            descripcion: document.getElementById('task-desc').value.trim(),
+            titulo: document.getElementById('task-title').value,
+            descripcion: document.getElementById('task-desc').value,
             prioridad: document.getElementById('task-priority').value,
             estado: document.getElementById('task-column').value,
             empresa_id: userProfile.empresa_id,
             creado_por: userProfile.id
         };
 
-        const { error } = await supabase.from('tareas').insert([nuevaTarea]);
-
-        if (error) {
-            console.error("Error Supabase:", error.message);
-            alert("Error al guardar: " + error.message);
-        } else {
+        const { error } = await supabase.from('tareas').insert([payload]);
+        if (!error) {
             cerrarModal();
-            await cargarTareas(currentBoardId);
+            cargarTareas(currentBoardId);
+        } else {
+            alert("Error al guardar: " + error.message);
         }
-        
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = "Guardar Tarea";
     };
 
-    // --- ACCIÓN: MOVER TAREA ---
     async function moverTarea(id, estadoActual) {
         const orden = ['todo', 'doing', 'done'];
-        const indice = orden.indexOf(estadoActual);
-        if (indice === -1 || indice === orden.length - 1) return;
-
-        const nuevoEstado = orden[indice + 1];
-        const { error } = await supabase
-            .from('tareas')
-            .update({ estado: nuevoEstado })
-            .eq('id', id);
-
-        if (!error) cargarTareas(currentBoardId);
+        const nuevo = orden[orden.indexOf(estadoActual) + 1];
+        if (!nuevo) return;
+        await supabase.from('tareas').update({ estado: nuevo }).eq('id', id);
+        cargarTareas(currentBoardId);
     }
 
-    // --- ACCIÓN: BORRAR TAREA ---
     async function borrarTarea(id) {
-        if (!confirm('¿Seguro que quieres eliminar esta tarea?')) return;
-        const { error } = await supabase.from('tareas').delete().eq('id', id);
-        if (!error) cargarTareas(currentBoardId);
+        if (confirm('¿Eliminar tarea?')) {
+            await supabase.from('tareas').delete().eq('id', id);
+            cargarTareas(currentBoardId);
+        }
     }
 
     function actualizarContadores() {
@@ -216,16 +173,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =============================
     // 4. CONTROL DEL MODAL
     // =============================
-    btnAbrirModal.onclick = () => modalTarea.classList.remove('modal-hidden');
-    btnCerrarModal.onclick = cerrarModal;
-    document.getElementById('btn-cancel-task').onclick = cerrarModal;
+    const abrirModal = () => {
+        console.log("Abriendo modal...");
+        modalTarea.classList.remove('modal-hidden');
+    };
 
-    function cerrarModal() {
+    const cerrarModal = () => {
         modalTarea.classList.add('modal-hidden');
         formNuevaTarea.reset();
-    }
+    };
 
-    // Logout
+    btnAbrirModal?.addEventListener('click', abrirModal);
+    btnCerrarModal?.addEventListener('click', cerrarModal);
+    btnCancelar?.addEventListener('click', cerrarModal);
+
+    // Cerrar sesión
     document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
