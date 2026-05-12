@@ -599,19 +599,22 @@ hr.sidebar-divider {
     font-size: 0.9rem;
     color: #fff;
 }
-
 .btn-action.btn-approve {
-    background-color: var(--green);
+    background-color: var(--green) !important;
 }
 .btn-action.btn-approve:hover {
-    background-color: #218838;
+    background-color: #218838 !important;
 }
 
 .btn-action.btn-reject {
-    background-color: var(--red);
+    background-color: var(--red) !important;
 }
 .btn-action.btn-reject:hover {
-    background-color: #c82333;
+    background-color: #c82333 !important;
+}
+
+.btn-action i {
+    margin-right: 5px;
 }
 
 .team-status-list {
