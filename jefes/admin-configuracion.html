@@ -23,6 +23,15 @@
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
+    <style>
+        .roles-management { margin-top: 1rem; }
+        .roles-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+        .roles-table th, .roles-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .btn-delete-rol { background: none; border: none; color: #dc3545; cursor: pointer; padding: 5px; }
+        .btn-delete-rol:hover { color: #a71d2a; }
+        .form-inline { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .form-inline input { flex: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-main); }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -42,7 +51,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout-admin"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -59,12 +68,39 @@
             <div class="page-grid-solicitudes">
 
                 <div class="widget">
+                    <h2>Gestión de Roles y Departamentos</h2>
+                    <p style="color:var(--text-light);margin-bottom:0.5rem;">
+                        Crea roles personalizados (ej. Marketing, Ventas) para organizar tu calendario y equipo.
+                    </p>
+                    
+                    <form id="form-nuevo-rol" class="form-inline">
+                        <input type="text" id="nuevo-rol-nombre" placeholder="Nombre del nuevo rol..." required>
+                        <button type="submit" class="btn-primary-app" style="padding: 0.5rem 1rem;">Añadir</button>
+                    </form>
+
+                    <div class="roles-management">
+                        <table class="roles-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Rol</th>
+                                    <th>Origen</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roles-tbody">
+                                <tr><td colspan="3">Cargando roles...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="widget">
                     <h2>Código de Invitación</h2>
                     <p style="color:var(--text-light);margin-bottom:0.5rem;">
                         Comparte este código con tus empleados para que puedan unirse al registrarse.
                     </p>
-                    <div class="invite-code-box">
-                        <span id="invite-code-display">—</span>
+                    <div class="invite-code-box" style="padding: 1rem; background: var(--bg-secondary); border-radius: 8px; text-align: center; margin-bottom: 1rem; border: 2px dashed var(--primary-color);">
+                        <span id="invite-code-display" style="font-size: 1.5rem; font-weight: bold; letter-spacing: 3px;">—</span>
                     </div>
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                         <button id="btn-copiar-codigo" class="btn-outline">
@@ -80,11 +116,11 @@
                     <h2>Datos de la Empresa</h2>
                     <div class="form-group-app">
                         <label for="input-nombre-empresa">Nombre de la Empresa</label>
-                        <input type="text" id="input-nombre-empresa" disabled>
+                        <input type="text" id="input-nombre-empresa" disabled style="background: var(--bg-secondary); opacity: 0.7;">
                     </div>
                     <div class="form-group-app">
                         <label for="input-plan-actual">Plan Actual</label>
-                        <input type="text" id="input-plan-actual" disabled>
+                        <input type="text" id="input-plan-actual" disabled style="background: var(--bg-secondary); opacity: 0.7;">
                     </div>
                 </div>
 
@@ -110,13 +146,22 @@
         <a href="../legal/politica-cookies.html">Política de Cookies</a>
     </footer>
 
-    <script src="../js/admin-configuracion.js"></script>
+    <script type="module" src="../js/admin-configuracion.js"></script>
+    
     <script>
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar    = document.getElementById('sidebar');
         const overlay    = document.getElementById('sidebar-overlay');
-        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
-        overlay?.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        
+        menuToggle?.addEventListener('click', () => { 
+            sidebar.classList.add('active'); 
+            overlay.classList.add('active'); 
+        });
+        
+        overlay?.addEventListener('click', () => { 
+            sidebar.classList.remove('active'); 
+            overlay.classList.remove('active'); 
+        });
     </script>
 </body>
 </html>
