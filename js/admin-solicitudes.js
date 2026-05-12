@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { supabase } from './supabase-client.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
 
     // =============================
     // ELEMENTOS DEL DOM
@@ -14,115 +16,105 @@ document.addEventListener('DOMContentLoaded', () => {
     // ESTADO
     // =============================
     let filtroActivo = 'todas';
+    let empresaId = null;
 
     // =============================
-    // HELPERS
+    // 1. VERIFICAR SESIÓN Y CARGAR ADMIN
     // =============================
-    function getJefeActual() {
-        const email = localStorage.getItem('currentUserEmail');
-        if (!email) return null;
-        try { return JSON.parse(localStorage.getItem(email)); } catch { return null; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '../login/login.html';
+        return;
     }
 
-    function getEmailsEmpleados() {
-        const jefe = getJefeActual();
-        if (!jefe) return [];
-        const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
-        const empresa  = empresas.find(e => e.code === jefe.companyCode);
-        return empresa ? empresa.employees : [];
-    }
+    const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('nombre, empresa_id')
+        .eq('id', session.user.id)
+        .single();
 
-    // =============================
-    // OBTENER SOLICITUDES DE TODOS LOS EMPLEADOS
-    // (solo lee claves individuales solicitudes_email — sin duplicados)
-    // =============================
-    function getSolicitudesEmpresa() {
-
-        const emails    = getEmailsEmpleados();
-        const resultado = [];
-
-        emails.forEach(email => {
-            const key  = `solicitudes_${email}`;
-            const sols = JSON.parse(localStorage.getItem(key)) || [];
-            sols.forEach((sol, idx) => {
-                resultado.push({
-                    ...sol,
-                    emailEmpleado: email,
-                    _storageKey:   key,
-                    _idx:          idx   // índice real en el array de ese empleado
-                });
-            });
-        });
-
-        return resultado;
+    if (adminProfile) {
+        if (userNameHeader) userNameHeader.textContent = adminProfile.nombre;
+        empresaId = adminProfile.empresa_id;
     }
 
     // =============================
-    // RENDERIZAR TABLA
+    // 2. RENDERIZAR TABLA (DATOS REALES)
     // =============================
-    function renderTablaSolicitudes() {
+    async function renderTablaSolicitudes() {
+        if (!solicitudesTbody || !empresaId) return;
 
-        if (!solicitudesTbody) return;
+        solicitudesTbody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando solicitudes...</td></tr>';
 
-        let solicitudes = getSolicitudesEmpresa();
+        // Construir consulta base
+        let query = supabase
+            .from('solicitudes')
+            .select(`
+                id,
+                tipo,
+                fecha_inicio,
+                fecha_fin,
+                estado,
+                profiles (nombre, apellido)
+            `)
+            .eq('empresa_id', empresaId)
+            .order('created_at', { ascending: false });
 
-        // Filtro activo
+        // Aplicar filtro si no es "todas"
         if (filtroActivo !== 'todas') {
-            solicitudes = solicitudes.filter(s =>
-                (s.estado || 'Pendiente').toLowerCase() === filtroActivo.toLowerCase()
-            );
+            query = query.eq('estado', filtroActivo);
+        }
+
+        const { data: solicitudes, error } = await query;
+
+        if (error) {
+            console.error("Error cargando solicitudes:", error);
+            solicitudesTbody.innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar datos.</td></tr>';
+            return;
         }
 
         solicitudesTbody.innerHTML = '';
 
-        if (solicitudes.length === 0) {
-            solicitudesTbody.innerHTML = `
-                <tr><td colspan="6" class="text-center">No hay solicitudes que mostrar.</td></tr>`;
+        if (!solicitudes || solicitudes.length === 0) {
+            solicitudesTbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay solicitudes que mostrar.</td></tr>';
             return;
         }
 
         solicitudes.forEach(sol => {
-
-            let empleado = null;
-            try {
-                const ud = localStorage.getItem(sol.emailEmpleado);
-                if (ud) empleado = JSON.parse(ud);
-            } catch { /* ignoramos */ }
-
-            const nombreEmp  = empleado ? (empleado.fullname || sol.emailEmpleado) : sol.emailEmpleado;
+            const nombreEmp = `${sol.profiles?.nombre} ${sol.profiles?.apellido || ''}`;
             const estadoReal = sol.estado || 'Pendiente';
-            const estadoLow  = estadoReal.toLowerCase();
-            let estadoClase  = 'status-pending';
-            if (estadoLow === 'aprobada')  estadoClase = 'status-approved';
-            if (estadoLow === 'rechazada') estadoClase = 'status-rejected';
+            
+            // Definir clase de badge según estado
+            let estadoClase = 'status-pending';
+            if (estadoReal === 'Aprobada')  estadoClase = 'status-approved';
+            if (estadoReal === 'Rechazada') estadoClase = 'status-rejected';
 
-            const esPendiente = estadoLow === 'pendiente';
+            const esPendiente = estadoReal === 'Pendiente';
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${nombreEmp}</td>
-                <td>${sol.type || '-'}</td>
-                <td>${sol.startDate || '-'}</td>
-                <td>${sol.endDate || '-'}</td>
+                <td>${sol.tipo || '-'}</td>
+                <td>${sol.fecha_inicio || '-'}</td>
+                <td>${sol.fecha_fin || '-'}</td>
                 <td><span class="status-badge ${estadoClase}">${estadoReal}</span></td>
                 <td class="actions-cell">
                     ${esPendiente ? `
-                        <button class="btn-action btn-aprobar" title="Aprobar">
+                        <button class="btn-action btn-approve" data-id="${sol.id}" title="Aprobar">
                             <i class="fas fa-check"></i>
                         </button>
-                        <button class="btn-action btn-rechazar" title="Rechazar">
+                        <button class="btn-action btn-reject" data-id="${sol.id}" title="Rechazar">
                             <i class="fas fa-times"></i>
                         </button>
-                    ` : '<span style="color:var(--text-light);font-size:0.85rem;">—</span>'}
+                    ` : '<span style="color:var(--text-light);font-size:0.85rem;">Procesada</span>'}
                 </td>`;
 
-            // Guardamos referencia al objeto en el propio row (no en dataset)
-            // para que los botones siempre lean el dato correcto
+            // Eventos para botones de acción
             if (esPendiente) {
-                row.querySelector('.btn-aprobar').addEventListener('click', () =>
-                    procesarSolicitud(sol, 'Aprobada'));
-                row.querySelector('.btn-rechazar').addEventListener('click', () =>
-                    procesarSolicitud(sol, 'Rechazada'));
+                row.querySelector('.btn-approve').addEventListener('click', () => 
+                    procesarSolicitud(sol.id, 'Aprobada'));
+                row.querySelector('.btn-reject').addEventListener('click', () => 
+                    procesarSolicitud(sol.id, 'Rechazada'));
             }
 
             solicitudesTbody.appendChild(row);
@@ -130,66 +122,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
-    // PROCESAR SOLICITUD (aprobar / rechazar)
-    // (actualiza el estado en la clave individual del empleado)
+    // 3. PROCESAR SOLICITUD (REAL EN BD)
     // =============================
-    function procesarSolicitud(sol, nuevoEstado) {
+    async function procesarSolicitud(solId, nuevoEstado) {
+        const { error } = await supabase
+            .from('solicitudes')
+            .update({ estado: nuevoEstado })
+            .eq('id', solId);
 
-        const sols = JSON.parse(localStorage.getItem(sol._storageKey)) || [];
-
-        // Buscamos por índice real guardado al leer
-        if (sols[sol._idx] !== undefined) {
-            sols[sol._idx].estado = nuevoEstado;
-            localStorage.setItem(sol._storageKey, JSON.stringify(sols));
-        }
-
-        // Si se aprueba, lo añadimos al calendario del empleado
-        if (nuevoEstado === 'Aprobada') {
-            actualizarCalendarioEmpleado(sol);
-        }
-
-        alert(`Solicitud ${nuevoEstado.toLowerCase()} correctamente.`);
-        renderTablaSolicitudes();
-    }
-
-    // =============================
-    // AÑADIR SOLICITUD APROBADA AL CALENDARIO DEL EMPLEADO
-    // =============================
-    function actualizarCalendarioEmpleado(sol) {
-
-        if (!sol.emailEmpleado) return;
-
-        const keyEventos = `eventos_${sol.emailEmpleado}`;
-        const eventos    = JSON.parse(localStorage.getItem(keyEventos)) || [];
-
-        // Evitamos duplicados
-        const yaExiste = eventos.some(e =>
-            e.type      === sol.type &&
-            e.startDate === sol.startDate &&
-            e.endDate   === sol.endDate &&
-            e.category  === 'Solicitud'
-        );
-
-        if (!yaExiste) {
-            eventos.push({
-                type:      sol.type,
-                startDate: sol.startDate,
-                endDate:   sol.endDate,
-                comments:  sol.comments || '',
-                estado:    'Aprobada',
-                category:  'Solicitud'
-            });
-            localStorage.setItem(keyEventos, JSON.stringify(eventos));
+        if (error) {
+            alert("Error al procesar la solicitud: " + error.message);
+        } else {
+            alert(`Solicitud ${nuevoEstado.toLowerCase()} correctamente.`);
+            renderTablaSolicitudes();
         }
     }
 
     // =============================
-    // FILTROS
+    // 4. FILTROS
     // =============================
     function activarFiltro(nuevoFiltro, btnActivo) {
         filtroActivo = nuevoFiltro;
-        [filtroPendientes, filtroAprobadas, filtroRechazadas, filtroTodas]
-            .forEach(b => b?.classList.remove('active'));
+        // Quitar clase active de todos los botones con clase 'btn-filter'
+        document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
         btnActivo?.classList.add('active');
         renderTablaSolicitudes();
     }
@@ -200,16 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
     filtroRechazadas?.addEventListener('click', () => activarFiltro('Rechazada', filtroRechazadas));
 
     // =============================
-    // CARGAR NOMBRE EN HEADER
+    // 5. CERRAR SESIÓN
     // =============================
-    function cargarNombreHeader() {
-        const jefe = getJefeActual();
-        if (jefe && userNameHeader) userNameHeader.textContent = jefe.fullname || jefe.email;
-    }
+    document.getElementById('btn-logout-admin')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await supabase.auth.signOut();
+        window.location.href = '../login/login.html';
+    });
 
-    // =============================
-    // INIT
-    // =============================
-    cargarNombreHeader();
+    // Iniciar carga
     renderTablaSolicitudes();
 });
