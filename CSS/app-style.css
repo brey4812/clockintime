@@ -180,14 +180,18 @@ a {
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
 }
-.status-badge {
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    font-weight: bold;
-    color: #fff;
+.status-badge { 
+    display: inline-block;
+    padding: 4px 12px; 
+    border-radius: 12px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    text-align: center;
+    min-width: 80px;
 }
 .status-out { background-color: var(--text-light); }
-.status-in { background-color: var(--green); }
+.status-in { background-color: var(--blue); }
 .status-pause { background-color: var(--yellow); color: var(--text-dark); }
 
 .btn-clock-in {
@@ -343,7 +347,7 @@ td.text-center {
 
 .status-badge.status-completed { background-color: var(--green); }
 .status-badge.status-issue { background-color: var(--red); }
-.status-badge.status-off { background-color: var(--yellow); color: var(--text-dark); }
+.status-badge.status-off { background-color: var(grey); color: var(--text-dark); }
 
 .page-grid-solicitudes {
     display: grid;
