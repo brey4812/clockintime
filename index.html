@@ -32,11 +32,9 @@
 
     <script>
         (function() {
-            // Aplicar tema antes de renderizar
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Redirección si ya está logueado
             if (localStorage.getItem('usserNameStorage')) {
                 window.location.href = '/empleados/dashboard.html';
             }
@@ -80,14 +78,14 @@
           "name": "¿Puedo fichar desde el móvil?",
           "acceptedAnswer": {
           "@type": "Answer",
-          "text": "¡Por supuesto! ClockInTime es una PWA (Progressive Web App) optimizada para dispositivos móviles, lo que permite a los empleados fichar desde cualquier lugar con conexión a internet sin necesidad de instalar aplicaciones pesadas desde tiendas oficiales."
+          "text": "¡Por supuesto! ClockInTime es una PWA optimizada para dispositivos móviles, permitiendo fichar desde cualquier lugar sin instalar apps pesadas."
           }
       }, {
           "@type": "Question",
           "name": "¿Qué pasa si olvido fichar la salida?",
           "acceptedAnswer": {
           "@type": "Answer",
-          "text": "El sistema permite a los administradores gestionar y corregir registros olvidados. Además, al ser una PWA, puedes configurar notificaciones push para recibir recordatorios automáticos al finalizar tu horario laboral programado."
+          "text": "El sistema permite a los administradores gestionar y corregir registros olvidados."
           }
       }]
     }
@@ -95,6 +93,8 @@
 
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 </head>
 <body>
     <nav class="navbar">
@@ -151,19 +151,13 @@
                     <div class="faq-item">
                         <button class="faq-question">¿Es obligatorio el registro de jornada? <i class="fas fa-chevron-down"></i></button>
                         <div class="faq-answer">
-                            <p>Sí. Conforme al <strong>Real Decreto-ley 8/2019</strong>, que modifica el Art. 34 del Estatuto de los Trabajadores, todas las empresas están obligadas a realizar un registro diario de jornada que incluya el horario concreto de inicio y finalización de cada empleado.</p>
+                            <p>Sí. Conforme al <strong>Real Decreto-ley 8/2019</strong>, todas las empresas están obligadas a realizar un registro diario de jornada.</p>
                         </div>
                     </div>
                     <div class="faq-item">
                         <button class="faq-question">¿Puedo fichar desde el móvil? <i class="fas fa-chevron-down"></i></button>
                         <div class="faq-answer">
-                            <p>¡Por supuesto! ClockInTime es una PWA optimizada para dispositivos móviles, permitiendo fichar desde cualquier lugar sin instalar apps pesadas.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <button class="faq-question">¿Qué pasa si olvido fichar la salida? <i class="fas fa-chevron-down"></i></button>
-                        <div class="faq-answer">
-                            <p>El sistema permite a los administradores corregir registros o puedes configurar notificaciones push para que la app te avise al terminar tu jornada.</p>
+                            <p>¡Por supuesto! ClockInTime es una PWA optimizada para dispositivos móviles.</p>
                         </div>
                     </div>
                 </div>
@@ -185,9 +179,7 @@
 
     <div id="cookie-banner" class="cookie-banner">
         <div class="cookie-banner-content">
-            <p>Usamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra
-                <a href="legal/politica-cookies.html">Política de Cookies</a>.
-            </p>
+            <p>Usamos cookies para mejorar tu experiencia. Al continuar, aceptas nuestra <a href="legal/politica-cookies.html">Política de Cookies</a>.</p>
         </div>
         <div class="cookie-banner-buttons">
             <button id="cookie-decline" class="btn-cookie btn-cookie-decline">Rechazar</button>
@@ -195,7 +187,6 @@
         </div>
     </div>
 
-    <script src="js/cooky.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Lógica del Tema
@@ -210,18 +201,18 @@
                 }
             }
 
+            // Aplicar icono inicial
             updateIcon(document.documentElement.getAttribute('data-theme'));
 
             themeBtn.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateIcon(newTheme);
             });
 
-            // Lógica Acordeón FAQ
+            // Lógica del Acordeón FAQ
             document.querySelectorAll('.faq-question').forEach(button => {
                 button.addEventListener('click', () => {
                     const item = button.parentElement;
@@ -229,32 +220,26 @@
                 });
             });
 
-            // Lógica del Banner de Cookies (Sincronizada)
+            // Lógica del Banner de Cookies
             const banner = document.getElementById('cookie-banner');
-            const acceptBtn = document.getElementById('cookie-accept');
-            const declineBtn = document.getElementById('cookie-decline');
-
-            // Verificamos si existe cooky.js o manejamos aquí si falla
             if (!localStorage.getItem('cookies-accepted')) {
                 banner.style.display = 'flex';
             }
 
-            acceptBtn.addEventListener('click', () => {
+            document.getElementById('cookie-accept').addEventListener('click', () => {
                 localStorage.setItem('cookies-accepted', 'true');
                 banner.style.display = 'none';
             });
 
-            declineBtn.addEventListener('click', () => {
+            document.getElementById('cookie-decline').addEventListener('click', () => {
                 banner.style.display = 'none';
             });
         });
 
-        // Registro del Service Worker
+        // Registro de Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registrado con éxito'))
-                    .catch(err => console.error('Error al registrar SW', err));
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
             });
         }
     </script>
