@@ -39,21 +39,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 2. LÓGICA DE TABLEROS
+    // 2. GESTIÓN DE TABLEROS
     // =============================
     async function cargarTableros() {
+        // Traemos tableros de la empresa (rol coincidente o globales)
+        // Nota: He quitado el filtro de creado_por en tableros para evitar errores si no lo creaste
         const { data: tableros, error } = await supabase
             .from('tableros')
             .select('*')
             .eq('empresa_id', userProfile.empresa_id)
-            .or(`creado_por.eq.${userProfile.id},rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
+            .or(`rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
 
         if (tableros && tableros.length > 0) {
             boardSelector.innerHTML = tableros.map(b => 
                 `<option value="${b.id}">${b.nombre}</option>`
             ).join('');
             
-            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear tablero personal...</option>`;
+            boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear tablero nuevo...</option>`;
             
             if (!currentBoardId) currentBoardId = tableros[0].id;
             boardSelector.value = currentBoardId;
@@ -65,14 +67,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     boardSelector.addEventListener('change', async (e) => {
         if (e.target.value === 'NEW_BOARD') {
-            const nombre = prompt('Nombre del nuevo tablero personal:');
+            const nombre = prompt('Nombre del nuevo tablero:');
             if (nombre && nombre.trim() !== "") {
                 const { data: nuevo, error } = await supabase
                     .from('tableros')
                     .insert([{ 
                         nombre: nombre.trim(), 
-                        empresa_id: userProfile.empresa_id,
-                        creado_por: userProfile.id 
+                        empresa_id: userProfile.empresa_id
                     }])
                     .select().single();
                 
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. GESTIÓN DE TAREAS
     // =============================
     async function cargarTareas(boardId) {
+        if (!boardId) return;
         colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
 
         const { data: tareas } = await supabase
@@ -117,8 +119,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <span class="badge-priority priority-${tarea.prioridad}">${tarea.prioridad}</span>
                 <div>
-                    <button class="btn-mover" data-id="${tarea.id}" style="background:none;border:none;cursor:pointer;color:var(--primary-color);"><i class="fas fa-arrow-right"></i></button>
-                    <button class="btn-borrar" data-id="${tarea.id}" style="background:none;border:none;cursor:pointer;color:var(--red);margin-left:8px;"><i class="fas fa-trash"></i></button>
+                    <button class="btn-mover" style="background:none;border:none;cursor:pointer;color:var(--primary-color);"><i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-borrar" style="background:none;border:none;cursor:pointer;color:var(--red);margin-left:8px;"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
@@ -128,22 +130,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         columna.appendChild(card);
     }
 
+    // --- GUARDAR TAREA CORREGIDO ---
     formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
+        
+        if (!currentBoardId) {
+            alert("Selecciona un tablero primero");
+            return;
+        }
+
         const payload = {
             tablero_id: currentBoardId,
             titulo: document.getElementById('task-title').value,
             descripcion: document.getElementById('task-desc').value,
             prioridad: document.getElementById('task-priority').value,
             estado: document.getElementById('task-column').value,
-            empresa_id: userProfile.empresa_id,
-            creado_por: userProfile.id
+            empresa_id: userProfile.empresa_id
+            // NO incluimos 'creado_por' para evitar el error de Schema Cache
         };
 
         const { error } = await supabase.from('tareas').insert([payload]);
+        
         if (!error) {
             cerrarModal();
-            cargarTareas(currentBoardId);
+            await cargarTareas(currentBoardId);
         } else {
             alert("Error al guardar: " + error.message);
         }
@@ -165,19 +175,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function actualizarContadores() {
-        document.getElementById('count-todo').textContent = colTodo.children.length;
-        document.getElementById('count-doing').textContent = colDoing.children.length;
-        document.getElementById('count-done').textContent = colDone.children.length;
+        if (document.getElementById('count-todo')) document.getElementById('count-todo').textContent = colTodo.children.length;
+        if (document.getElementById('count-doing')) document.getElementById('count-doing').textContent = colDoing.children.length;
+        if (document.getElementById('count-done')) document.getElementById('count-done').textContent = colDone.children.length;
     }
 
     // =============================
     // 4. CONTROL DEL MODAL
     // =============================
-    const abrirModal = () => {
-        console.log("Abriendo modal...");
-        modalTarea.classList.remove('modal-hidden');
-    };
-
+    const abrirModal = () => modalTarea.classList.remove('modal-hidden');
     const cerrarModal = () => {
         modalTarea.classList.add('modal-hidden');
         formNuevaTarea.reset();
@@ -187,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCerrarModal?.addEventListener('click', cerrarModal);
     btnCancelar?.addEventListener('click', cerrarModal);
 
-    // Cerrar sesión
+    // Logout
     document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
