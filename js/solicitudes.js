@@ -3,18 +3,18 @@ import { supabase } from './supabase-client.js';
 document.addEventListener('DOMContentLoaded', async () => {
 
     // ELEMENTOS DEL DOM
+    const requestForm       = document.getElementById('request-form');
     const requestTypeSelect = document.getElementById('request-type');
     const startDateInput    = document.getElementById('start-date');
     const endDateInput      = document.getElementById('end-date');
     const commentsInput     = document.getElementById('comments');
-    const submitButton      = document.getElementById('btn-submit-request');
-    const requestHistoryElement = document.getElementById('historial-solicitudes-tbody');
-    const userNameHeader = document.getElementById('user-name-header');
+    const requestHistory    = document.getElementById('historial-solicitudes-tbody');
+    const userNameHeader    = document.getElementById('user-name-header');
 
     let userProfile = null;
 
     // ==========================================
-    // 1. VERIFICAR SESIÓN Y CARGAR PERFIL
+    // 1. CARGA DE SESIÓN Y PERFIL
     // ==========================================
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, nombre, empresa_id')
         .eq('id', session.user.id)
@@ -32,104 +32,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (profile) {
         userProfile = profile;
         if (userNameHeader) userNameHeader.textContent = profile.nombre;
+        cargarHistorial(); // Solo cargamos el historial tras tener el perfil
     }
 
     // ==========================================
-    // 2. ENVIAR SOLICITUD A SUPABASE
+    // 2. ENVIAR SOLICITUD (INSERT)
     // ==========================================
-    submitButton?.addEventListener('click', async (event) => {
-        event.preventDefault();
+    requestForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        const type = requestTypeSelect.value;
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-        const comments = commentsInput.value;
-
-        // Validaciones básicas
-        if (!startDate || !endDate) {
-            alert('Por favor, selecciona las fechas.');
-            return;
-        }
-
-        if (endDate < startDate) {
+        // Validaciones de fechas
+        if (endDateInput.value < startDateInput.value) {
             alert('La fecha de fin no puede ser anterior a la de inicio.');
             return;
         }
 
-        // Insertar en la base de datos
         const { error } = await supabase
-            .from('solicitudes')
+            .from('solicitud') // Nombre exacto de tu tabla
             .insert([{
-                usuario_id: userProfile.id,
+                user_id: userProfile.id,      // Usando user_id como dijiste
                 empresa_id: userProfile.empresa_id,
-                tipo: type,
-                fecha_inicio: startDate,
-                fecha_fin: endDate,
-                comentarios: comments,
+                tipo: requestTypeSelect.value,
+                fecha_inicio: startDateInput.value,
+                fecha_fin: endDateInput.value,
+                comentarios: commentsInput.value,
                 estado: 'Pendiente'
             }]);
 
         if (error) {
-            alert('Error al enviar la solicitud: ' + error.message);
+            alert('Error al enviar: ' + error.message);
         } else {
-            alert('Solicitud enviada con éxito.');
-            resetForm();
-            cargarHistorialSolicitudes();
+            alert('Solicitud enviada correctamente.');
+            requestForm.reset();
+            cargarHistorial();
         }
     });
 
     // ==========================================
-    // 3. CARGAR HISTORIAL DESDE LA DB
+    // 3. CARGAR HISTORIAL (SELECT)
     // ==========================================
-    async function cargarHistorialSolicitudes() {
-        if (!requestHistoryElement) return;
+    async function cargarHistorial() {
+        if (!requestHistory) return;
 
         const { data: solicitudes, error } = await supabase
-            .from('solicitudes')
+            .from('solicitud')
             .select('*')
-            .eq('usuario_id', userProfile.id)
+            .eq('user_id', userProfile.id) // Filtramos por tu user_id
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error("Error cargando solicitudes:", error);
+            console.error("Error cargando historial:", error);
             return;
         }
 
-        requestHistoryElement.innerHTML = '';
+        requestHistory.innerHTML = '';
 
         if (solicitudes.length === 0) {
-            requestHistoryElement.innerHTML = `
-                <tr><td colspan="4" class="text-center">No tienes solicitudes registradas.</td></tr>`;
+            requestHistory.innerHTML = '<tr><td colspan="4" class="text-center">No hay solicitudes.</td></tr>';
             return;
         }
 
         solicitudes.forEach(req => {
-            let estadoClase = 'status-pending';
-            if (req.estado === 'Aprobada')  estadoClase = 'status-completed'; // Usamos tus clases de color
-            if (req.estado === 'Rechazada') estadoClase = 'status-issue';
+            // Asignación de colores según estado
+            let claseBadge = 'status-pending';
+            if (req.estado === 'Aprobada')  claseBadge = 'status-completed';
+            if (req.estado === 'Rechazada') claseBadge = 'status-issue';
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${req.tipo}</td>
                 <td>${formatFecha(req.fecha_inicio)}</td>
                 <td>${formatFecha(req.fecha_fin)}</td>
-                <td><span class="status-badge ${estadoClase}">${req.estado}</span></td>`;
-            requestHistoryElement.appendChild(row);
+                <td><span class="status-badge ${claseBadge}">${req.estado}</span></td>
+            `;
+            requestHistory.appendChild(row);
         });
     }
 
     // ==========================================
     // UTILIDADES
     // ==========================================
-    function resetForm() {
-        startDateInput.value = '';
-        endDateInput.value = '';
-        commentsInput.value = '';
-    }
-
-    function formatFecha(fechaStr) {
-        const opciones = { day: '2-digit', month: 'short', year: 'numeric' };
-        return new Date(fechaStr).toLocaleDateString('es-ES', opciones);
+    function formatFecha(str) {
+        const d = new Date(str);
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
     // Logout
@@ -138,7 +123,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         await supabase.auth.signOut();
         window.location.href = '../login/login.html';
     });
-
-    // Carga inicial
-    cargarHistorialSolicitudes();
 });
