@@ -189,7 +189,9 @@ a {
     text-transform: uppercase; 
     text-align: center;
     min-width: 80px;
+    color: #ffffff !important; /* Fuerza el texto a blanco */
 }
+
 .status-out { background-color: var(--text-light); }
 .status-in { background-color: var(--blue); }
 .status-pause { background-color: var(--yellow); color: var(--text-dark); }
@@ -347,7 +349,7 @@ td.text-center {
 
 .status-badge.status-completed { background-color: var(--green); }
 .status-badge.status-issue { background-color: var(--red); }
-.status-badge.status-off { background-color: var(grey); color: var(--text-dark); }
+.status-badge.status-off { background-color: var(--grey); color: var(--text-dark); }
 
 .page-grid-solicitudes {
     display: grid;
