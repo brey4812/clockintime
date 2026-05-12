@@ -1320,3 +1320,57 @@ form .btn-primary-app {
 [data-theme="dark"] .legal-footer a {
     color: #93c5fd !important;
 }
+/* =========================================
+   BOTONES DE ACCIÓN (SOLICITUDES)
+   ========================================= */
+
+/* Estilo base para botones en tablas */
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    color: #ffffff;
+    margin-right: 5px;
+}
+
+/* Botón Aprobar (Verde) */
+.btn-approve {
+    background-color: var(--green); /* Usa tu variable #28a745 */
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Botón Rechazar (Rojo) */
+.btn-reject {
+    background-color: var(--red); /* Usa tu variable #dc3545 */
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Ajuste para iconos dentro de los botones */
+.btn-action i {
+    font-size: 0.9rem;
+}
+
+/* Estado deshabilitado (por si ya se procesó) */
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
