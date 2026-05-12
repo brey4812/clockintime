@@ -29,7 +29,7 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 
-    <script>
+   <script>
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -92,6 +92,8 @@
 
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 </head>
 <body>
     <nav class="navbar">
@@ -245,7 +247,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
+                navigator.serviceWorker.register('/sw.js');
             });
         }
     </script>
