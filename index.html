@@ -3,24 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <meta name="description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
     <meta name="keywords" content="clockInTime, control horario, fichajes, gestión de empleados, ausencias, tareas, calendario">
     <meta name="author" content="clockInTime">
-    <meta name="theme-color" content="#0056b3">
+    <meta name="theme-color" content="#87CEEB">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    
     <meta property="og:type" content="website">
     <meta property="og:title" content="clockInTime">
     <meta property="og:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
+    
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="clockInTime">
     <meta name="twitter:description" content="clockInTime es la plataforma para control horario, fichajes, ausencias, tareas y gestión de equipos para empresas.">
     <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
 
-        <script type="application/ld+json">
+    <title>clockInTime - Gestión de Equipo Simplificada</title>
+
+    <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
+    <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
+
+    <script>
+        (function() {
+            // Aplicar tema antes de renderizar
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Redirección si ya está logueado
+            if (localStorage.getItem('usserNameStorage')) {
+                window.location.href = '/empleados/dashboard.html';
+            }
+        })();
+    </script>
+
+    <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -43,37 +66,35 @@
 
     <script type="application/ld+json">
     {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [{
-        "@type": "Question",
-        "name": "¿Es obligatorio el registro de jornada?",
-        "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Sí. Conforme al Real Decreto-ley 8/2019, es obligatorio que todas las empresas realicen un registro diario de jornada que incluya el horario concreto de inicio y finalización de la jornada laboral de cada trabajador."
-        }
-    }, {
-        "@type": "Question",
-        "name": "¿Puedo fichar desde el móvil?",
-        "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "¡Por supuesto! ClockInTime es una PWA (Progressive Web App) optimizada para dispositivos móviles, lo que permite a los empleados fichar desde cualquier lugar con conexión a internet sin necesidad de instalar aplicaciones pesadas desde tiendas oficiales."
-        }
-    }, {
-        "@type": "Question",
-        "name": "¿Qué pasa si olvido fichar la salida?",
-        "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "El sistema permite a los administradores gestionar y corregir registros olvidados. Además, al ser una PWA, puedes configurar notificaciones push para recibir recordatorios automáticos al finalizar tu horario laboral programado."
-        }
-    }]
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+          "@type": "Question",
+          "name": "¿Es obligatorio el registro de jornada?",
+          "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sí. Conforme al Real Decreto-ley 8/2019, es obligatorio que todas las empresas realicen un registro diario de jornada que incluya el horario concreto de inicio y finalización de la jornada laboral de cada trabajador."
+          }
+      }, {
+          "@type": "Question",
+          "name": "¿Puedo fichar desde el móvil?",
+          "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "¡Por supuesto! ClockInTime es una PWA (Progressive Web App) optimizada para dispositivos móviles, lo que permite a los empleados fichar desde cualquier lugar con conexión a internet sin necesidad de instalar aplicaciones pesadas desde tiendas oficiales."
+          }
+      }, {
+          "@type": "Question",
+          "name": "¿Qué pasa si olvido fichar la salida?",
+          "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "El sistema permite a los administradores gestionar y corregir registros olvidados. Además, al ser una PWA, puedes configurar notificaciones push para recibir recordatorios automáticos al finalizar tu horario laboral programado."
+          }
+      }]
     }
     </script>
 
     <link rel="stylesheet" href="CSS/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="preload" as="image" href="https://iili.io/fzg2rNt.png">
 </head>
 <body>
     <nav class="navbar">
@@ -176,6 +197,58 @@
 
     <script src="js/cooky.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica del Tema
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = themeBtn.querySelector('i');
+
+            function updateIcon(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                }
+            }
+
+            updateIcon(document.documentElement.getAttribute('data-theme'));
+
+            themeBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateIcon(newTheme);
+            });
+
+            // Lógica Acordeón FAQ
+            document.querySelectorAll('.faq-question').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = button.parentElement;
+                    item.classList.toggle('active');
+                });
+            });
+
+            // Lógica del Banner de Cookies (Sincronizada)
+            const banner = document.getElementById('cookie-banner');
+            const acceptBtn = document.getElementById('cookie-accept');
+            const declineBtn = document.getElementById('cookie-decline');
+
+            // Verificamos si existe cooky.js o manejamos aquí si falla
+            if (!localStorage.getItem('cookies-accepted')) {
+                banner.style.display = 'flex';
+            }
+
+            acceptBtn.addEventListener('click', () => {
+                localStorage.setItem('cookies-accepted', 'true');
+                banner.style.display = 'none';
+            });
+
+            declineBtn.addEventListener('click', () => {
+                banner.style.display = 'none';
+            });
+        });
+
         // Registro del Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
