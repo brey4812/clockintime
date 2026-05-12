@@ -67,6 +67,30 @@
             background: var(--bg-secondary);
         }
 
+        /* Contenedor de la URL externa (Sincronizado con Admin) */
+        .url-input-group {
+            margin-top: 1rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+        
+        .url-input-wrapper {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .url-input-wrapper input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-primary);
+            color: var(--text-main);
+            font-size: 0.85rem;
+        }
+
         .page-grid-perfil {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -106,9 +130,6 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn-menu" style="background:none; border:none; font-size:1.5rem; color:var(--text-main); cursor:pointer; margin-right:1rem;">
-                        <i class="fas fa-bars"></i>
-                    </button>
                     <h1>Configuración de Perfil</h1>
                 </div>
                 <div class="user-info">Bienvenido, <strong id="user-name-header">Cargando...</strong></div>
@@ -122,10 +143,21 @@
                             <div class="profile-pic-display" id="profile-pic-preview">
                                 <i class="fas fa-user" style="font-size:3.5rem;color:#94a3b8;"></i>
                             </div>
+                            
                             <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-                                <button type="button" id="btn-upload-pic" class="btn-filter">Cambiar foto</button>
+                                <button type="button" id="btn-upload-pic" class="btn-filter">Subir foto local</button>
                                 <input type="file" id="input-pic-upload" accept="image/*" style="display:none;">
                                 <button type="button" id="btn-remove-pic" class="btn-filter" style="color:#dc3545;">Quitar</button>
+                            </div>
+
+                            <div class="url-input-group">
+                                <label style="font-size: 0.75rem; color: var(--text-light);">¿Tienes una URL de icono? Pégala aquí:</label>
+                                <div class="url-input-wrapper">
+                                    <input type="url" id="avatar-url-input" placeholder="https://ejemplo.com/foto.png">
+                                    <button type="button" id="btn-apply-url" class="btn-filter" style="background: var(--primary-color); color: white;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -143,7 +175,7 @@
                             <input type="text" id="role" disabled>
                         </div>
                         <button type="submit" class="btn-primary-app" style="width:100%; margin-top:1rem;">
-                            Guardar Cambios
+                            Guardar Cambios de Texto
                         </button>
                     </form>
                 </div>
@@ -190,7 +222,6 @@
     <script type="module" src="../js/mi-perfil.js"></script>
 
     <script>
-        // Control básico del menú lateral para móviles
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
