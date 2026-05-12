@@ -57,6 +57,9 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
+                    <button id="menu-toggle" class="btn-menu" style="background:none; border:none; font-size:1.5rem; color:var(--text-main); margin-right:1rem; cursor:pointer;">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Gestión de Usuarios</h1>
                 </div>
                 <div class="user-info">
@@ -68,6 +71,9 @@
                 <div class="widget-header">
                     <h2>Empleados de tu empresa</h2>
                 </div>
+                
+                <select id="select-roles-disponibles" style="display: none;"></select>
+
                 <div class="table-container">
                     <table>
                         <thead>
@@ -95,7 +101,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuToggle = document.getElementById('menu-toggle');
-            const menuClose = document.getElementById('menu-close');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
 
@@ -105,7 +110,6 @@
             }
 
             menuToggle?.addEventListener('click', toggleMenu);
-            menuClose?.addEventListener('click', toggleMenu);
             overlay?.addEventListener('click', toggleMenu);
         });
     </script>
