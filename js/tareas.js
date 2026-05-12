@@ -1,213 +1,138 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { supabase } from './supabase-client.js';
 
-    // =============================
+document.addEventListener('DOMContentLoaded', async () => {
     // ELEMENTOS DEL DOM
-    // =============================
-    const btnAbrirModal   = document.getElementById('btn-open-task-modal');
-    const btnCerrarModal  = document.getElementById('btn-close-task-modal');
-    const btnCancelar     = document.getElementById('btn-cancel-task');
-    const formNuevaTarea  = document.getElementById('new-task-form');
-    const modalTarea      = document.getElementById('task-modal');
+    const boardSelector  = document.getElementById('board-selector');
+    const boardTitle     = document.getElementById('current-board-name');
+    const colTodo        = document.getElementById('kanban-content-todo');
+    const colDoing       = document.getElementById('kanban-content-doing');
+    const colDone        = document.getElementById('kanban-content-done');
+    
+    const formNuevaTarea = document.getElementById('new-task-form');
+    const modalTarea     = document.getElementById('task-modal');
 
-    const inputTitulo     = document.getElementById('task-title');
-    const inputDesc       = document.getElementById('task-desc');
-    const selectPrioridad = document.getElementById('task-priority');
-    const selectColumna   = document.getElementById('task-column');
-
-    // Contenidos de las columnas kanban
-    const colTodo         = document.getElementById('kanban-content-todo');
-    const colDoing        = document.getElementById('kanban-content-doing');
-    const colDone         = document.getElementById('kanban-content-done');
+    let userProfile = null;
+    let currentBoardId = null;
 
     // =============================
-    // COLORES POR PRIORIDAD
+    // 1. INICIO Y SESIÓN
     // =============================
-    const priorityConfig = {
-        high:   { label: 'Alta',  clase: 'priority-high'   },
-        medium: { label: 'Media', clase: 'priority-medium' },
-        low:    { label: 'Baja',  clase: 'priority-low'    }
-    };
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return window.location.href = '../login/login.html';
 
-    // =============================
-    // CARGAR TAREAS DEL LOCALSTORAGE
-    // (al iniciar renderizamos las tareas guardadas en cada columna)
-    // =============================
-    function cargarTareas() {
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, nombre, empresa_id, rol_id')
+        .eq('id', session.user.id)
+        .single();
 
-        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
-
-        // Limpiamos las columnas antes de pintar (dejamos las hardcodeadas del HTML si no hay tareas)
-        if (tareas.length > 0) {
-            colTodo.innerHTML  = '';
-            colDoing.innerHTML = '';
-            colDone.innerHTML  = '';
-        }
-
-        tareas.forEach(tarea => renderTarjeta(tarea, false));
+    if (profile) {
+        userProfile = profile;
+        document.getElementById('user-name-header').textContent = profile.nombre;
+        await cargarTableros();
     }
 
     // =============================
-    // RENDERIZAR TARJETA KANBAN
-    // (creamos la tarjeta visual y la añadimos a la columna correspondiente)
+    // 2. CARGAR TABLEROS (POR ROL O PROYECTO)
     // =============================
-    function renderTarjeta(tarea, guardar = true) {
+    async function cargarTableros() {
+        // Traemos tableros que: o son globales de la empresa, o son de tu rol, o fuiste invitado
+        const { data: tableros, error } = await supabase
+            .from('tableros')
+            .select('*')
+            .eq('empresa_id', userProfile.empresa_id)
+            .or(`rol_id.eq.${userProfile.rol_id},rol_id.is.null`);
 
-        const columna = getColumna(tarea.columna);
-        if (!columna) return;
-
-        const prio    = priorityConfig[tarea.prioridad] || priorityConfig['medium'];
-
-        const card = document.createElement('div');
-        card.className = 'kanban-card';
-        card.dataset.id = tarea.id;
-
-        card.innerHTML = `
-            <h3>${tarea.titulo}</h3>
-            ${tarea.descripcion ? `<p>${tarea.descripcion}</p>` : ''}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
-                <span class="badge-priority ${prio.clase}">${prio.label}</span>
-                <div>
-                    <button class="btn-mover" data-id="${tarea.id}" title="Mover a siguiente columna"
-                        style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:0.8rem;">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                    <button class="btn-borrar-tarea" data-id="${tarea.id}" title="Eliminar"
-                        style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.8rem;margin-left:4px;">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>`;
-
-        columna.appendChild(card);
-
-        // Asignamos eventos a los botones de la tarjeta recién creada
-        card.querySelector('.btn-mover').addEventListener('click', () => moverTarea(tarea.id));
-        card.querySelector('.btn-borrar-tarea').addEventListener('click', () => borrarTarea(tarea.id));
-
-        if (guardar) guardarTareas();
-    }
-
-    // =============================
-    // OBTENER COLUMNA POR NOMBRE
-    // =============================
-    function getColumna(nombre) {
-        if (nombre === 'todo')  return colTodo;
-        if (nombre === 'doing') return colDoing;
-        if (nombre === 'done')  return colDone;
-        return null;
-    }
-
-    // =============================
-    // MOVER TAREA A LA SIGUIENTE COLUMNA
-    // (todo → doing → done, si ya está en done no hace nada)
-    // =============================
-    function moverTarea(id) {
-
-        let tareas = JSON.parse(localStorage.getItem('tareas')) || [];
-        const idx  = tareas.findIndex(t => t.id === id);
-        if (idx === -1) return;
-
-        const orden = ['todo', 'doing', 'done'];
-        const actual = tareas[idx].columna;
-        const posActual = orden.indexOf(actual);
-
-        if (posActual < orden.length - 1) {
-            tareas[idx].columna = orden[posActual + 1];
-            localStorage.setItem('tareas', JSON.stringify(tareas));
-            reconstruirTablero();
+        if (tableros && tableros.length > 0) {
+            boardSelector.innerHTML = tableros.map(b => 
+                `<option value="${b.id}">${b.nombre}</option>`
+            ).join('');
+            
+            currentBoardId = tableros[0].id;
+            boardTitle.textContent = tableros[0].nombre;
+            cargarTareas(currentBoardId);
         }
     }
 
-    // =============================
-    // BORRAR TAREA
-    // =============================
-    function borrarTarea(id) {
-
-        if (!confirm('¿Eliminar esta tarea?')) return;
-
-        let tareas = JSON.parse(localStorage.getItem('tareas')) || [];
-        tareas = tareas.filter(t => t.id !== id);
-        localStorage.setItem('tareas', JSON.stringify(tareas));
-        reconstruirTablero();
-    }
-
-    // =============================
-    // RECONSTRUIR EL TABLERO COMPLETO
-    // (borramos todo y volvemos a pintar desde localStorage)
-    // =============================
-    function reconstruirTablero() {
-        colTodo.innerHTML  = '';
-        colDoing.innerHTML = '';
-        colDone.innerHTML  = '';
-        cargarTareas();
-    }
-
-    // =============================
-    // GUARDAR TAREAS EN LOCALSTORAGE
-    // =============================
-    function guardarTareas() {
-        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
-        localStorage.setItem('tareas', JSON.stringify(tareas));
-    }
-
-    // =============================
-    // CREAR NUEVA TAREA DESDE EL FORMULARIO
-    // =============================
-    function crearTarea(event) {
-
-        event.preventDefault();
-
-        const titulo = inputTitulo ? inputTitulo.value.trim() : '';
-        if (!titulo) {
-            alert('El título es obligatorio.');
-            return;
-        }
-
-        const nuevaTarea = {
-            id:          Date.now().toString(),
-            titulo:      titulo,
-            descripcion: inputDesc       ? inputDesc.value.trim()   : '',
-            prioridad:   selectPrioridad ? selectPrioridad.value    : 'medium',
-            columna:     selectColumna   ? selectColumna.value      : 'todo'
-        };
-
-        // Guardamos en localStorage
-        const tareas = JSON.parse(localStorage.getItem('tareas')) || [];
-        tareas.push(nuevaTarea);
-        localStorage.setItem('tareas', JSON.stringify(tareas));
-
-        // Pintamos la tarjeta
-        renderTarjeta(nuevaTarea, false);
-
-        cerrarModal();
-    }
-
-    // =============================
-    // CONTROL DEL MODAL
-    // =============================
-    function abrirModal() {
-        if (modalTarea) modalTarea.classList.remove('modal-hidden');
-    }
-
-    function cerrarModal() {
-        if (modalTarea) modalTarea.classList.add('modal-hidden');
-        if (formNuevaTarea) formNuevaTarea.reset();
-    }
-
-    // =============================
-    // EVENTOS
-    // =============================
-    btnAbrirModal?.addEventListener('click',  abrirModal);
-    btnCerrarModal?.addEventListener('click', cerrarModal);
-    btnCancelar?.addEventListener('click',    cerrarModal);
-    formNuevaTarea?.addEventListener('submit', crearTarea);
-
-    modalTarea?.addEventListener('click', (e) => {
-        if (e.target === modalTarea) cerrarModal();
+    // Al cambiar el selector, cargamos otro tablero
+    boardSelector.addEventListener('change', (e) => {
+        currentBoardId = e.target.value;
+        boardTitle.textContent = boardSelector.options[boardSelector.selectedIndex].text;
+        cargarTareas(currentBoardId);
     });
 
     // =============================
-    // INIT
+    // 3. CARGAR Y RENDERIZAR TAREAS
     // =============================
-    cargarTareas();
+    async function cargarTareas(boardId) {
+        colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
+
+        const { data: tareas } = await supabase
+            .from('tareas')
+            .select('*')
+            .eq('tablero_id', boardId)
+            .order('created_at', { ascending: true });
+
+        tareas?.forEach(tarea => renderTarjeta(tarea));
+    }
+
+    function renderTarjeta(tarea) {
+        const columna = document.getElementById(`kanban-content-${tarea.estado}`);
+        if (!columna) return;
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.innerHTML = `
+            <h3>${tarea.titulo}</h3>
+            <p>${tarea.descripcion || ''}</p>
+            <div class="card-actions">
+                <span class="priority-badge ${tarea.prioridad}">${tarea.prioridad}</span>
+                <button class="btn-next" data-id="${tarea.id}"><i class="fas fa-arrow-right"></i></button>
+                <button class="btn-delete" data-id="${tarea.id}"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+
+        card.querySelector('.btn-next').onclick = () => moverTarea(tarea.id, tarea.estado);
+        card.querySelector('.btn-delete').onclick = () => borrarTarea(tarea.id);
+        
+        columna.appendChild(card);
+    }
+
+    // =============================
+    // 4. ACCIONES (MOVER / BORRAR / CREAR)
+    // =============================
+    async function moverTarea(id, estadoActual) {
+        const orden = ['todo', 'doing', 'done'];
+        const nuevoEstado = orden[orden.indexOf(estadoActual) + 1];
+        if (!nuevoEstado) return;
+
+        await supabase.from('tareas').update({ estado: nuevoEstado }).eq('id', id);
+        cargarTareas(currentBoardId);
+    }
+
+    async function borrarTarea(id) {
+        if (!confirm('¿Borrar tarea?')) return;
+        await supabase.from('tareas').delete().eq('id', id);
+        cargarTareas(currentBoardId);
+    }
+
+    formNuevaTarea.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            tablero_id: currentBoardId,
+            titulo: document.getElementById('task-title').value,
+            descripcion: document.getElementById('task-desc').value,
+            prioridad: document.getElementById('task-priority').value,
+            estado: 'todo',
+            empresa_id: userProfile.empresa_id
+        };
+
+        const { error } = await supabase.from('tareas').insert([payload]);
+        if (!error) {
+            cerrarModal();
+            cargarTareas(currentBoardId);
+        }
+    });
+
+    // Funciones de Modal (abrirModal / cerrarModal) abreviadas...
 });
