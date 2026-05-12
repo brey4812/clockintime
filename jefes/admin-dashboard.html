@@ -2,34 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel de administración global de clockInTime. Supervisión de métricas, gestión de usuarios y configuración del sistema.">
-    <meta name="keywords" content="clockInTime, administración, dashboard admin, usuarios, métricas, configuración">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    
+    <title>Dashboard Admin - clockInTime</title>
+    <meta name="robots" content="noindex, nofollow"> <meta name="description" content="Panel de administración de clockInTime. Gestión de empleados, métricas de asistencia y control de solicitudes.">
     <meta name="author" content="clockInTime">
-    <meta name="theme-color" content="#0056b3">
+
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0056b3">
+
     <meta property="og:title" content="Dashboard Admin - clockInTime">
-    <meta property="og:description" content="Panel de administración global de clockInTime. Supervisión de métricas, gestión de usuarios y configuración del sistema.">
+    <meta property="og:description" content="Gestiona tu equipo y supervisa la jornada laboral en tiempo real.">
     <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Dashboard Admin - clockInTime">
-    <meta name="twitter:description" content="Panel de administración global de clockInTime. Supervisión de métricas, gestión de usuarios y configuración del sistema.">
-    <meta name="twitter:image" content="https://iili.io/fzg2rNt.png">
-    <title>Dashboard Admin - clockInTime</title>
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/png" href="https://iili.io/fzg2rNt.png">
+    <link rel="apple-touch-icon" href="https://iili.io/fzg2rNt.png">
+
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     <link rel="stylesheet" href="../CSS/app-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="../js/theme.js"></script>
 </head>
 <body>
     <div class="app-container">
-
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="admin-dashboard.html" class="logo">clockInTime <span class="admin-badge">Admin</span></a>
+                <a href="admin-dashboard.html" class="logo">
+                    clockInTime <span class="admin-badge">Admin</span>
+                </a>
+                <button class="mobile-close" id="menu-close"><i class="fas fa-times"></i></button>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -42,7 +52,7 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="../login/login.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                <a href="#" id="btn-logout-admin"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -51,58 +61,89 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <h1>Dashboard Administrador</h1>
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Dashboard Principal</h1>
                 </div>
-                <div class="user-info"><strong id="user-name-header">Admin</strong></div>
+                <div class="user-info">
+                    <strong id="user-name-header">Cargando...</strong>
+                </div>
             </header>
 
             <section class="widget-grid">
                 <div class="widget summary-widget">
                     <h3>Usuarios Totales</h3>
                     <div id="summary-usuarios-totales" class="summary-value">0</div>
+                    <p>En tu organización</p>
                 </div>
                 <div class="widget summary-widget">
                     <h3>Solicitudes Pendientes</h3>
                     <div id="summary-solicitudes-pendientes" class="summary-value">0</div>
+                    <p>Esperando revisión</p>
                 </div>
                 <div class="widget summary-widget">
                     <h3>Fichados Hoy</h3>
                     <div id="summary-fichados-hoy" class="summary-value">0</div>
+                    <p>Jornadas iniciadas</p>
                 </div>
             </section>
 
             <section class="widget">
-                <h2>Solicitudes Pendientes Recientes</h2>
+                <div class="widget-header">
+                    <h2>Solicitudes de Ausencia Recientes</h2>
+                    <a href="admin-solicitudes.html" class="btn-link">Gestionar todas</a>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th>Empleado</th><th>Tipo</th><th>Fechas</th><th>Estado</th></tr>
+                            <tr>
+                                <th>Empleado</th>
+                                <th>Tipo</th>
+                                <th>Periodo</th>
+                                <th>Estado</th>
+                            </tr>
                         </thead>
-                        <tbody id="lista-solicitudes-pendientes"></tbody>
+                        <tbody id="lista-solicitudes-pendientes">
+                            <tr>
+                                <td colspan="4" class="text-center">Sincronizando con la base de datos...</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </section>
 
             <section class="widget">
-                <h2>Bienvenido al Panel de Administración</h2>
-                <p style="color:var(--text-light);">Desde aquí puedes gestionar usuarios, aprobar solicitudes y añadir proyectos al calendario del equipo.</p>
+                <h2>Panel de Control de Empresa</h2>
+                <p style="color:var(--text-light);">
+                    Bienvenido al centro de mando. Desde aquí puedes supervisar el cumplimiento horario y gestionar el equipo humano de tu empresa de forma centralizada.
+                </p>
             </section>
         </main>
     </div>
 
     <footer class="legal-footer">
-        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
-        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
-        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+        <a href="../legal/terminos-servicio.html">Términos</a>
+        <a href="../legal/politica-privacidad.html">Privacidad</a>
+        <a href="../legal/politica-cookies.html">Cookies</a>
     </footer>
 
-    <script src="../js/admin-dashboard.js"></script>
+    <script type="module" src="../js/admin-dashboard.js"></script>
+
     <script>
         const menuToggle = document.getElementById('menu-toggle');
-        const sidebar    = document.getElementById('sidebar');
-        const overlay    = document.getElementById('sidebar-overlay');
-        menuToggle?.addEventListener('click', () => { sidebar.classList.add('active'); overlay.classList.add('active'); });
-        overlay?.addEventListener('click',   () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        const menuClose = document.getElementById('menu-close');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        menuToggle?.addEventListener('click', toggleMenu);
+        menuClose?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
     </script>
 </body>
 </html>
