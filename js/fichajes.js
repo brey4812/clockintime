@@ -1,122 +1,115 @@
-document.addEventListener("DOMContentLoaded", () => {
+import { supabase } from './supabase-client.js';
+
+document.addEventListener("DOMContentLoaded", async () => {
 
     const fichajesTbody = document.getElementById("fichajes-tbody");
     const btnFiltrar    = document.getElementById("btn-filter-fichajes");
     const inputDesde    = document.getElementById("start-date");
     const inputHasta    = document.getElementById("end-date");
+    const userNameHeader = document.getElementById('user-name-header');
 
-    if (!fichajesTbody) return;
+    // 1. VERIFICAR SESIÓN
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = '../login/login.html';
+        return;
+    }
+
+    // Cargar nombre en el header
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('nombre')
+        .eq('id', session.user.id)
+        .single();
+    if (profile && userNameHeader) userNameHeader.textContent = profile.nombre;
 
     // ==========================
     // UTILS
     // ==========================
-    function secondsToHMS(totalSeconds) {
+    function formatTimeDisplay(isoString) {
+        if (!isoString) return '--:--';
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatFecha(dateString) {
+        const d = new Date(dateString);
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function calcularDiferenciaHMS(entrada, salida) {
+        if (!entrada || !salida) return "00:00:00";
+        const diffMs = new Date(salida) - new Date(entrada);
+        const totalSeconds = Math.floor(diffMs / 1000);
         const h = Math.floor(totalSeconds / 3600);
         const m = Math.floor((totalSeconds % 3600) / 60);
         const s = totalSeconds % 60;
         return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
-    function formatFecha(isoString) {
-        if (!isoString) return '-';
-        const d = new Date(isoString);
-        return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-    }
-
     // ==========================
-    // CARGAR Y AGRUPAR FICHAJES
-    // (filtramos por el email del empleado en sesión si está disponible)
+    // CARGAR FICHAJES DESDE SUPABASE
     // ==========================
-    function cargarFichajes(desde, hasta) {
+    async function cargarFichajes(desde = '', hasta = '') {
+        if (!fichajesTbody) return;
 
-        const currentEmail = localStorage.getItem('currentUserEmail');
-        const fichajes     = JSON.parse(localStorage.getItem('workDays')) || [];
+        fichajesTbody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando registros...</td></tr>';
 
-        // Filtramos por email si está disponible
-        const propios = currentEmail
-            ? fichajes.filter(f => !f.email || f.email === currentEmail)
-            : fichajes;
+        let query = supabase
+            .from('jornadas')
+            .select('*')
+            .eq('usuario_id', session.user.id)
+            .order('fecha', { ascending: false });
 
-        // Agrupamos por día (YYYY-MM-DD)
-        const porDia = {};
+        // Filtros opcionales
+        if (desde) query = query.gte('fecha', desde);
+        if (hasta) query = query.lte('fecha', hasta);
 
-        propios.forEach(f => {
-            if (!f.date) return;
-            const fecha = f.date.split('T')[0];
+        const { data: jornadas, error } = await query;
 
-            // Aplicar filtro de fechas si se especificó
-            if (desde && fecha < desde) return;
-            if (hasta && fecha > hasta) return;
+        if (error) {
+            console.error("Error:", error);
+            fichajesTbody.innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar datos.</td></tr>';
+            return;
+        }
 
-            if (!porDia[fecha]) {
-                porDia[fecha] = {
-                    startTime:    f.startTime   || '-',
-                    endTime:      f.endTime     || '-',
-                    totalSeconds: f.totalSeconds || 0,
-                    pausedTime:   f.pausedTime   || 0
-                };
-            } else {
-                // Si hay varios registros del mismo día, los acumulamos
-                porDia[fecha].totalSeconds += (f.totalSeconds || 0);
-                porDia[fecha].pausedTime   += (f.pausedTime   || 0);
-                if (f.startTime && f.startTime < porDia[fecha].startTime) porDia[fecha].startTime = f.startTime;
-                if (f.endTime   && f.endTime   > porDia[fecha].endTime)   porDia[fecha].endTime   = f.endTime;
-            }
-        });
-
-        renderTabla(porDia);
+        renderTabla(jornadas);
     }
 
     // ==========================
     // PINTAR TABLA
     // ==========================
-    function renderTabla(porDia) {
-
+    function renderTabla(jornadas) {
         fichajesTbody.innerHTML = '';
 
-        const fechas = Object.keys(porDia).sort().reverse(); // más reciente primero
-
-        if (fechas.length === 0) {
-            fichajesTbody.innerHTML = `
-                <tr><td colspan="6" class="text-center">No hay fichajes registrados.</td></tr>`;
+        if (!jornadas || jornadas.length === 0) {
+            fichajesTbody.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron fichajes en este rango.</td></tr>';
             return;
         }
 
-        fechas.forEach(fecha => {
-
-            const data       = porDia[fecha];
-            const totalHoras = secondsToHMS(data.totalSeconds);
-            const pausas     = secondsToHMS(data.pausedTime);
-
-            let estado      = 'Incidencia';
-            let estadoClase = 'status-issue';
-
-            if (data.totalSeconds >= 7 * 3600) {
-                estado      = 'Completado';
-                estadoClase = 'status-completed';
-            }
-            if (data.totalSeconds === 0) {
-                estado      = 'Ausencia';
-                estadoClase = 'status-off';
-            }
-
+        jornadas.forEach(j => {
             const row = document.createElement('tr');
-
-            if (estado === 'Ausencia') {
-                row.innerHTML = `
-                    <td>${formatFecha(fecha + 'T00:00:00')}</td>
-                    <td colspan="3" class="text-center">Vacaciones</td>
-                    <td>${totalHoras}</td>
-                    <td><span class="status-badge ${estadoClase}">${estado}</span></td>`;
-            } else {
-                row.innerHTML = `
-                    <td>${formatFecha(fecha + 'T00:00:00')}</td>
-                    <td>${data.startTime}</td>
-                    <td>${data.endTime}</td>
-                    <td>${pausas}</td>
-                    <td>${totalHoras}</td>
-                    <td><span class="status-badge ${estadoClase}">${estado}</span></td>`;
+            
+            const horaEntrada = formatTimeDisplay(j.hora_entrada);
+            const horaSalida = formatTimeDisplay(j.hora_salida);
+            const tiempoTotal = j.hora_salida ? calcularDiferenciaHMS(j.hora_entrada, j.hora_salida) : 'En curso...';
+            
+            // Lógica de estado
+            let estado = j.estado === 'completado' ? 'Completado' : 'Incidencia';
+            let estadoClase = j.estado === 'completado' ? 'status-completed' : 'status-issue';
+            
+            if (!j.hora_salida) {
+                estado = 'Activo';
+                estadoClase = 'status-in';
             }
+
+            row.innerHTML = `
+                <td>${formatFecha(j.fecha)}</td>
+                <td>${horaEntrada}</td>
+                <td>${horaSalida}</td>
+                <td>00:00:00</td> <td>${tiempoTotal}</td>
+                <td><span class="status-badge ${estadoClase}">${estado}</span></td>
+            `;
 
             fichajesTbody.appendChild(row);
         });
@@ -131,8 +124,13 @@ document.addEventListener("DOMContentLoaded", () => {
         cargarFichajes(desde, hasta);
     });
 
-    // ==========================
+    // Logout
+    document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await supabase.auth.signOut();
+        window.location.href = '../login/login.html';
+    });
+
     // INIT
-    // ==========================
-    cargarFichajes('', '');
+    cargarFichajes();
 });
