@@ -143,11 +143,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- GUARDAR TAREA ---
-    formNuevaTarea.onsubmit = async (e) => {
+formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
         
         if (!currentBoardId) {
-            alert("⚠️ Debes crear o seleccionar un tablero antes de añadir tareas.");
+            alert("⚠️ Selecciona un tablero primero.");
             return;
         }
 
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tablero_id: currentBoardId,
             titulo: document.getElementById('task-title').value,
             descripcion: document.getElementById('task-desc').value,
-            prioridad: document.getElementById('task-priority').value,
+            // Quitamos la línea de prioridad para que no de error
             estado: document.getElementById('task-column').value,
             empresa_id: userProfile.empresa_id
         };
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("Error al guardar tarea: " + error.message);
         }
     };
-
+    
     async function moverTarea(id, estadoActual) {
         const orden = ['todo', 'doing', 'done'];
         const indexActual = orden.indexOf(estadoActual);
