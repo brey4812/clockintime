@@ -1,46 +1,52 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const btnRecover = document.getElementById('btn-recover-submit');
-    const emailInput = document.getElementById('recover-email');
+    const btnRecover = document.getElementById('btn-forgot-submit'); // ID corregido según tu HTML
+    const emailInput = document.getElementById('email');
     const forgotForm = document.getElementById('forgot-form');
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    const themeIcon = themeBtn?.querySelector('i');
 
+    // Lógica de tema
+    const updateIcon = (theme) => {
+        if (themeIcon) themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    };
+    updateIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeBtn?.addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateIcon(theme);
+    });
+
+    // Lógica de recuperación
     const handleRecovery = async (e) => {
-        e.preventDefault(); // Evitamos que la página se recargue
-
+        e.preventDefault();
         const email = emailInput.value.trim();
 
         if (!email) {
-            alert('Por favor, introduce tu correo electrónico.');
+            alert('Introduce tu email.');
             return;
         }
 
-        // Estado visual de carga
         btnRecover.disabled = true;
-        btnRecover.textContent = 'Enviando enlace...';
+        btnRecover.textContent = 'Enviando...';
 
-        try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                // Esta URL debe coincidir con la de Supabase y Vercel
-                redirectTo: 'https://clockintime.vercel.app/login/reset-password.html',
-            });
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://clockintime.vercel.app/login/reset-password.html',
+        });
 
-            if (error) {
-                alert('Error de Supabase: ' + error.message);
-                btnRecover.disabled = false;
-                btnRecover.textContent = 'Recuperar Contraseña';
-            } else {
-                alert('¡Enlace enviado! Revisa tu bandeja de entrada (y la carpeta de spam).');
-                window.location.href = 'login.html';
-            }
-        } catch (err) {
-            console.error('Error inesperado:', err);
-            alert('Ocurrió un error al intentar enviar el correo.');
+        if (error) {
+            alert('Error: ' + error.message);
             btnRecover.disabled = false;
+            btnRecover.textContent = 'Enviar enlace';
+        } else {
+            alert('¡Enlace enviado! Revisa tu correo.');
+            window.location.href = 'login.html';
         }
     };
 
-    // Escuchamos tanto el clic como el "Enter" en el formulario
     forgotForm?.addEventListener('submit', handleRecovery);
     btnRecover?.addEventListener('click', handleRecovery);
 });
