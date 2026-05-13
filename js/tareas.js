@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return window.location.href = '../login/login.html';
 
+    // Obtener perfil del usuario actual
     const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -29,32 +30,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         await cargarTableros();
     }
 
-    // --- 2. GESTIÓN DE TABLEROS (FILTRADO POR USUARIO) ---
+    // --- 2. GESTIÓN DE TABLEROS (FILTRADO POR USUARIO LOGUEADO) ---
     async function cargarTableros() {
-        // Traemos solo los tableros creados por este usuario específico
+        // Traemos solo los tableros que pertenecen a este usuario específico
         const { data: tableros, error } = await supabase
             .from('tableros')
             .select('*')
             .eq('creado_por', userProfile.id);
 
         if (tableros && tableros.length > 0) {
-            // Llenar el selector
+            // Llenar el selector con los tableros del usuario
             boardSelector.innerHTML = tableros.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
             boardSelector.innerHTML += `<option value="NEW_BOARD">+ Nuevo Tablero...</option>`;
             
-            // Seleccionar el primero por defecto
+            // Cargar por defecto el primer tablero
             currentBoardId = tableros[0].id;
             boardSelector.value = currentBoardId;
             await cargarTareas(currentBoardId);
         } else {
-            // Caso: Usuario nuevo sin tableros
+            // Caso: Usuario nuevo o sin tableros propios
             boardSelector.innerHTML = `<option value="NONE">Sin tableros activos</option>`;
             boardSelector.innerHTML += `<option value="NEW_BOARD">+ Crear mi primer tablero...</option>`;
             limpiarColumnas();
         }
     }
 
-    // Evento al cambiar de tablero
+    // Evento al cambiar de tablero en el select
     boardSelector.onchange = async (e) => {
         const val = e.target.value;
         if (val === 'NEW_BOARD') {
@@ -72,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Insertar tablero vinculando empresa y usuario creador
         const { data, error } = await supabase
             .from('tableros')
             .insert([{ 
@@ -85,24 +87,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("Error al crear tablero: " + error.message);
         } else {
             await cargarTableros();
-            // Seleccionar automáticamente el tablero creado
+            // Seleccionamos el nuevo tablero automáticamente
             currentBoardId = data[0].id;
             boardSelector.value = currentBoardId;
             await cargarTareas(currentBoardId);
         }
     }
 
-    // --- 3. GESTIÓN DE TAREAS (FILTRADO POR USUARIO) ---
+    // --- 3. GESTIÓN DE TAREAS (FILTRADO POR TABLERO Y USUARIO) ---
     async function cargarTareas(tableroId) {
         if (!tableroId || tableroId === 'NONE' || tableroId === 'NEW_BOARD') return;
         limpiarColumnas();
 
-        // Filtramos que la tarea pertenezca al tablero Y al usuario logueado
+        // Filtramos por el tablero seleccionado Y que el dueño sea el usuario actual
         const { data: tareas, error } = await supabase
             .from('tareas')
             .select('*')
             .eq('tablero_id', tableroId)
-            .eq('user_id', userProfile.id) 
+            .eq('creado_por', userProfile.id) 
             .order('created_at', { ascending: true });
 
         if (!error) {
@@ -126,28 +128,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.className = 'kanban-card';
         card.innerHTML = `
             <div class="card-body" style="cursor:pointer;">
-                <h3 style="margin:0;">${tarea.titulo}</h3>
+                <h3 style="margin:0; font-size: 1.1rem;">${tarea.titulo}</h3>
                 <p style="font-size:0.85rem; color:gray; margin-top:5px;">${tarea.descripcion || 'Sin descripción'}</p>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
                 <span class="badge-priority priority-${tarea.prioridad}">${tarea.prioridad}</span>
                 <div class="card-actions">
-                    <button class="btn-mover" title="Mover a la derecha"><i class="fas fa-arrow-right"></i></button>
-                    <button class="btn-del" style="color:#ff4d4d; margin-left:12px;"><i class="fas fa-trash"></i></button>
+                    <button class="btn-mover" title="Mover a siguiente fase"><i class="fas fa-arrow-right"></i></button>
+                    <button class="btn-del" style="color:#ff4d4d; margin-left:12px;" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
 
-        // Click en el cuerpo para editar
+        // Editar al hacer click en la tarjeta
         card.querySelector('.card-body').onclick = () => abrirModalParaEditar(tarea);
         
-        // Click en mover (flecha)
+        // Mover tarea entre columnas
         card.querySelector('.btn-mover').onclick = (e) => { 
             e.stopPropagation(); 
             moverTarea(tarea.id, tarea.estado); 
         };
 
-        // Click en borrar (basura)
+        // Borrar tarea
         card.querySelector('.btn-del').onclick = (e) => { 
             e.stopPropagation(); 
             borrarTarea(tarea.id); 
@@ -160,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function moverTarea(id, estadoActual) {
         const estados = ['todo', 'doing', 'done'];
         const sigIdx = estados.indexOf(estadoActual) + 1;
-        if (sigIdx >= estados.length) return; // Ya está en la última columna
+        if (sigIdx >= estados.length) return; // Límite de columnas alcanzado
 
         const nuevoEstado = estados[sigIdx];
         const { error } = await supabase
@@ -172,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function borrarTarea(id) {
-        if (confirm('¿Deseas eliminar esta tarea?')) {
+        if (confirm('¿Seguro que quieres borrar esta tarea?')) {
             const { error } = await supabase.from('tareas').delete().eq('id', id);
             if (!error) await cargarTareas(currentBoardId);
         }
@@ -182,10 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         
         if (!currentBoardId || currentBoardId === 'NONE') {
-            alert("Primero crea un tablero para poder añadir tareas.");
+            alert("No tienes un tablero seleccionado.");
             return;
         }
 
+        // Estructura del objeto basada en tus columnas de BD
         const payload = {
             titulo: document.getElementById('task-title').value,
             descripcion: document.getElementById('task-desc').value,
@@ -193,8 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             estado: document.getElementById('task-column').value,
             tablero_id: currentBoardId,
             empresa_id: userProfile.empresa_id,
-            user_id: userProfile.id,      // Vinculamos la tarea al usuario
-            creado_por: userProfile.id   // Mantenemos consistencia con tu tabla
+            creado_por: userProfile.id // Vinculación UUID correcta
         };
 
         let res;
@@ -208,11 +210,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             cerrarModal();
             await cargarTareas(currentBoardId);
         } else {
-            alert("Error al guardar: " + res.error.message);
+            alert("Error en la base de datos: " + res.error.message);
         }
     };
 
-    // --- 5. MODALES Y NAVEGACIÓN ---
+    // --- 5. MODALES Y UI ---
     function abrirModalParaEditar(tarea) {
         editingTaskId = tarea.id;
         document.querySelector('#task-modal h2').textContent = "Editar Tarea";
@@ -225,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-open-task-modal').onclick = () => {
         if (!currentBoardId || currentBoardId === 'NONE') {
-            alert("Crea un tablero primero");
+            alert("Debes crear o seleccionar un tablero primero.");
             return;
         }
         editingTaskId = null;
