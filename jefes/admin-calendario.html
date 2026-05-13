@@ -2,165 +2,110 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calendario de Equipo | ClockInTime Admin</title>
-
-    <meta name="description" content="Panel de administración de ClockInTime. Gestiona calendarios, proyectos y turnos del equipo de forma centralizada.">
-    <meta name="keywords" content="control horario, gestión de proyectos, calendario laboral, RRHH, admin dashboard">
-    <meta name="author" content="ClockInTime Team">
-    <meta name="robots" content="noindex, nofollow"> <meta name="theme-color" content="#090e1a">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel de administración de calendario. Gestiona turnos, proyectos y empleados en clockInTime.">
+    <meta name="keywords" content="clockInTime, administración, calendario laboral, gestión equipos, RRHH">
+    <meta name="author" content="clockInTime">
+    <meta name="theme-color" content="#0056b3">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" type="image/png" href="../assets/favicon.png">
-    <link rel="apple-touch-icon" href="../assets/icon-192.png">
-
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Calendario Admin - ClockInTime">
-    <meta property="og:description" content="Gestión avanzada de tiempos y proyectos.">
-    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
-
-    <link rel="stylesheet" href="../CSS/app-style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
     
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Calendario Admin - clockInTime">
+    <meta property="og:description" content="Gestión centralizada de calendarios y eventos de equipo.">
+    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
+    
+    <title>Calendario Admin - clockInTime</title>
+    
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="../js/theme.js"></script>
 
     <style>
-        /* Estilos específicos para la vista de calendario */
-        .calendar-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .cal-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-secondary);
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .calendar-header-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            margin: 10px 0;
-        }
-
-        .calendar-header-nav h2 {
-            min-width: 200px;
-            text-align: center;
-            font-size: 1.5rem;
-            text-transform: capitalize;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background: var(--border-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .day-header {
-            background: var(--bg-secondary);
-            color: var(--text-dim);
-            padding: 12px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .day-cell {
-            background: var(--bg-primary);
-            min-height: 120px;
-            padding: 10px;
-            transition: background 0.3s;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .day-cell.other-month {
-            opacity: 0.4;
-            background: var(--bg-secondary);
-        }
-
-        .day-cell.today {
-            background: rgba(222, 255, 154, 0.03);
-        }
-
-        .day-number {
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 5px;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .day-cell.today .day-number {
-            background: var(--primary-color);
-            color: #000;
-        }
-
+        /* Estilos para eventos y celdas (Sincronizados con empleados) */
         .calendar-event {
-            font-size: 0.7rem;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: white;
+            margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-weight: 500;
-            border-left: 3px solid rgba(0,0,0,0.2);
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        .modal-hidden { display: none !important; }
-
-        @media (max-width: 768px) {
-            .calendar-grid { grid-template-columns: repeat(7, 1fr); }
-            .day-cell { min-height: 80px; padding: 5px; }
-            .day-header { font-size: 0.7rem; padding: 8px 2px; }
-            .calendar-event { font-size: 0.6rem; }
+        .day-cell {
+            min-height: 110px;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
         }
+
+        .day-cell.today {
+            background-color: rgba(0, 86, 179, 0.05);
+            border: 2px solid var(--primary-color);
+        }
+
+        .other-month {
+            background-color: var(--bg-secondary);
+            opacity: 0.5;
+        }
+
+        /* Toolbar de Admin */
+        .admin-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-secondary);
+            padding: 5px 15px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .select-admin {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Modal Hidden por defecto */
+        .modal-hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="admin-dashboard.html" class="logo">
-                    clockIn<span>Time</span> <small class="badge-admin">Admin</small>
-                </a>
+                <a href="admin-dashboard.html" class="logo">clockInTime <span style="font-size: 0.6rem; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">ADMIN</span></a>
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="admin-dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
-                    <li><a href="admin-usuarios.html"><i class="fas fa-users"></i> Empleados</a></li>
-                    <li><a href="admin-calendario.html" class="active"><i class="fas fa-calendar-alt"></i> Calendario</a></li>
+                    <li><a href="admin-dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="admin-usuarios.html"><i class="fas fa-users"></i> Gestión Usuarios</a></li>
                     <li><a href="admin-solicitudes.html"><i class="fas fa-clipboard-check"></i> Solicitudes</a></li>
-                    <li><a href="admin-configuracion.html"><i class="fas fa-cog"></i> Configuración</a></li>
+                    <li><a href="admin-calendario.html" class="active"><i class="fas fa-calendar-alt"></i> Calendario Equipo</a></li>
+                    <li><a href="admin-configuracion.html"><i class="fas fa-cogs"></i> Configuración</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <button id="btn-logout" class="btn-logout-full">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </button>
+                <a href="#" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
         </aside>
 
@@ -169,34 +114,34 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn-icon-only"><i class="fas fa-bars"></i></button>
+                    <button id="menu-toggle" class="btn-menu" style="background:none; border:none; font-size:1.2rem; color:var(--text-main); cursor:pointer; margin-right:1rem;">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Calendario del Equipo</h1>
                 </div>
-                <div class="user-info">
-                    <span class="status-indicator online"></span>
-                    <strong id="user-name-header">Cargando...</strong>
-                </div>
+                <div class="user-info">Hola, <strong id="user-name-header">Administrador</strong></div>
             </header>
 
-            <div class="calendar-section">
-                <div class="cal-toolbar">
-                    <div class="filter-group">
-                        <label for="filtro-empleado-cal"><i class="fas fa-filter"></i> Filtrar por:</label>
-                        <select id="filtro-empleado-cal" class="select-custom">
-                            <option value="todos">Todos los empleados</option>
+            <div class="admin-toolbar">
+                <div class="filter-group">
+                    <i class="fas fa-user-circle" style="color: var(--primary-color);"></i>
+                    <label for="filtro-empleado-cal" style="font-size: 0.8rem; font-weight: bold;">VER CALENDARIO DE:</label>
+                    <select id="filtro-empleado-cal" class="select-admin">
+                        <option value="todos">Todos los Empleados</option>
                         </select>
-                    </div>
-                    <button id="btn-nuevo-proyecto" class="btn-primary-app">
-                        <i class="fas fa-plus-circle"></i> Crear Proyecto / Evento
-                    </button>
                 </div>
 
-                <div class="calendar-header-nav">
-                    <button id="btn-cal-prev" class="btn-nav-cal"><i class="fas fa-chevron-left"></i></button>
-                    <h2 id="calendar-month-year">-- --- ----</h2>
-                    <button id="btn-cal-next" class="btn-nav-cal"><i class="fas fa-chevron-right"></i></button>
-                </div>
+                <button id="btn-nuevo-proyecto" class="btn-primary-app">
+                    <i class="fas fa-plus-circle"></i> Nuevo Proyecto / Evento
+                </button>
+            </div>
 
+            <div class="widget">
+                <div class="calendar-header">
+                    <button id="btn-cal-prev" class="btn-calendar-nav"><i class="fas fa-chevron-left"></i></button>
+                    <h2 id="calendar-month-year">Cargando...</h2>
+                    <button id="btn-cal-next" class="btn-calendar-nav"><i class="fas fa-chevron-right"></i></button>
+                </div>
                 <div id="calendar-grid-body" class="calendar-grid">
                     <div class="day-header">Lun</div>
                     <div class="day-header">Mar</div>
@@ -205,66 +150,89 @@
                     <div class="day-header">Vie</div>
                     <div class="day-header">Sáb</div>
                     <div class="day-header">Dom</div>
+                </div>
+            </div>
+
+            <div class="widget" style="margin-top: 1rem;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; background: #28a745; border-radius: 2px;"></span> Vacaciones
                     </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; background: #f5a623; border-radius: 2px;"></span> Pendientes
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; background: #6f42c1; border-radius: 2px;"></span> Proyectos
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 10px; height: 10px; background: #e74c3c; border-radius: 2px;"></span> Festivos
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
     <div id="modal-proyecto" class="modal-overlay modal-hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3><i class="fas fa-calendar-plus"></i> Publicar Evento</h3>
-                <button type="button" id="btn-cerrar-modal-proyecto" class="btn-close-modal">&times;</button>
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin:0;">Publicar Evento / Proyecto</h2>
+                <button id="btn-cerrar-modal-proyecto" style="background:none; border:none; font-size: 1.5rem; cursor:pointer; color: var(--text-light);">&times;</button>
             </div>
-            <form id="form-proyecto" class="modal-form">
-                <div class="form-group">
-                    <label for="proyecto-titulo">Título del Evento *</label>
-                    <input type="text" id="proyecto-titulo" placeholder="Ej: Lanzamiento Campaña" required>
+            
+            <form id="form-proyecto">
+                <div class="form-group-app">
+                    <label>Título del Proyecto *</label>
+                    <input type="text" id="proyecto-titulo" placeholder="Ej: Lanzamiento Web" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="proyecto-desc">Descripción Corta</label>
-                    <textarea id="proyecto-desc" placeholder="Detalles adicionales..." rows="2"></textarea>
+                <div class="form-group-app">
+                    <label>Descripción</label>
+                    <textarea id="proyecto-desc" placeholder="Detalles del evento..." rows="2" style="width:100%; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; background: var(--bg-primary); color: var(--text-main);"></textarea>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="proyecto-start">Fecha Inicio</label>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group-app" style="flex: 1;">
+                        <label>Inicio</label>
                         <input type="date" id="proyecto-start" required>
                     </div>
-                    <div class="form-group">
-                        <label for="proyecto-end">Fecha Fin</label>
+                    <div class="form-group-app" style="flex: 1;">
+                        <label>Fin</label>
                         <input type="date" id="proyecto-end" required>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="proyecto-rol">Visibilidad por Rol</label>
-                        <select id="proyecto-rol">
-                            <option value="">Global (Todos)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="proyecto-color">Color</label>
-                        <input type="color" id="proyecto-color" value="#6f42c1">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="proyecto-empleado">Asignación Directa (Opcional)</label>
-                    <select id="proyecto-empleado">
-                        <option value="">Ninguno (Evento de Grupo)</option>
+                <div class="form-group-app">
+                    <label>Asignar a Departamento / Rol</label>
+                    <select id="proyecto-rol" class="input-app">
+                        <option value="">Todos los Roles (Global)</option>
                     </select>
                 </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn-save">Publicar en Calendario</button>
+                <div class="form-group-app">
+                    <label>Color de Etiqueta</label>
+                    <input type="color" id="proyecto-color" value="#6f42c1" style="width: 100%; height: 40px; cursor: pointer;">
                 </div>
+                <button type="submit" class="btn-primary-app" style="width: 100%; margin-top: 10px;">Publicar en Calendario</button>
             </form>
         </div>
     </div>
 
+    <footer class="legal-footer">
+        <a href="../legal/terminos-servicio.html">Términos de Servicio</a>
+        <a href="../legal/politica-privacidad.html">Política de Privacidad</a>
+        <a href="../legal/politica-cookies.html">Política de Cookies</a>
+    </footer>
+
     <script type="module" src="../js/admin-calendario.js"></script>
+
+    <script>
+        // Control del menú móvil (Igual que empleados para consistencia)
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        menuToggle?.addEventListener('click', toggleMenu);
+        overlay?.addEventListener('click', toggleMenu);
+    </script>
 </body>
 </html>
