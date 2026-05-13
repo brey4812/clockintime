@@ -192,7 +192,13 @@ a {
     color: #ffffff !important; /* Fuerza el texto a blanco */
 }
 
-.status-out { background-color: var(--text-red); }
+.status-out { 
+    background-color: rgba(220, 53, 69, 0.1); /* Un fondo rojo muy clarito/transparente */
+    color: var(--text-red);                 /* El texto en rojo fuerte */
+    border: 1px solid var(--text-red);       /* Un borde para que resalte más */
+    padding: 5px 12px;
+    border-radius: 15px;
+}
 .status-in { background-color: var(--blue); }
 .status-pause { background-color: var(--yellow); color: var(--text-dark); }
 
