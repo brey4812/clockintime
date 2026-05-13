@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!select) return;
             const isFiltro = select.id === 'filtro-empleado-cal';
             select.innerHTML = isFiltro 
-                ? `<option value="todos">Todos los empleados</option>` 
+                ? `<option value="todos">Todos los empleados (Proyectos)</option>` 
                 : `<option value="">Sin asignar (Global / Empresa)</option>`;
             
             empleados.forEach(emp => {
@@ -96,10 +96,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 3. PINTAR EVENTOS (EVENTOS + VACACIONES)
+    // 3. PINTAR EVENTOS (Lógica Inteligente)
     // =============================
     async function markEventos(month, year, dayCellMap) {
-        // --- PARTE A: PROYECTOS Y EVENTOS ---
+        // --- PARTE A: PROYECTOS Y EVENTOS (Siempre se ven) ---
         let queryEventos = supabase
             .from('eventos_calendario')
             .select('*, roles(nombre_rol)')
@@ -111,27 +111,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const { data: eventos } = await queryEventos;
 
-        // --- PARTE B: SOLICITUDES / VACACIONES ---
-        let querySol = supabase
-            .from('solicitudes')
-            .select('*')
-            .eq('estado', 'Aprobada');
-
+        // --- PARTE B: VACACIONES (Solo si hay un empleado seleccionado) ---
+        let vacaciones = [];
         if (filtroActual !== 'todos') {
-            querySol = querySol.eq('user_id', filtroActual);
+            const { data: solAprobadas } = await supabase
+                .from('solicitudes')
+                .select('*')
+                .eq('user_id', filtroActual)
+                .eq('estado', 'Aprobada');
+            
+            vacaciones = solAprobadas || [];
         }
 
-        const { data: solicitudes } = await querySol;
-
         // --- PARTE C: DIBUJAR ---
-        // Dibujar Proyectos
+        // 1. Dibujar Proyectos / Presentaciones
         eventos?.forEach(event => {
             let tag = event.user_id ? "👤 " : (event.rol_id ? "👥 " : "🌐 ");
             pintarEnRango(event.fecha_inicio, event.fecha_fin, event.titulo, event.color || '#6f42c1', dayCellMap, month, year, tag);
         });
 
-        // Dibujar Vacaciones (Color Verde fijo para diferenciar)
-        solicitudes?.forEach(sol => {
+        // 2. Dibujar Vacaciones (Solo si el filtro no es "todos")
+        vacaciones.forEach(sol => {
             pintarEnRango(sol.fecha_inicio, sol.fecha_fin, sol.tipo || 'Vacaciones', '#28a745', dayCellMap, month, year, "🌴 ");
         });
     }
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 4. GUARDAR PROYECTO
+    // 4. RESTO DE FUNCIONES (Igual)
     // =============================
     async function guardarProyecto(e) {
         e.preventDefault();
@@ -175,21 +175,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             rol_id: selectRolProy.value || null,
             user_id: selectEmpleadoProy.value || null
         };
-
         const { error } = await supabase.from('eventos_calendario').insert([nuevoEvento]);
-
-        if (error) {
-            alert("Error al guardar: " + error.message);
-        } else {
-            alert("Evento publicado correctamente");
+        if (error) alert("Error: " + error.message);
+        else {
+            alert("Evento publicado");
             cerrarModal();
             renderCalendar();
         }
     }
 
-    // =============================
-    // 5. RENDERIZADO DEL GRID
-    // =============================
     function renderCalendar() {
         const dayCellMap = updateCalendarGrid(currentMonth, currentYear);
         markEventos(currentMonth, currentYear, dayCellMap);
@@ -199,18 +193,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
         calendarGridBody.querySelectorAll('.day-cell').forEach(c => c.remove());
-
         let firstDay = new Date(year, month, 1).getDay();
         firstDay = firstDay === 0 ? 7 : firstDay; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const dayCellMap = new Map();
-
         for (let i = 1; i < firstDay; i++) {
             const empty = document.createElement('div');
             empty.className = 'day-cell other-month';
             calendarGridBody.appendChild(empty);
         }
-
         for (let day = 1; day <= daysInMonth; day++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
@@ -218,7 +209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             num.className = 'day-number';
             num.textContent = day;
             cell.appendChild(num);
-
             if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
                 cell.classList.add('today');
             }
@@ -228,16 +218,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return dayCellMap;
     }
 
-    // =============================
-    // 6. EVENTOS DE UI
-    // =============================
     selectEmpleadoFiltro?.addEventListener('change', (e) => {
         filtroActual = e.target.value;
         renderCalendar();
     });
 
-    prevButton.onclick = () => { currentMonth--; if(currentMonth < 0){currentMonth=11; currentYear--;} renderCalendar(); };
-    nextButton.onclick = () => { currentMonth++; if(currentMonth > 11){currentMonth=0; currentYear++;} renderCalendar(); };
+    prevButton.onclick = () => { currentMonth--; if (currentMonth < 0){currentMonth=11; currentYear--;} renderCalendar(); };
+    nextButton.onclick = () => { currentMonth++; if (currentMonth > 11){currentMonth=0; currentYear++;} renderCalendar(); };
 
     const cerrarModal = () => { modalProyecto?.classList.add('modal-hidden'); formProyecto.reset(); };
     btnNuevoProyecto?.addEventListener('click', () => modalProyecto?.classList.remove('modal-hidden'));
