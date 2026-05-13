@@ -35,6 +35,22 @@
         /* Ajuste para el botón de menú en móviles */
         .btn-menu { background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; margin-right: 1rem; }
         @media (min-width: 1025px) { .btn-menu { display: none; } }
+
+        /* Estilos para mini-tarjetas de tareas en dashboard */
+        .contenedor-tareas {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mini-card-tarea {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        .mini-card-tarea p { margin: 0; font-size: 0.9rem; font-weight: 600; }
+        .mini-card-tarea small { color: gray; }
     </style>
 </head>
 <body>
@@ -45,10 +61,10 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="dashboard.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
                     <li><a href="fichajes.html"><i class="fas fa-history"></i> Mis Fichajes</a></li>
                     <li><a href="solicitudes.html"><i class="fas fa-calendar-alt"></i> Solicitudes</a></li>
-                    <li><a href="calendario.html" class="active"><i class="fas fa-calendar-week"></i> Calendario</a></li>
+                    <li><a href="calendario.html"><i class="fas fa-calendar-week"></i> Calendario</a></li>
                     <li><a href="tareas.html"><i class="fas fa-tasks"></i> Mis Tareas</a></li>
                     <li><a href="mi-perfil.html"><i class="fas fa-user"></i> Mi Perfil</a></li>
                 </ul>
@@ -63,6 +79,9 @@
         <main class="main-content">
             <header class="main-header">
                 <div class="header-left">
+                    <button id="menu-toggle" class="btn-menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Dashboard</h1>
                 </div>
                 <div class="user-info">Bienvenido, <strong id="user-name-header">Empleado</strong></div>
@@ -90,15 +109,38 @@
                 </div>
             </section>
 
-            <section class="widget-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+            <section class="widget-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                
                 <div class="widget summary-widget">
-                    <h3>Horas Semana</h3>
-                    <div id="summary-horas-semana" class="summary-value" style="font-size: 1.5rem; margin-top: 0.5rem;">0h 00m 00s</div>
+                    <h3>Horas esta Semana</h3>
+                    <div id="summary-horas-semana" class="summary-value" style="font-size: 1.8rem; margin-top: 0.5rem; color: var(--text-main);">0h 00m</div>
+                    <p style="font-size: 0.8rem; color: gray; margin-top: 5px;">Basado en tus últimos fichajes</p>
                 </div>
+
                 <div class="widget summary-widget">
                     <h3>Próximo Evento / Proyecto</h3>
-                    <div id="summary-proximas-ausencias" class="summary-value small" style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">No hay eventos hoy</div>
+                    <div id="proximo-evento-texto" class="summary-value" style="font-size: 1.2rem; color: var(--primary-color); margin-top: 10px; min-height: 50px;">
+                        Cargando eventos...
+                    </div>
+                    <a href="calendario.html" style="font-size: 0.8rem; color: var(--primary-color); text-decoration: none;">Ver calendario completo →</a>
                 </div>
+
+                <div class="widget summary-widget">
+                    <h3>Mis Tareas Pendientes</h3>
+                    <div id="contenedor-tareas-dashboard" class="contenedor-tareas">
+                        <p style="color: gray; font-size: 0.85rem;">Cargando tareas...</p>
+                    </div>
+                    <a href="tareas.html" style="font-size: 0.8rem; color: var(--primary-color); text-decoration: none; margin-top: 10px; display: block;">Ir al tablero Kanban →</a>
+                </div>
+
+                <div class="widget summary-widget">
+                    <h3>Resumen de Vacaciones</h3>
+                    <div id="resumen-vacaciones" style="margin-top: 10px;">
+                        <p style="color: gray; font-size: 0.85rem;">Calculando días...</p>
+                    </div>
+                    <p style="font-size: 0.75rem; color: gray; margin-top: 5px;">Días anuales totales: 30</p>
+                </div>
+
             </section>
         </main>
     </div>
@@ -106,6 +148,7 @@
     <script type="module" src="../js/dashboard.js"></script>
     
     <script>
+        // Lógica del menú hamburguesa para móviles
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
@@ -117,6 +160,11 @@
 
         menuToggle?.addEventListener('click', toggleMenu);
         overlay?.addEventListener('click', toggleMenu);
+
+        // Cerrar sesión
+        document.getElementById('btn-logout')?.addEventListener('click', () => {
+            // La lógica de cierre real está en dashboard.js (Firebase/Supabase)
+        });
     </script>
 </body>
 </html>
