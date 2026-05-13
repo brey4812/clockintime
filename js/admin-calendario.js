@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 2. CARGAR SELECTORES
+    // 2. CARGAR SELECTORES (EMPLEADOS Y ROLES)
     // =============================
     async function cargarFiltros() {
         const { data: empleados, error } = await supabase
@@ -67,12 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (error) return console.error("Error cargando empleados:", error);
 
-        // Poblar selectores de empleados
+        // Poblar selectores de empleados (Tanto el filtro superior como el del modal)
         [selectEmpleadoFiltro, selectEmpleadoProy].forEach(select => {
             if (!select) return;
             const isFiltro = select.id === 'filtro-empleado-cal';
             select.innerHTML = isFiltro 
-                ? `<option value="todos">Todos los eventos</option>` 
+                ? `<option value="todos">Todos los empleados</option>` 
                 : `<option value="">Sin asignar (Global / Empresa)</option>`;
             
             empleados.forEach(emp => {
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 3. PINTAR EVENTOS (CON FILTRO MEJORADO)
+    // 3. PINTAR EVENTOS (GLOBAL + FILTRADO)
     // =============================
     async function markEventos(month, year, dayCellMap) {
         let query = supabase
@@ -106,8 +106,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             .select('*, roles(nombre_rol)')
             .eq('empresa_id', userProfile.empresa_id);
 
-        // Si filtramos por un empleado, queremos ver sus eventos 
-        // Y TAMBIÉN los globales (donde user_id es null)
+        // LÓGICA DE FILTRO: 
+        // Si se elige un empleado, vemos: lo suyo + lo que es NULL (Global)
         if (filtroActual !== 'todos') {
             query = query.or(`user_id.eq.${filtroActual},user_id.is.null`);
         }
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const start = new Date(event.fecha_inicio);
             const end = new Date(event.fecha_fin);
             
-            // Ajuste para evitar problemas de zona horaria (00:00:00)
+            // Normalizar horas para evitar saltos de día por zona horaria
             start.setHours(0,0,0,0);
             end.setHours(23,59,59,999);
 
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         div.className = 'calendar-event';
                         div.style.backgroundColor = event.color || '#6f42c1';
                         
-                        // Etiqueta de visibilidad
+                        // Iconos informativos según asignación
                         let tag = event.user_id ? "👤 " : (event.rol_id ? "👥 " : "🌐 ");
                         div.textContent = tag + event.titulo;
                         div.title = event.descripcion || '';
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) {
             alert("Error al guardar: " + error.message);
         } else {
-            alert("Evento publicado correctamente");
+            alert("¡Proyecto/Evento publicado!");
             cerrarModal();
             renderCalendar();
         }
@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
         
+        // Limpiar celdas anteriores preservando headers
         calendarGridBody.querySelectorAll('.day-cell').forEach(c => c.remove());
 
         let firstDay = new Date(year, month, 1).getDay();
@@ -195,14 +196,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const dayCellMap = new Map();
 
-        // Mes anterior
+        // Rellenar huecos mes anterior
         for (let i = 1; i < firstDay; i++) {
             const empty = document.createElement('div');
             empty.className = 'day-cell other-month';
             calendarGridBody.appendChild(empty);
         }
 
-        // Mes actual
+        // Crear días del mes
         for (let day = 1; day <= daysInMonth; day++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
@@ -210,6 +211,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             num.className = 'day-number';
             num.textContent = day;
             cell.appendChild(num);
+
+            if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
+                cell.classList.add('today');
+            }
+
             calendarGridBody.appendChild(cell);
             dayCellMap.set(day, cell);
         }
@@ -217,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // =============================
-    // 6. EVENTOS DE NAVEGACIÓN Y UI
+    // 6. EVENTOS DE UI
     // =============================
     selectEmpleadoFiltro?.addEventListener('change', (e) => {
         filtroActual = e.target.value;
@@ -236,7 +242,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderCalendar(); 
     };
 
-    // Modales
     const abrirModal = () => modalProyecto?.classList.remove('modal-hidden');
     const cerrarModal = () => {
         modalProyecto?.classList.add('modal-hidden');
@@ -247,7 +252,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCerrarModalProy?.addEventListener('click', cerrarModal);
     formProyecto?.addEventListener('submit', guardarProyecto);
 
-    // Logout
     document.getElementById('btn-logout')?.addEventListener('click', async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
