@@ -182,14 +182,14 @@ a {
 }
 .status-badge { 
     display: inline-block;
-    padding: 4px 12px; 
-    border-radius: 12px; 
-    font-size: 0.75rem; 
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 0.85rem; 
     font-weight: 700; 
     text-transform: uppercase; 
     text-align: center;
-    min-width: 80px;
-    color: #ffffff !important; /* Fuerza el texto a blanco */
+    min-width: 100px;
+    transition: all 0.3s ease;
 }
 
 .status-out { 
@@ -1055,12 +1055,6 @@ form .btn-primary-app {
         height: 50px;
     }
 
-    .status-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-    }
-
     table {
         font-size: 0.75rem; 
         min-width: 450px;
@@ -1068,21 +1062,6 @@ form .btn-primary-app {
 
     th, td {
         padding: 0.6rem 0.4rem;
-    }
-
-    .status-badge {
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        padding: 0;
-        font-size: 0.7rem;
-        color: rgb(196, 0, 0) !important;
-        text-indent: -9999px;
-        position: relative;
-        cursor: help; 
     }
 
     .status-badge::before {
