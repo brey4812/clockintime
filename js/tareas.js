@@ -1,16 +1,16 @@
 import { supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const boardSelector  = document.getElementById('board-selector');
-    const colTodo        = document.getElementById('kanban-content-todo');
-    const colDoing       = document.getElementById('kanban-content-doing');
-    const colDone        = document.getElementById('kanban-content-done');
-    const modalTarea     = document.getElementById('task-modal');
-    const formNuevaTarea = document.getElementById('new-task-form');
+    const boardSelector    = document.getElementById('board-selector');
+    const colTodo          = document.getElementById('kanban-content-todo');
+    const colDoing         = document.getElementById('kanban-content-doing');
+    const colDone          = document.getElementById('kanban-content-done');
+    const modalTarea       = document.getElementById('task-modal');
+    const formNuevaTarea   = document.getElementById('new-task-form');
     
     let userProfile = null;
     let currentBoardId = null;
-    let editingTaskId = null; // Para saber si estamos editando o creando
+    let editingTaskId = null;
 
     // 1. INICIO DE SESIÓN
     const { data: { session } } = await supabase.auth.getSession();
@@ -23,25 +23,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         await cargarTableros();
     }
 
+    // 2. CARGAR TABLEROS (Filtrado por Usuario)
     async function cargarTableros() {
-        const { data: tableros } = await supabase.from('tableros').select('*').eq('empresa_id', userProfile.empresa_id);
+        // CORRECCIÓN: Filtramos por empresa_id Y por el usuario logueado (creado_por)
+        const { data: tableros } = await supabase
+            .from('tableros')
+            .select('*')
+            .eq('empresa_id', userProfile.empresa_id)
+            .eq('creado_por', userProfile.id); // Solo mis tableros
+
         if (tableros && tableros.length > 0) {
             boardSelector.innerHTML = tableros.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
             boardSelector.innerHTML += `<option value="NEW_BOARD">+ Nuevo Tablero...</option>`;
             currentBoardId = tableros[0].id;
             boardSelector.value = currentBoardId;
             cargarTareas(currentBoardId);
+        } else {
+            // Si no hay tableros, invitamos a crear uno
+            boardSelector.innerHTML = `<option value="NEW_BOARD">+ Crear mi primer tablero</option>`;
+            colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
         }
     }
 
-    // 2. CARGAR Y RENDERIZAR
+    // 3. CARGAR TAREAS (Filtrado por Tablero y Usuario)
     async function cargarTareas(id) {
-        if (!id) return;
+        if (!id || id === 'NEW_BOARD') return;
         colTodo.innerHTML = ''; colDoing.innerHTML = ''; colDone.innerHTML = '';
-        const { data: t } = await supabase.from('tareas').select('*').eq('tablero_id', id).order('created_at', {ascending: true});
+
+        // CORRECCIÓN: Filtramos que la tarea pertenezca al tablero Y al usuario
+        const { data: t } = await supabase
+            .from('tareas')
+            .select('*')
+            .eq('tablero_id', id)
+            .eq('user_id', userProfile.id) // Solo mis tareas
+            .order('created_at', {ascending: true});
+
         t?.forEach(tarea => renderTarjeta(tarea));
         actualizarContadores();
     }
+
+    // 4. LÓGICA DE NUEVO TABLERO
+    boardSelector.onchange = async (e) => {
+        if (e.target.value === 'NEW_BOARD') {
+            const nombre = prompt("Nombre del nuevo tablero:");
+            if (nombre) {
+                const { data, error } = await supabase
+                    .from('tableros')
+                    .insert([{ 
+                        nombre: nombre, 
+                        empresa_id: userProfile.empresa_id, 
+                        creado_por: userProfile.id 
+                    }])
+                    .select();
+                
+                if (!error) {
+                    await cargarTableros();
+                    boardSelector.value = data[0].id;
+                    currentBoardId = data[0].id;
+                    cargarTareas(currentBoardId);
+                }
+            } else {
+                boardSelector.value = currentBoardId; // Cancelar
+            }
+        } else {
+            currentBoardId = e.target.value;
+            cargarTareas(currentBoardId);
+        }
+    };
 
     function renderTarjeta(tarea) {
         const col = document.getElementById(`kanban-content-${tarea.estado}`);
@@ -63,16 +111,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-        // CLIC PARA EDITAR
         card.querySelector('.card-body').onclick = () => abrirModalParaEditar(tarea);
-
-        // BOTÓN MOVER
         card.querySelector('.btn-mover').onclick = (e) => {
             e.stopPropagation();
             moverTarea(tarea.id, tarea.estado);
         };
-
-        // BOTÓN BORRAR
         card.querySelector('.btn-del').onclick = (e) => {
             e.stopPropagation();
             borrarTarea(tarea.id);
@@ -81,28 +124,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         col.appendChild(card);
     }
 
-    // 3. LÓGICA DE MOVIMIENTO (FLECHITA)
     async function moverTarea(id, estadoActual) {
         const estados = ['todo', 'doing', 'done'];
         const sigIdx = estados.indexOf(estadoActual) + 1;
-        
-        if (sigIdx >= estados.length) return; // Ya está en "Terminado"
+        if (sigIdx >= estados.length) return;
 
         const nuevoEstado = estados[sigIdx];
+        const { error } = await supabase.from('tareas').update({ estado: nuevoEstado }).eq('id', id);
 
-        const { error } = await supabase
-            .from('tareas')
-            .update({ estado: nuevoEstado })
-            .eq('id', id);
-
-        if (error) {
-            console.error("Error al mover:", error.message);
-        } else {
-            cargarTareas(currentBoardId);
-        }
+        if (!error) cargarTareas(currentBoardId);
     }
 
-    // 4. LÓGICA DE GUARDAR / EDITAR
+    // 5. GUARDAR / EDITAR (Inyectando user_id)
     formNuevaTarea.onsubmit = async (e) => {
         e.preventDefault();
         
@@ -112,15 +145,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             prioridad: document.getElementById('task-priority').value,
             estado: document.getElementById('task-column').value,
             tablero_id: currentBoardId,
-            empresa_id: userProfile.empresa_id
+            empresa_id: userProfile.empresa_id,
+            user_id: userProfile.id // CORRECCIÓN: Guardamos quién es el dueño
         };
 
         let res;
         if (editingTaskId) {
-            // ACTUALIZAR EXISTENTE
             res = await supabase.from('tareas').update(payload).eq('id', editingTaskId);
         } else {
-            // CREAR NUEVA
             res = await supabase.from('tareas').insert([payload]);
         }
 
@@ -132,7 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 5. MODALES
     function abrirModalParaEditar(tarea) {
         editingTaskId = tarea.id;
         document.querySelector('#task-modal h2').textContent = "Editar Tarea";
@@ -144,7 +175,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('btn-open-task-modal').onclick = () => {
-        editingTaskId = null; // Modo creación
+        if (!currentBoardId || currentBoardId === 'NEW_BOARD') return alert("Crea un tablero primero");
+        editingTaskId = null;
         document.querySelector('#task-modal h2').textContent = "Nueva Tarea";
         formNuevaTarea.reset();
         modalTarea.classList.remove('modal-hidden');
@@ -155,7 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         editingTaskId = null;
     }
 
-    // Otros eventos (cancelar, cerrar...)
     document.getElementById('btn-close-task-modal').onclick = cerrarModal;
     document.getElementById('btn-cancel-task').onclick = cerrarModal;
 
