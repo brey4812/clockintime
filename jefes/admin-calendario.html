@@ -1,207 +1,270 @@
-import { supabase } from './supabase-client.js';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calendario de Equipo | ClockInTime Admin</title>
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // =============================
-    // ELEMENTOS DEL DOM
-    // =============================
-    const prevButton          = document.getElementById('btn-cal-prev');
-    const nextButton          = document.getElementById('btn-cal-next');
-    const monthYearDisplay    = document.getElementById('calendar-month-year');
-    const calendarGridBody    = document.getElementById('calendar-grid-body');
-    const userNameHeader      = document.getElementById('user-name-header');
+    <meta name="description" content="Panel de administración de ClockInTime. Gestiona calendarios, proyectos y turnos del equipo de forma centralizada.">
+    <meta name="keywords" content="control horario, gestión de proyectos, calendario laboral, RRHH, admin dashboard">
+    <meta name="author" content="ClockInTime Team">
+    <meta name="robots" content="noindex, nofollow"> <meta name="theme-color" content="#090e1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="apple-touch-icon" href="../assets/icon-192.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Calendario Admin - ClockInTime">
+    <meta property="og:description" content="Gestión avanzada de tiempos y proyectos.">
+    <meta property="og:image" content="https://iili.io/fzg2rNt.png">
+
+    <link rel="stylesheet" href="../CSS/app-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    const selectEmpleadoFiltro = document.getElementById('filtro-empleado-cal');
-    const selectRolProy       = document.getElementById('proyecto-rol');
-    const selectEmpleadoProy  = document.getElementById('proyecto-empleado');
+    <script src="../js/theme.js"></script>
 
-    const modalProyecto       = document.getElementById('modal-proyecto');
-    const btnNuevoProyecto    = document.getElementById('btn-nuevo-proyecto');
-    const formProyecto        = document.getElementById('form-proyecto');
-
-    // =============================
-    // ESTADO
-    // =============================
-    let currentMonth = new Date().getMonth();
-    let currentYear  = new Date().getFullYear();
-    let userProfile  = null;
-    let filtroEmpleadoId = 'todos'; 
-
-    // =============================
-    // 1. INICIO
-    // =============================
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return window.location.href = '../login/login.html';
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*, empresas(id)')
-        .eq('id', session.user.id)
-        .single();
-
-    if (profile) {
-        userProfile = profile;
-        if (userNameHeader) userNameHeader.textContent = profile.nombre;
-        await cargarFiltros();
-        renderCalendar();
-    }
-
-    // =============================
-    // 2. CARGAR SELECTORES
-    // =============================
-    async function cargarFiltros() {
-        // Cargar empleados de la empresa
-        const { data: empleados } = await supabase
-            .from('profiles')
-            .select('id, nombre')
-            .eq('empresa_id', userProfile.empresa_id);
-
-        if (empleados) {
-            // Poblar selector de filtro y selector de modal
-            selectEmpleadoFiltro.innerHTML = '<option value="todos">Todos los empleados</option>';
-            selectEmpleadoProy.innerHTML = '<option value="">Evento general / Uso grupal</option>';
-            
-            empleados.forEach(emp => {
-                const opt = new Option(emp.nombre, emp.id);
-                selectEmpleadoFiltro.add(opt.cloneNode(true));
-                selectEmpleadoProy.add(opt);
-            });
+    <style>
+        /* Estilos específicos para la vista de calendario */
+        .calendar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        // Cargar Roles
-        const { data: roles } = await supabase
-            .from('roles')
-            .select('*')
-            .or(`empresa_id.is.null,empresa_id.eq.${userProfile.empresa_id}`);
-
-        if (roles) {
-            selectRolProy.innerHTML = '<option value="">Visible para todos los roles (Global)</option>';
-            roles.forEach(rol => {
-                selectRolProy.add(new Option(rol.nombre_rol, rol.id));
-            });
-        }
-    }
-
-    // =============================
-    // 3. RENDERIZADO
-    // =============================
-    async function markEventos(month, year, dayCellMap) {
-        let query = supabase
-            .from('eventos_calendario')
-            .select('*, roles(nombre_rol)')
-            .eq('empresa_id', userProfile.empresa_id);
-
-        // Si filtramos por empleado, vemos lo suyo + lo global de la empresa
-        if (filtroEmpleadoId !== 'todos') {
-            query = query.or(`user_id.eq.${filtroEmpleadoId},user_id.is.null`);
+        .cal-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        const { data: eventos, error } = await query;
-        if (error) return console.error(error);
-
-        eventos?.forEach(event => {
-            const start = new Date(event.fecha_inicio);
-            const end = new Date(event.fecha_fin);
-            
-            // Ajuste de horas para evitar desfases de día
-            start.setHours(0,0,0,0);
-            end.setHours(23,59,59,999);
-
-            let d = new Date(start);
-            while (d <= end) {
-                if (d.getMonth() === month && d.getFullYear() === year) {
-                    const cell = dayCellMap.get(d.getDate());
-                    if (cell) {
-                        const div = document.createElement('div');
-                        div.className = 'calendar-event';
-                        div.style.backgroundColor = event.color || '#6f42c1';
-                        
-                        let tag = event.user_id ? "👤 " : (event.rol_id ? "👥 " : "🌐 ");
-                        div.textContent = tag + event.titulo;
-                        div.title = event.descripcion || '';
-                        cell.appendChild(div);
-                    }
-                }
-                d.setDate(d.getDate() + 1);
-            }
-        });
-    }
-
-    function renderCalendar() {
-        const dayCellMap = updateCalendarGrid(currentMonth, currentYear);
-        markEventos(currentMonth, currentYear, dayCellMap);
-    }
-
-    function updateCalendarGrid(month, year) {
-        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
-        
-        calendarGridBody.querySelectorAll('.day-cell').forEach(c => c.remove());
-
-        let firstDay = new Date(year, month, 1).getDay();
-        firstDay = firstDay === 0 ? 7 : firstDay; 
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const dayCellMap = new Map();
-
-        for (let i = 1; i < firstDay; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'day-cell other-month';
-            calendarGridBody.appendChild(empty);
+        .calendar-header-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 10px 0;
         }
 
-        for (let day = 1; day <= daysInMonth; day++) {
-            const cell = document.createElement('div');
-            cell.className = 'day-cell';
-            const num = document.createElement('div');
-            num.className = 'day-number';
-            num.textContent = day;
-            cell.appendChild(num);
-            calendarGridBody.appendChild(cell);
-            dayCellMap.set(day, cell);
+        .calendar-header-nav h2 {
+            min-width: 200px;
+            text-align: center;
+            font-size: 1.5rem;
+            text-transform: capitalize;
         }
-        return dayCellMap;
-    }
 
-    // =============================
-    // 4. CREAR PROYECTO
-    // =============================
-    formProyecto.onsubmit = async (e) => {
-        e.preventDefault();
-
-        const nuevo = {
-            titulo: document.getElementById('proyecto-titulo').value,
-            descripcion: document.getElementById('proyecto-desc').value,
-            fecha_inicio: document.getElementById('proyecto-start').value,
-            fecha_fin: document.getElementById('proyecto-end').value,
-            color: document.getElementById('proyecto-color').value,
-            empresa_id: userProfile.empresa_id,
-            creado_por: userProfile.id,
-            rol_id: selectRolProy.value || null,
-            user_id: selectEmpleadoProy.value || null
-        };
-
-        const { error } = await supabase.from('eventos_calendario').insert([nuevo]);
-
-        if (!error) {
-            modalProyecto.classList.add('modal-hidden');
-            formProyecto.reset();
-            renderCalendar();
-        } else {
-            alert("Error: " + error.message);
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-    };
 
-    // =============================
-    // 5. INTERACCIÓN
-    // =============================
-    selectEmpleadoFiltro.onchange = (e) => {
-        filtroEmpleadoId = e.target.value;
-        renderCalendar();
-    };
+        .day-header {
+            background: var(--bg-secondary);
+            color: var(--text-dim);
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-    prevButton.onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); };
-    nextButton.onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); };
-    
-    btnNuevoProyecto.onclick = () => modalProyecto.classList.remove('modal-hidden');
-    window.onclick = (e) => { if(e.target == modalProyecto) modalProyecto.classList.add('modal-hidden'); };
+        .day-cell {
+            background: var(--bg-primary);
+            min-height: 120px;
+            padding: 10px;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
 
-});
+        .day-cell.other-month {
+            opacity: 0.4;
+            background: var(--bg-secondary);
+        }
+
+        .day-cell.today {
+            background: rgba(222, 255, 154, 0.03);
+        }
+
+        .day-number {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .day-cell.today .day-number {
+            background: var(--primary-color);
+            color: #000;
+        }
+
+        .calendar-event {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+            border-left: 3px solid rgba(0,0,0,0.2);
+        }
+
+        .modal-hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .calendar-grid { grid-template-columns: repeat(7, 1fr); }
+            .day-cell { min-height: 80px; padding: 5px; }
+            .day-header { font-size: 0.7rem; padding: 8px 2px; }
+            .calendar-event { font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="admin-dashboard.html" class="logo">
+                    clockIn<span>Time</span> <small class="badge-admin">Admin</small>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="admin-dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+                    <li><a href="admin-usuarios.html"><i class="fas fa-users"></i> Empleados</a></li>
+                    <li><a href="admin-calendario.html" class="active"><i class="fas fa-calendar-alt"></i> Calendario</a></li>
+                    <li><a href="admin-solicitudes.html"><i class="fas fa-clipboard-check"></i> Solicitudes</a></li>
+                    <li><a href="admin-configuracion.html"><i class="fas fa-cog"></i> Configuración</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-logout" class="btn-logout-full">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button id="menu-toggle" class="btn-icon-only"><i class="fas fa-bars"></i></button>
+                    <h1>Calendario del Equipo</h1>
+                </div>
+                <div class="user-info">
+                    <span class="status-indicator online"></span>
+                    <strong id="user-name-header">Cargando...</strong>
+                </div>
+            </header>
+
+            <div class="calendar-section">
+                <div class="cal-toolbar">
+                    <div class="filter-group">
+                        <label for="filtro-empleado-cal"><i class="fas fa-filter"></i> Filtrar por:</label>
+                        <select id="filtro-empleado-cal" class="select-custom">
+                            <option value="todos">Todos los empleados</option>
+                        </select>
+                    </div>
+                    <button id="btn-nuevo-proyecto" class="btn-primary-app">
+                        <i class="fas fa-plus-circle"></i> Crear Proyecto / Evento
+                    </button>
+                </div>
+
+                <div class="calendar-header-nav">
+                    <button id="btn-cal-prev" class="btn-nav-cal"><i class="fas fa-chevron-left"></i></button>
+                    <h2 id="calendar-month-year">-- --- ----</h2>
+                    <button id="btn-cal-next" class="btn-nav-cal"><i class="fas fa-chevron-right"></i></button>
+                </div>
+
+                <div id="calendar-grid-body" class="calendar-grid">
+                    <div class="day-header">Lun</div>
+                    <div class="day-header">Mar</div>
+                    <div class="day-header">Mié</div>
+                    <div class="day-header">Jue</div>
+                    <div class="day-header">Vie</div>
+                    <div class="day-header">Sáb</div>
+                    <div class="day-header">Dom</div>
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-proyecto" class="modal-overlay modal-hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-plus"></i> Publicar Evento</h3>
+                <button type="button" id="btn-cerrar-modal-proyecto" class="btn-close-modal">&times;</button>
+            </div>
+            <form id="form-proyecto" class="modal-form">
+                <div class="form-group">
+                    <label for="proyecto-titulo">Título del Evento *</label>
+                    <input type="text" id="proyecto-titulo" placeholder="Ej: Lanzamiento Campaña" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="proyecto-desc">Descripción Corta</label>
+                    <textarea id="proyecto-desc" placeholder="Detalles adicionales..." rows="2"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="proyecto-start">Fecha Inicio</label>
+                        <input type="date" id="proyecto-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="proyecto-end">Fecha Fin</label>
+                        <input type="date" id="proyecto-end" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="proyecto-rol">Visibilidad por Rol</label>
+                        <select id="proyecto-rol">
+                            <option value="">Global (Todos)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="proyecto-color">Color</label>
+                        <input type="color" id="proyecto-color" value="#6f42c1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="proyecto-empleado">Asignación Directa (Opcional)</label>
+                    <select id="proyecto-empleado">
+                        <option value="">Ninguno (Evento de Grupo)</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn-save">Publicar en Calendario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="../js/admin-calendario.js"></script>
+</body>
+</html>
