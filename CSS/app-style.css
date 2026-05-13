@@ -192,7 +192,7 @@ a {
     color: #ffffff !important; /* Fuerza el texto a blanco */
 }
 
-.status-out { background-color: var(--text-light); }
+.status-out { background-color: var(--text-red); }
 .status-in { background-color: var(--blue); }
 .status-pause { background-color: var(--yellow); color: var(--text-dark); }
 
